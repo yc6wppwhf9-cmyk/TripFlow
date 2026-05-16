@@ -3,56 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendor Dashboard - TripDesk</title>
+    <title>TripFlow | Vendor</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .tab-nav { display:flex;gap:0.5rem;margin-bottom:2.5rem;border-bottom:2px solid #f1f5f9;padding-bottom:0; }
+        .tab-btn { padding:0.75rem 1.5rem;border:none;background:none;cursor:pointer;font-size:0.95rem;font-weight:600;color:var(--text-muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.2s; }
+        .tab-btn.active { color:#6366f1;border-bottom-color:#6366f1; }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
+    </style>
 </head>
 <body>
-    <nav class="dashboard-nav">
-        <div class="logo">TripDesk Vendor</div>
+    <nav class="dashboard-nav glass">
+        <div class="logo">TripFlow</div>
+        <div class="nav-links">
+            <a href="#" class="active">Vendor Portal</a>
+        </div>
         <div class="user-info">
-            <span id="user-name"></span>
-            <button onclick="logout()" class="secondary" style="width: auto; padding: 0.5rem 1rem;">Logout</button>
+            <span id="user-name" style="font-weight:600;"></span>
+            <button onclick="logout()" class="secondary" style="width:auto;padding:0.6rem 1.2rem;">Logout</button>
         </div>
     </nav>
 
     <div class="container">
-        <h1>Booking Requests</h1>
-        <p style="color: var(--secondary-text); margin-bottom: 2rem;">Process approved travel requests and upload tickets.</p>
+        <div style="margin-bottom:2.5rem;">
+            <p style="color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.1em;font-size:0.8rem;margin-bottom:0.4rem;">Vendor Portal</p>
+            <h1 id="company-name">Booking Requests</h1>
+        </div>
 
-        <div class="card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Employee</th>
-                        <th>Type</th>
-                        <th>Details</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="requests-list">
-                    <!-- Loaded dynamically -->
-                </tbody>
-            </table>
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.5rem;margin-bottom:2.5rem;">
+            <div class="stat-card glass">
+                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Pending Requests</p>
+                <div class="stat-value" id="stat-pending">—</div>
+            </div>
+            <div class="stat-card glass">
+                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Completed Trips</p>
+                <div class="stat-value" id="stat-done">—</div>
+            </div>
+        </div>
+
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('pending')">
+                Pending Requests <span id="pending-badge" style="background:#e63946;color:white;padding:0.1rem 0.5rem;border-radius:12px;font-size:0.75rem;margin-left:0.4rem;display:none;"></span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('completed')">Completed</button>
+        </div>
+
+        <!-- Pending Tab -->
+        <div id="tab-pending" class="tab-content active">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Employee</th><th>Type</th><th>Route</th><th>Date</th><th>Est. Cost</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="requests-list">
+                        <tr><td colspan="6" style="text-align:center;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Completed Tab -->
+        <div id="tab-completed" class="tab-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Employee</th><th>Type</th><th>Route</th><th>PNR</th><th>Cost</th><th>Ticket</th></tr>
+                    </thead>
+                    <tbody id="completed-list">
+                        <tr><td colspan="6" style="text-align:center;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <!-- Upload Modal -->
     <div id="upload-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width:460px;">
             <h2>Upload Ticket & PNR</h2>
-            <form id="upload-form" style="margin-top: 1.5rem;">
+            <p style="color:var(--text-muted);margin-bottom:1.5rem;">Once uploaded, the employee will be notified automatically.</p>
+            <form id="upload-form">
                 <input type="hidden" id="booking-id">
                 <div class="form-group">
-                    <label>PNR Number</label>
-                    <input type="text" id="pnr" required placeholder="e.g. AB1234">
+                    <label>PNR / Booking Reference</label>
+                    <input type="text" id="pnr" required placeholder="e.g. AB1234 or CONF-789">
                 </div>
                 <div class="form-group">
-                    <label>Ticket File (PDF/Image)</label>
-                    <input type="file" id="ticket-file" required accept=".pdf,image/*">
+                    <label>Ticket File (PDF or Image)</label>
+                    <input type="file" id="ticket-file" required accept=".pdf,image/*" style="padding:0.5rem;">
                 </div>
-                <div style="display: flex; gap: 1rem;">
-                    <button type="submit" id="upload-btn">Upload & Complete</button>
-                    <button type="button" onclick="hideUploadModal()" class="secondary">Cancel</button>
+                <div id="upload-progress" style="display:none;margin-bottom:1rem;padding:0.75rem;background:#f0f9ff;border-radius:8px;font-size:0.875rem;color:#0c4a6e;">
+                    ⏳ Uploading ticket...
+                </div>
+                <div style="display:flex;gap:1rem;">
+                    <button type="submit" id="upload-btn" style="flex:1;">Upload & Complete</button>
+                    <button type="button" onclick="hideUploadModal()" class="secondary" style="flex:0.5;">Cancel</button>
                 </div>
             </form>
         </div>
@@ -61,39 +108,85 @@
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
-        const user = checkAuth();
-        if (user) {
-            updateUserInfo();
+        async function init() {
+            const user = checkAuth();
+            if (!user) return;
+            document.getElementById('user-name').innerText = user.name;
             loadRequests();
+            loadCompleted();
+        }
+        init();
+
+        function switchTab(name) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
         }
 
         async function loadRequests() {
             try {
                 const requests = await apiRequest('/vendor/requests');
+                const badge = document.getElementById('pending-badge');
+                document.getElementById('stat-pending').innerText = requests.length;
+                if (requests.length) { badge.innerText = requests.length; badge.style.display = 'inline'; }
+
                 const list = document.getElementById('requests-list');
+                if (!requests.length) {
+                    list.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">✅ No pending requests</td></tr>';
+                    return;
+                }
                 list.innerHTML = requests.map(b => `
                     <tr>
-                        <td><strong>${b.employee.user.name}</strong></td>
-                        <td>${b.type}</td>
-                        <td>${b.details.origin} to ${b.details.destination} (${b.details.date})</td>
                         <td>
-                            <button onclick="showUploadModal('${b.id}')" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.85rem;">Process & Upload</button>
+                            <strong>${b.employee.user.name}</strong><br>
+                            <small style="color:var(--text-muted);">${b.employee.department}</small>
                         </td>
-                    </tr>
-                `).join('') || '<tr><td colspan="4" style="text-align:center;">No pending booking requests</td></tr>';
-            } catch (err) {
-                alert(err.message);
+                        <td><strong>${b.type}</strong></td>
+                        <td>${b.details.origin} → ${b.details.destination}</td>
+                        <td>${b.details.date}</td>
+                        <td style="font-weight:700;color:#6366f1;">$${b.cost || '—'}</td>
+                        <td>
+                            <button onclick="showUploadModal('${b.id}')" style="width:auto;padding:0.4rem 0.9rem;font-size:0.85rem;">Process & Upload</button>
+                        </td>
+                    </tr>`).join('');
+            } catch(err) {
+                console.error(err.message);
+            }
+        }
+
+        async function loadCompleted() {
+            try {
+                const completed = await apiRequest('/vendor/completed');
+                document.getElementById('stat-done').innerText = completed.length;
+                const list = document.getElementById('completed-list');
+                if (!completed.length) {
+                    list.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">No completed bookings yet</td></tr>';
+                    return;
+                }
+                list.innerHTML = completed.map(b => `
+                    <tr>
+                        <td style="font-weight:600;">${b.employee.user.name}</td>
+                        <td>${b.type}</td>
+                        <td>${b.details.origin} → ${b.details.destination}</td>
+                        <td style="font-family:monospace;color:#6366f1;font-weight:700;">${b.pnr || '—'}</td>
+                        <td style="font-weight:600;">$${b.cost || '—'}</td>
+                        <td>${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color:#6366f1;font-weight:600;text-decoration:none;">View Ticket</a>` : '—'}</td>
+                    </tr>`).join('');
+            } catch(err) {
+                console.error(err.message);
             }
         }
 
         function showUploadModal(id) {
             document.getElementById('booking-id').value = id;
+            document.getElementById('pnr').value = '';
+            document.getElementById('ticket-file').value = '';
+            document.getElementById('upload-progress').style.display = 'none';
             document.getElementById('upload-modal').style.display = 'flex';
         }
 
-        function hideUploadModal() {
-            document.getElementById('upload-modal').style.display = 'none';
-        }
+        function hideUploadModal() { document.getElementById('upload-modal').style.display = 'none'; }
 
         document.getElementById('upload-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -101,27 +194,25 @@
             const pnr = document.getElementById('pnr').value;
             const file = document.getElementById('ticket-file').files[0];
             const btn = document.getElementById('upload-btn');
+            const progress = document.getElementById('upload-progress');
 
             const formData = new FormData();
             formData.append('pnr', pnr);
             formData.append('ticket', file);
 
-            btn.disabled = true;
-            btn.textContent = 'Uploading...';
+            btn.disabled = true; btn.innerText = 'Uploading...';
+            progress.style.display = 'block';
 
             try {
-                await apiRequest(`/vendor/${id}/upload-ticket`, {
-                    method: 'POST',
-                    body: formData
-                });
+                await apiRequest(`/vendor/${id}/upload-ticket`, { method: 'POST', body: formData });
                 hideUploadModal();
                 loadRequests();
-                alert('Ticket uploaded and booking completed!');
-            } catch (err) {
-                alert(err.message);
+                loadCompleted();
+            } catch(err) {
+                alert('Upload failed: ' + err.message);
             } finally {
-                btn.disabled = false;
-                btn.textContent = 'Upload & Complete';
+                btn.disabled = false; btn.innerText = 'Upload & Complete';
+                progress.style.display = 'none';
             }
         });
     </script>

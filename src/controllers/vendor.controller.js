@@ -23,6 +23,20 @@ exports.getVendorRequests = async (req, res) => {
   }
 };
 
+exports.getCompletedBookings = async (req, res) => {
+  try {
+    if (!req.user.vendor) return res.status(400).json({ error: 'User is not a vendor' });
+    const bookings = await prisma.booking.findMany({
+      where: { vendorId: req.user.vendor.id, stage: 'COMPLETED' },
+      include: { employee: { include: { user: true } } },
+      orderBy: { updatedAt: 'desc' }
+    });
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.uploadTicket = async (req, res) => {
   try {
     const { id } = req.params;

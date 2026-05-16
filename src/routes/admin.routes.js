@@ -5,14 +5,21 @@ const auth = require('../middleware/auth.middleware');
 const role = require('../middleware/role.middleware');
 
 router.use(auth);
-router.use(role('ADMIN'));
 
-router.get('/bookings', adminController.getAllBookings);
-router.get('/stats', adminController.getStats);
-router.post('/policy', adminController.updatePolicy);
-router.get('/employees', adminController.getEmployees);
-router.post('/employees', adminController.createEmployee);
-router.get('/vendors', adminController.getVendors);
-router.post('/policies/analyze', adminController.analyzePolicy);
+// HR + ADMIN can view data
+router.get('/bookings', role(['ADMIN', 'HR']), adminController.getAllBookings);
+router.get('/stats', role(['ADMIN', 'HR']), adminController.getStats);
+router.get('/users', role(['ADMIN', 'HR']), adminController.getAllUsers);
+router.get('/employees', role(['ADMIN', 'HR']), adminController.getEmployees);
+router.get('/vendors', role(['ADMIN', 'HR']), adminController.getVendors);
+router.get('/policies', role(['ADMIN', 'HR']), adminController.getPolicies);
+
+// ADMIN only — system management
+router.post('/users', role('ADMIN'), adminController.createUser);
+router.post('/employees', role('ADMIN'), adminController.createEmployee);
+router.post('/policies', role(['ADMIN', 'HR']), adminController.createPolicy);
+router.post('/policies/assign', role(['ADMIN', 'HR']), adminController.assignPolicy);
+router.post('/policies/analyze', role(['ADMIN', 'HR']), adminController.analyzePolicy);
+router.post('/policy', role('ADMIN'), adminController.updatePolicy);
 
 module.exports = router;

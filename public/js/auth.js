@@ -27,7 +27,8 @@ function checkAuth() {
     'EMPLOYEE': '/employee.html',
     'MANAGER': '/manager.html',
     'VENDOR': '/vendor.html',
-    'ADMIN': '/admin.html'
+    'ADMIN': '/admin.html',
+    'HR': '/hr.html'
   };
 
   if (window.location.pathname === '/index.html' || window.location.pathname === '/') {

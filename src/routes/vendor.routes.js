@@ -9,6 +9,7 @@ router.use(auth);
 router.use(role('VENDOR'));
 
 router.get('/requests', vendorController.getVendorRequests);
+router.get('/completed', vendorController.getCompletedBookings);
 router.post('/:id/upload-ticket', upload.single('ticket'), vendorController.uploadTicket);
 
 module.exports = router;

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripFlow | HR Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .tab-nav { display:flex;gap:0.5rem;margin-bottom:2.5rem;border-bottom:2px solid #f1f5f9;padding-bottom:0; }
+        .tab-btn { padding:0.75rem 1.5rem;border:none;background:none;cursor:pointer;font-size:0.95rem;font-weight:600;color:var(--text-muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.2s; }
+        .tab-btn.active { color:#6366f1;border-bottom-color:#6366f1; }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
+        .role-badge { padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;text-transform:uppercase; }
+        .role-EMPLOYEE { background:#f0f9ff;color:#0c4a6e; }
+        .role-MANAGER { background:#d1fae5;color:#065f46; }
+    </style>
+</head>
+<body>
+    <nav class="dashboard-nav glass">
+        <div class="logo">TripFlow</div>
+        <div class="nav-links">
+            <a href="hr.html" class="active">HR Portal</a>
+            <a href="admin.html">Admin</a>
+        </div>
+        <div class="user-info">
+            <span id="user-name" style="font-weight:600;"></span>
+            <button onclick="logout()" class="secondary" style="width:auto;padding:0.6rem 1.2rem;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div style="margin-bottom:2.5rem;">
+            <p style="color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.1em;font-size:0.8rem;margin-bottom:0.4rem;">Human Resources</p>
+            <h1>HR Dashboard</h1>
+        </div>
+
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2.5rem;">
+            <div class="stat-card glass">
+                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Total Employees</p>
+                <div class="stat-value" id="stat-emp">—</div>
+            </div>
+            <div class="stat-card glass">
+                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Active Trips</p>
+                <div class="stat-value" id="stat-active">—</div>
+            </div>
+            <div class="stat-card glass">
+                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Completed This Month</p>
+                <div class="stat-value" id="stat-completed">—</div>
+            </div>
+            <div class="stat-card glass">
+                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Total Travel Spend</p>
+                <div class="stat-value" id="stat-spend">—</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('employees')">Employees</button>
+            <button class="tab-btn" onclick="switchTab('bookings')">All Bookings</button>
+            <button class="tab-btn" onclick="switchTab('policies')">Policies</button>
+        </div>
+
+        <!-- Employees Tab -->
+        <div id="tab-employees" class="tab-content active">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                <h3>Employee Directory</h3>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Manager</th><th>Policy</th><th>Assign Policy</th></tr></thead>
+                    <tbody id="emp-list"><tr><td colspan="6" style="text-align:center;">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Bookings Tab -->
+        <div id="tab-bookings" class="tab-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                <h3>All Travel Requests</h3>
+                <select id="stage-filter" onchange="filterBookings()" style="padding:0.5rem 1rem;border:1px solid #e2e8f0;border-radius:8px;">
+                    <option value="">All Stages</option>
+                    <option value="PENDING_MANAGER">Pending Manager</option>
+                    <option value="PENDING_VENDOR">Pending Vendor</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="REJECTED">Rejected</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Employee</th><th>Type</th><th>Route</th><th>Stage</th><th>Cost</th><th>Date</th></tr></thead>
+                    <tbody id="bookings-list"><tr><td colspan="6" style="text-align:center;">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Policies Tab -->
+        <div id="tab-policies" class="tab-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                <h3>Travel Policies</h3>
+                <button onclick="showPolicyModal()" style="padding:0.75rem 1.5rem;">+ New Policy</button>
+            </div>
+            <div class="table-container" style="margin-bottom:2rem;">
+                <table>
+                    <thead><tr><th>Name</th><th>Flight Limit</th><th>Hotel Limit</th><th>Train</th><th>Cab</th><th>Monthly Budget</th></tr></thead>
+                    <tbody id="policy-list"><tr><td colspan="6" style="text-align:center;">Loading...</td></tr></tbody>
+                </table>
+            </div>
+
+            <div class="card" style="background:white;">
+                <h3 style="margin-bottom:1rem;">AI Policy Extractor</h3>
+                <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem;">Paste a travel policy document and Claude will extract the spending limits automatically.</p>
+                <textarea id="policy-text" rows="5" placeholder="e.g. Employees are allowed to book flights up to $800. Hotel stays are capped at $150 per night. Cab rides should not exceed $40..." style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;font-family:inherit;font-size:0.9rem;"></textarea>
+                <div style="display:flex;gap:1rem;margin-top:1rem;align-items:center;">
+                    <button onclick="analyzePolicy()" id="analyze-btn" style="width:auto;padding:0.75rem 1.5rem;background:var(--secondary-gradient);">Analyze with Claude</button>
+                    <span id="analyze-status" style="color:var(--text-muted);font-size:0.85rem;"></span>
+                </div>
+                <div id="policy-results" style="margin-top:1.5rem;display:none;padding:1.5rem;background:#f8fafc;border-radius:12px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Policy Modal -->
+    <div id="policy-modal" class="modal">
+        <div class="modal-content" style="max-width:480px;">
+            <h2>Create Travel Policy</h2>
+            <form id="policy-form" style="margin-top:1.5rem;">
+                <div class="form-group">
+                    <label>Policy Name</label>
+                    <input type="text" id="p-name" required placeholder="e.g. Standard 2026">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="form-group">
+                        <label>Flight Limit (USD)</label>
+                        <input type="number" id="p-flight" placeholder="1000" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Hotel Limit / night (USD)</label>
+                        <input type="number" id="p-hotel" placeholder="200" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Train Limit (USD)</label>
+                        <input type="number" id="p-train" placeholder="100" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Cab Limit (USD)</label>
+                        <input type="number" id="p-cab" placeholder="50" min="0">
+                    </div>
+                    <div class="form-group" style="grid-column:span 2;">
+                        <label>Monthly Budget (USD)</label>
+                        <input type="number" id="p-budget" placeholder="5000" min="0">
+                    </div>
+                </div>
+                <div style="display:flex;gap:1rem;margin-top:2rem;">
+                    <button type="submit" style="flex:1;">Save Policy</button>
+                    <button type="button" onclick="hideModal('policy-modal')" class="secondary" style="flex:0.4;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let allBookings = [];
+        let allPolicies = [];
+
+        async function init() {
+            const user = checkAuth();
+            if (!user) return;
+            document.getElementById('user-name').innerText = user.name;
+            loadStats();
+            loadEmployees();
+            loadBookings();
+            loadPolicies();
+        }
+        init();
+
+        function switchTab(name) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+        }
+
+        async function loadStats() {
+            try {
+                const s = await apiRequest('/admin/stats');
+                document.getElementById('stat-emp').innerText = s.totalUsers || '—';
+                document.getElementById('stat-active').innerText = s.pendingApprovals;
+                document.getElementById('stat-completed').innerText = s.completedTrips;
+                document.getElementById('stat-spend').innerText = '$' + (s.totalCost || 0).toLocaleString();
+            } catch(e) {}
+        }
+
+        async function loadEmployees() {
+            try {
+                allPolicies = await apiRequest('/admin/policies');
+                const emps = await apiRequest('/admin/employees');
+                const list = document.getElementById('emp-list');
+                list.innerHTML = emps.map(e => `
+                    <tr>
+                        <td style="font-weight:600;">${e.user.name}</td>
+                        <td style="color:var(--text-muted);">${e.user.email}</td>
+                        <td>${e.department}</td>
+                        <td>${e.manager?.name || '—'}</td>
+                        <td>${allPolicies.find(p => p.id === e.policyId)?.name || '<span style="color:#e63946;">No policy</span>'}</td>
+                        <td>
+                            <select onchange="assignPolicy('${e.id}', this.value)" style="padding:0.3rem 0.5rem;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;">
+                                <option value="">Assign policy...</option>
+                                ${allPolicies.map(p => `<option value="${p.id}" ${p.id === e.policyId ? 'selected' : ''}>${p.name}</option>`).join('')}
+                            </select>
+                        </td>
+                    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No employees</td></tr>';
+            } catch(e) { console.error(e); }
+        }
+
+        async function assignPolicy(employeeId, policyId) {
+            if (!policyId) return;
+            try {
+                await apiRequest('/admin/policies/assign', { method: 'POST', body: { employeeId, policyId } });
+            } catch(err) {
+                alert('Failed to assign policy: ' + err.message);
+            }
+        }
+
+        async function loadBookings() {
+            try {
+                allBookings = await apiRequest('/admin/bookings');
+                renderBookings(allBookings);
+            } catch(e) { console.error(e); }
+        }
+
+        function renderBookings(list) {
+            document.getElementById('bookings-list').innerHTML = list.map(b => `
+                <tr>
+                    <td style="font-weight:600;">${b.employee?.user?.name || '—'}</td>
+                    <td>${b.type}</td>
+                    <td>${b.details?.origin || '—'} → ${b.details?.destination || '—'}</td>
+                    <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
+                    <td style="font-weight:600;">$${b.cost || '—'}</td>
+                    <td style="color:var(--text-muted);font-size:0.85rem;">${new Date(b.createdAt).toLocaleDateString()}</td>
+                </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No bookings</td></tr>';
+        }
+
+        function filterBookings() {
+            const stage = document.getElementById('stage-filter').value;
+            renderBookings(stage ? allBookings.filter(b => b.stage === stage) : allBookings);
+        }
+
+        async function loadPolicies() {
+            try {
+                allPolicies = await apiRequest('/admin/policies');
+                const list = document.getElementById('policy-list');
+                list.innerHTML = allPolicies.map(p => `
+                    <tr>
+                        <td style="font-weight:600;">${p.name}</td>
+                        <td>$${p.rules.flightLimit || '—'}</td>
+                        <td>$${p.rules.hotelLimit || '—'}</td>
+                        <td>$${p.rules.trainLimit || '—'}</td>
+                        <td>$${p.rules.cabLimit || '—'}</td>
+                        <td>$${p.rules.globalMonthlyBudget || '—'}</td>
+                    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No policies yet</td></tr>';
+            } catch(e) { console.error(e); }
+        }
+
+        function showPolicyModal() { document.getElementById('policy-modal').style.display = 'flex'; }
+        function hideModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        document.getElementById('policy-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type=submit]');
+            btn.disabled = true; btn.innerText = 'Saving...';
+            try {
+                await apiRequest('/admin/policies', {
+                    method: 'POST',
+                    body: {
+                        name: document.getElementById('p-name').value,
+                        flightLimit: document.getElementById('p-flight').value,
+                        hotelLimit: document.getElementById('p-hotel').value,
+                        trainLimit: document.getElementById('p-train').value,
+                        cabLimit: document.getElementById('p-cab').value,
+                        globalMonthlyBudget: document.getElementById('p-budget').value
+                    }
+                });
+                hideModal('policy-modal');
+                e.target.reset();
+                loadPolicies();
+                loadEmployees();
+            } catch(err) {
+                alert(err.message);
+            } finally {
+                btn.disabled = false; btn.innerText = 'Save Policy';
+            }
+        });
+
+        async function analyzePolicy() {
+            const text = document.getElementById('policy-text').value;
+            if (!text.trim()) return alert('Please paste policy text first.');
+            const btn = document.getElementById('analyze-btn');
+            const status = document.getElementById('analyze-status');
+            btn.disabled = true; btn.innerText = 'Analyzing...';
+            status.innerText = 'Claude is reading the policy...';
+            try {
+                const r = await apiRequest('/admin/policies/analyze', { method: 'POST', body: { text } });
+                const div = document.getElementById('policy-results');
+                div.style.display = 'block';
+                div.innerHTML = `
+                    <h4 style="margin-bottom:1rem;">Extracted Limits</h4>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;">
+                        <div><p style="color:var(--text-muted);font-size:0.8rem;">FLIGHTS</p><strong>$${r.flightLimit || 'N/A'}</strong></div>
+                        <div><p style="color:var(--text-muted);font-size:0.8rem;">HOTELS / NIGHT</p><strong>$${r.hotelLimit || 'N/A'}</strong></div>
+                        <div><p style="color:var(--text-muted);font-size:0.8rem;">TRAINS</p><strong>$${r.trainLimit || 'N/A'}</strong></div>
+                        <div><p style="color:var(--text-muted);font-size:0.8rem;">CABS</p><strong>$${r.cabLimit || 'N/A'}</strong></div>
+                        <div><p style="color:var(--text-muted);font-size:0.8rem;">MONTHLY BUDGET</p><strong>$${r.globalMonthlyBudget || 'N/A'}</strong></div>
+                    </div>`;
+                status.innerText = '✅ Done';
+            } catch(err) {
+                status.innerText = '❌ Failed: ' + err.message;
+            } finally {
+                btn.disabled = false; btn.innerText = 'Analyze with Claude';
+            }
+        }
+    </script>
+</body>
+</html>
