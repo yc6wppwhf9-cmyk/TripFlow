@@ -9,6 +9,7 @@ const validate = require('../middleware/validate.middleware');
 router.use(auth);
 
 router.get('/mine', role('EMPLOYEE'), bookingController.getMyBookings);
+router.get('/trip-plan', role('EMPLOYEE'), bookingController.getTripPlan);
 router.get('/suggestions', role('EMPLOYEE'), bookingController.getSuggestions);
 
 router.post('/', role('EMPLOYEE'), [

@@ -53,6 +53,19 @@ async function checkPolicyLimits(employeeId, type, cost) {
 
 exports.checkPolicyLimits = checkPolicyLimits;
 
+exports.getTripPlan = async (req, res) => {
+  try {
+    const { from, to, fromDate, toDate } = req.query;
+    if (!from || !to || !fromDate) {
+      return res.status(400).json({ error: 'from, to, and fromDate are required' });
+    }
+    const plan = await travelService.planTrip(from, to, fromDate, toDate || null);
+    res.json(plan);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.getSuggestions = async (req, res) => {
   try {
     const { origin, destination, date, type, checkOut } = req.query;

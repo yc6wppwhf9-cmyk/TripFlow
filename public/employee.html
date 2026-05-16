@@ -62,113 +62,140 @@
         </div>
     </div>
 
-    <!-- Manual Booking Modal -->
+    <!-- Trip Planner Modal -->
     <div id="booking-modal" class="modal">
-        <div class="modal-content" style="max-width:600px; padding:2.5rem;">
+        <div class="modal-content" style="max-width:680px; padding:0; overflow:hidden; max-height:90vh; display:flex; flex-direction:column;">
 
             <!-- Header -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.75rem;">
-                <div>
-                    <h2 style="margin:0; font-size:1.4rem; letter-spacing:-0.5px;">New Travel Request</h2>
-                    <p style="margin:0.25rem 0 0; color:#64748b; font-size:0.85rem;">Fill in the details — live prices load automatically.</p>
+            <div style="padding:1.5rem 2rem 1.25rem; border-bottom:1px solid #e2e8f0; flex-shrink:0;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h2 style="margin:0; font-size:1.35rem; letter-spacing:-0.5px;">Plan Your Trip</h2>
+                        <p style="margin:0.2rem 0 0; color:#64748b; font-size:0.82rem;">Enter your destination — we'll find flights, trains &amp; hotels automatically.</p>
+                    </div>
+                    <button type="button" onclick="hideBookingModal()" style="background:none;border:none;box-shadow:none;color:#94a3b8;font-size:1.6rem;padding:0;cursor:pointer;line-height:1;">×</button>
                 </div>
-                <button type="button" onclick="hideBookingModal()" style="background:none; border:none; box-shadow:none; color:#94a3b8; font-size:1.5rem; padding:0; cursor:pointer; line-height:1;">×</button>
+
+                <!-- Search Form -->
+                <div style="display:grid; grid-template-columns:1fr auto 1fr 1fr 1fr auto; gap:0.6rem; align-items:end; margin-top:1.25rem;">
+                    <div>
+                        <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:0.3rem;">FROM</label>
+                        <div style="position:relative;">
+                            <input id="tp-from" type="text" placeholder="Mumbai" autocomplete="off"
+                                style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none;"
+                                oninput="showCitySuggestions(this,'tp-from-list')" onfocus="showCitySuggestions(this,'tp-from-list')" onblur="setTimeout(()=>hideCityList('tp-from-list'),200)">
+                            <div id="tp-from-list" class="city-dropdown"></div>
+                        </div>
+                    </div>
+                    <div style="padding-bottom:0.5rem; color:#94a3b8; font-size:1.1rem; text-align:center;">→</div>
+                    <div>
+                        <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:0.3rem;">TO (DESTINATION)</label>
+                        <div style="position:relative;">
+                            <input id="tp-to" type="text" placeholder="Muzaffarpur" autocomplete="off"
+                                style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none;"
+                                oninput="showCitySuggestions(this,'tp-to-list')" onfocus="showCitySuggestions(this,'tp-to-list')" onblur="setTimeout(()=>hideCityList('tp-to-list'),200)">
+                            <div id="tp-to-list" class="city-dropdown"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:0.3rem;">DEPARTURE</label>
+                        <input id="tp-from-date" type="date" style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:0.3rem;">RETURN (OPT)</label>
+                        <input id="tp-to-date" type="date" style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none;">
+                    </div>
+                    <button type="button" onclick="runTripPlan()" id="tp-search-btn"
+                        style="padding:0.7rem 1.2rem; border-radius:10px; font-size:0.85rem; white-space:nowrap; height:fit-content;">
+                        Search
+                    </button>
+                </div>
             </div>
 
-            <form id="booking-form">
+            <!-- Results area -->
+            <div id="trip-plan-results" style="flex:1; overflow-y:auto; padding:1.5rem 2rem;">
+                <p style="color:#94a3b8; font-size:0.85rem; text-align:center; margin-top:2rem;">
+                    Enter your trip details above and click <strong>Search</strong>.
+                </p>
+            </div>
 
-                <!-- Travel type pills -->
-                <div class="form-group" style="margin-bottom:1.25rem;">
-                    <label style="margin-bottom:0.6rem; display:block;">Travel Type</label>
-                    <div style="display:flex; gap:0.5rem;">
-                        <label class="type-pill" data-val="FLIGHT" style="flex:1;">
-                            <input type="radio" name="travel-type-radio" value="FLIGHT" checked style="display:none;">
-                            <span>✈️ Flight</span>
-                        </label>
-                        <label class="type-pill" data-val="TRAIN" style="flex:1;">
-                            <input type="radio" name="travel-type-radio" value="TRAIN" style="display:none;">
-                            <span>🚂 Train</span>
-                        </label>
-                        <label class="type-pill" data-val="HOTEL" style="flex:1;">
-                            <input type="radio" name="travel-type-radio" value="HOTEL" style="display:none;">
-                            <span>🏨 Hotel</span>
-                        </label>
-                        <label class="type-pill" data-val="CAB" style="flex:1;">
-                            <input type="radio" name="travel-type-radio" value="CAB" style="display:none;">
-                            <span>🚖 Cab</span>
-                        </label>
+            <!-- Submit bar (shown after plan loads) -->
+            <div id="submit-bar" style="display:none; padding:1rem 2rem; border-top:1px solid #e2e8f0; background:#fafafa; flex-shrink:0;">
+                <div style="display:flex; gap:0.75rem; align-items:center;">
+                    <div style="flex:1;">
+                        <label style="font-size:0.75rem; color:#64748b; font-weight:600;">ESTIMATED COST (₹)</label>
+                        <input type="number" id="estimated-cost" min="1" placeholder="Enter total trip cost"
+                            style="width:100%; padding:0.6rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; margin-top:0.25rem; font-family:inherit; outline:none;">
                     </div>
-                    <input type="hidden" id="travel-type" value="FLIGHT">
-                </div>
-
-                <!-- Origin / Destination row -->
-                <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:0.75rem; align-items:end; margin-bottom:1.25rem;">
-                    <div class="form-group" style="margin:0;" id="origin-group">
-                        <label>From</label>
-                        <input type="text" id="origin" required placeholder="e.g. Mumbai" autocomplete="off" onblur="fetchSuggestions()">
-                    </div>
-                    <div style="padding-bottom:0.9rem; color:#94a3b8; font-size:1.2rem;">→</div>
-                    <div class="form-group" style="margin:0;">
-                        <label id="dest-label">To</label>
-                        <input type="text" id="destination" required placeholder="e.g. Delhi" autocomplete="off" onblur="fetchSuggestions()">
+                    <div style="flex:1; display:flex; gap:0.5rem; padding-top:1.25rem;">
+                        <input type="hidden" id="travel-type" value="FLIGHT">
+                        <input type="hidden" id="origin" value="">
+                        <input type="hidden" id="destination" value="">
+                        <input type="hidden" id="travel-date" value="">
+                        <button type="button" onclick="submitTripBooking()" style="flex:2; padding:0.85rem; font-size:0.9rem;">Submit Request</button>
+                        <button type="button" onclick="hideBookingModal()" class="secondary" style="flex:1; padding:0.85rem; font-size:0.9rem;">Cancel</button>
                     </div>
                 </div>
-
-                <!-- Dates row -->
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.25rem;" id="dates-row">
-                    <div class="form-group" style="margin:0;">
-                        <label id="date-label">Travel Date</label>
-                        <input type="date" id="travel-date" required onchange="fetchSuggestions()">
-                    </div>
-                    <div class="form-group" style="margin:0;" id="checkout-group" style="display:none;">
-                        <label>Check-out Date</label>
-                        <input type="date" id="checkout-date" onchange="fetchSuggestions()">
-                    </div>
-                </div>
-
-                <!-- Live prices panel -->
-                <div id="suggestions-container" style="display:none; margin-bottom:1.25rem; background:#f0f4ff; border:1px solid #c7d2fe; border-radius:12px; overflow:hidden;">
-                    <div style="padding:0.65rem 1rem; background:#e0e7ff; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:0.82rem; font-weight:700; color:#3730a3; text-transform:uppercase; letter-spacing:0.05em;">Live Prices</span>
-                        <span id="suggestions-loading" style="font-size:0.75rem; color:#6366f1; display:none;">Fetching…</span>
-                    </div>
-                    <div id="suggestions-content" style="padding:0.75rem 1rem; font-size:0.83rem;"></div>
-                </div>
-
-                <!-- Cost row -->
-                <div class="form-group" style="margin-bottom:1.75rem;">
-                    <label>Estimated Cost (₹) <span style="font-size:0.75rem; color:#6366f1; font-weight:400;">— auto-filled from prices above, or enter manually</span></label>
-                    <input type="number" id="estimated-cost" required min="1" placeholder="0">
-                </div>
-
-                <!-- Actions -->
-                <div style="display:flex; gap:0.75rem;">
-                    <button type="submit" style="flex:2; padding:1rem; font-size:0.95rem;">Submit Request</button>
-                    <button type="button" onclick="hideBookingModal()" class="secondary" style="flex:1; padding:1rem; font-size:0.95rem;">Cancel</button>
-                </div>
-
-            </form>
+            </div>
         </div>
     </div>
 
     <style>
-        .type-pill {
+        .city-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            z-index: 9999;
+            max-height: 220px;
+            overflow-y: auto;
+            display: none;
+        }
+        .city-dropdown.open { display: block; }
+        .city-option {
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            font-size: 0.875rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 0.55rem 0.5rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: #64748b;
-            transition: all 0.15s;
-            text-align: center;
-            user-select: none;
+            gap: 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
         }
-        .type-pill:hover { border-color: #a5b4fc; color: #4338ca; }
-        .type-pill.active { border-color: #6366f1; background: #e0e7ff; color: #3730a3; }
+        .city-option:last-child { border-bottom: none; }
+        .city-option:hover { background: #f0f4ff; }
+        .city-option .city-code { font-size: 0.72rem; color: #6366f1; font-weight: 700; background: #e0e7ff; padding: 0.15rem 0.4rem; border-radius: 4px; }
+        .trip-section { margin-bottom: 1.5rem; }
+        .trip-section-header {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.8rem; font-weight: 700; color: #3730a3;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin-bottom: 0.6rem; padding-bottom: 0.4rem;
+            border-bottom: 2px solid #e0e7ff;
+        }
+        .trip-card {
+            padding: 0.65rem 0.9rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 0.4rem;
+            cursor: pointer;
+            font-size: 0.83rem;
+            line-height: 1.5;
+            background: white;
+            transition: all 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .trip-card:hover { border-color: #a5b4fc; background: #f5f3ff; }
+        .trip-card.selected { border-color: #6366f1; background: #e0e7ff; }
+        .trip-card .price { font-weight: 700; color: #4338ca; white-space: nowrap; margin-left: 1rem; }
+        .trip-card .best-tag { font-size: 0.68rem; color: #4338ca; background: #c7d2fe; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700; margin-right: 0.4rem; }
+        .via-label { font-size: 0.75rem; color: #6366f1; font-weight: 600; background: #e0e7ff; padding: 0.15rem 0.5rem; border-radius: 20px; margin-bottom: 0.4rem; display: inline-block; }
+        .no-result { color: #94a3b8; font-size: 0.82rem; padding: 0.5rem 0; }
     </style>
 
     <!-- AI Chat Widget -->
@@ -244,155 +271,244 @@
             }
         }
 
-        // ── Manual Booking Modal ──────────────────────────────────
+        // ── City list for autocomplete (all Indian cities + major international) ──
+        const CITY_LIST = [
+          // Metro
+          {n:'Mumbai',c:'BOM',s:'Maharashtra'},{n:'Delhi',c:'DEL',s:'Delhi'},{n:'Bangalore',c:'BLR',s:'Karnataka'},
+          {n:'Hyderabad',c:'HYD',s:'Telangana'},{n:'Chennai',c:'MAA',s:'Tamil Nadu'},{n:'Kolkata',c:'CCU',s:'West Bengal'},
+          // Tier 2 with airports
+          {n:'Pune',c:'PNQ',s:'Maharashtra'},{n:'Ahmedabad',c:'AMD',s:'Gujarat'},{n:'Goa',c:'GOI',s:'Goa'},
+          {n:'Jaipur',c:'JAI',s:'Rajasthan'},{n:'Lucknow',c:'LKO',s:'Uttar Pradesh'},{n:'Kochi',c:'COK',s:'Kerala'},
+          {n:'Chandigarh',c:'IXC',s:'Punjab'},{n:'Bhubaneswar',c:'BBI',s:'Odisha'},{n:'Indore',c:'IDR',s:'Madhya Pradesh'},
+          {n:'Nagpur',c:'NAG',s:'Maharashtra'},{n:'Coimbatore',c:'CJB',s:'Tamil Nadu'},{n:'Visakhapatnam',c:'VTZ',s:'Andhra Pradesh'},
+          {n:'Amritsar',c:'ATQ',s:'Punjab'},{n:'Varanasi',c:'VNS',s:'Uttar Pradesh'},{n:'Patna',c:'PAT',s:'Bihar'},
+          {n:'Raipur',c:'RPR',s:'Chhattisgarh'},{n:'Mangalore',c:'IXE',s:'Karnataka'},{n:'Madurai',c:'IXM',s:'Tamil Nadu'},
+          {n:'Trichy',c:'TRZ',s:'Tamil Nadu'},{n:'Ranchi',c:'IXR',s:'Jharkhand'},{n:'Bhopal',c:'BHO',s:'Madhya Pradesh'},
+          {n:'Agra',c:'AGR',s:'Uttar Pradesh'},{n:'Leh',c:'IXL',s:'Ladakh'},{n:'Srinagar',c:'SXR',s:'J&K'},
+          {n:'Darbhanga',c:'DBR',s:'Bihar'},{n:'Vadodara',c:'BDQ',s:'Gujarat'},{n:'Rajkot',c:'RAJ',s:'Gujarat'},
+          {n:'Jodhpur',c:'JDH',s:'Rajasthan'},{n:'Udaipur',c:'UDR',s:'Rajasthan'},{n:'Dehradun',c:'DED',s:'Uttarakhand'},
+          {n:'Gorakhpur',c:'GOP',s:'Uttar Pradesh'},{n:'Prayagraj',c:'IXD',s:'Uttar Pradesh'},{n:'Gwalior',c:'GWL',s:'Madhya Pradesh'},
+          {n:'Jammu',c:'IXJ',s:'J&K'},{n:'Guwahati',c:'GAU',s:'Assam'},{n:'Imphal',c:'IMF',s:'Manipur'},
+          {n:'Port Blair',c:'IXZ',s:'Andaman'},{n:'Aurangabad',c:'IXU',s:'Maharashtra'},{n:'Jabalpur',c:'JLR',s:'Madhya Pradesh'},
+          {n:'Dibrugarh',c:'DIB',s:'Assam'},{n:'Bagdogra',c:'IXB',s:'West Bengal'},{n:'Hubli',c:'HBX',s:'Karnataka'},
+          {n:'Kolhapur',c:'KLH',s:'Maharashtra'},{n:'Kannur',c:'CNN',s:'Kerala'},{n:'Kozhikode',c:'CCJ',s:'Kerala'},
+          {n:'Trivandrum',c:'TRV',s:'Kerala'},{n:'Gaya',c:'GAY',s:'Bihar'},{n:'Shirdi',c:'SAG',s:'Maharashtra'},
+          // Cities near airports (no direct flights but valid destinations)
+          {n:'Muzaffarpur',c:'→DBR/PAT',s:'Bihar'},{n:'Haridwar',c:'→DED',s:'Uttarakhand'},
+          {n:'Rishikesh',c:'→DED',s:'Uttarakhand'},{n:'Mathura',c:'→DEL/AGR',s:'Uttar Pradesh'},
+          {n:'Jamshedpur',c:'→IXR',s:'Jharkhand'},{n:'Manali',c:'→KUU',s:'Himachal Pradesh'},
+          {n:'Dharamshala',c:'→DHM',s:'Himachal Pradesh'},{n:'Ooty',c:'→CJB',s:'Tamil Nadu'},
+          {n:'Siliguri',c:'→IXB',s:'West Bengal'},{n:'Darjeeling',c:'→IXB',s:'West Bengal'},
+          {n:'Mysore',c:'→BLR',s:'Karnataka'},{n:'Ajmer',c:'→JAI',s:'Rajasthan'},
+          {n:'Kanpur',c:'→LKO',s:'Uttar Pradesh'},{n:'Meerut',c:'→DEL',s:'Uttar Pradesh'},
+          {n:'Bhagalpur',c:'→PAT',s:'Bihar'},{n:'Nashik',c:'→BOM',s:'Maharashtra'},
+          {n:'Munnar',c:'→COK',s:'Kerala'},{n:'Hajipur',c:'→PAT',s:'Bihar'},
+          {n:'Sitamarhi',c:'→DBR',s:'Bihar'},{n:'Samastipur',c:'→DBR',s:'Bihar'},
+          // International
+          {n:'Dubai',c:'DXB',s:'UAE'},{n:'Singapore',c:'SIN',s:'Singapore'},{n:'London',c:'LHR',s:'UK'},
+          {n:'Bangkok',c:'BKK',s:'Thailand'},{n:'New York',c:'JFK',s:'USA'},{n:'Tokyo',c:'NRT',s:'Japan'},
+          {n:'Paris',c:'CDG',s:'France'},{n:'Doha',c:'DOH',s:'Qatar'},{n:'Abu Dhabi',c:'AUH',s:'UAE'},
+          {n:'Kuala Lumpur',c:'KUL',s:'Malaysia'},{n:'Sydney',c:'SYD',s:'Australia'},{n:'Toronto',c:'YYZ',s:'Canada'},
+        ];
+
+        function showCitySuggestions(input, listId) {
+            const q = input.value.toLowerCase().trim();
+            const list = document.getElementById(listId);
+            if (!q) { list.classList.remove('open'); return; }
+            const matches = CITY_LIST.filter(c => c.n.toLowerCase().includes(q) || c.s.toLowerCase().includes(q)).slice(0, 8);
+            if (!matches.length) { list.classList.remove('open'); return; }
+            list.innerHTML = matches.map(c => `
+                <div class="city-option" onmousedown="selectCity('${c.n}','${listId}','${input.id}')">
+                    <span>${c.n}</span>
+                    <span class="city-code">${c.c}</span>
+                    <span style="color:#94a3b8; font-size:0.75rem; margin-left:auto;">${c.s}</span>
+                </div>`).join('');
+            list.classList.add('open');
+        }
+        function selectCity(name, listId, inputId) {
+            document.getElementById(inputId).value = name;
+            hideCityList(listId);
+        }
+        function hideCityList(listId) {
+            document.getElementById(listId)?.classList.remove('open');
+        }
+
+        // ── Trip Planner Modal ────────────────────────────────────
         function showBookingModal() {
             document.getElementById('booking-modal').style.display = 'flex';
-            updateFormForType('FLIGHT');
+            document.getElementById('trip-plan-results').innerHTML = '<p style="color:#94a3b8; font-size:0.85rem; text-align:center; margin-top:2rem;">Enter your trip details above and click <strong>Search</strong>.</p>';
+            document.getElementById('submit-bar').style.display = 'none';
+            document.getElementById('estimated-cost').value = '';
         }
         function hideBookingModal() {
             document.getElementById('booking-modal').style.display = 'none';
-            document.getElementById('suggestions-container').style.display = 'none';
-            document.getElementById('booking-form').reset();
-            document.getElementById('estimated-cost').value = '';
-            updateFormForType('FLIGHT');
         }
 
-        // Wire up type pills
-        document.querySelectorAll('.type-pill').forEach(pill => {
-            pill.addEventListener('click', () => {
-                const val = pill.dataset.val;
-                document.getElementById('travel-type').value = val;
-                document.querySelectorAll('.type-pill').forEach(p => p.classList.remove('active'));
-                pill.classList.add('active');
-                updateFormForType(val);
-                fetchSuggestions();
-            });
-        });
-        // Set FLIGHT active on load
-        document.querySelector('.type-pill[data-val="FLIGHT"]').classList.add('active');
-
-        function updateFormForType(type) {
-            const originGroup = document.getElementById('origin-group');
-            const destLabel = document.getElementById('dest-label');
-            const dateLabel = document.getElementById('date-label');
-            const checkoutGroup = document.getElementById('checkout-group');
-            const originInput = document.getElementById('origin');
-
-            if (type === 'HOTEL') {
-                originGroup.style.display = 'none';
-                originInput.required = false;
-                destLabel.textContent = 'City';
-                dateLabel.textContent = 'Check-in Date';
-                checkoutGroup.style.display = 'block';
-            } else {
-                originGroup.style.display = 'block';
-                originInput.required = true;
-                destLabel.textContent = 'To';
-                dateLabel.textContent = type === 'CAB' ? 'Pickup Date' : 'Travel Date';
-                checkoutGroup.style.display = 'none';
+        async function runTripPlan() {
+            const from = document.getElementById('tp-from').value.trim();
+            const to = document.getElementById('tp-to').value.trim();
+            const fromDate = document.getElementById('tp-from-date').value;
+            const toDate = document.getElementById('tp-to-date').value;
+            if (!from || !to || !fromDate) {
+                alert('Please fill in From, To and Departure Date.');
+                return;
             }
-        }
+            const btn = document.getElementById('tp-search-btn');
+            btn.disabled = true; btn.textContent = 'Searching…';
+            const results = document.getElementById('trip-plan-results');
+            results.innerHTML = `<div style="text-align:center; padding:2rem; color:#6366f1;">
+                <div style="font-size:1.5rem; margin-bottom:0.5rem;">⏳</div>
+                Searching flights, trains &amp; hotels for <strong>${to}</strong>…
+            </div>`;
 
-        async function fetchSuggestions() {
-            const origin = document.getElementById('origin').value.trim();
-            const destination = document.getElementById('destination').value.trim();
-            const date = document.getElementById('travel-date').value;
-            const type = document.getElementById('travel-type').value;
-            if (!destination || !date) return;
-            if (type !== 'HOTEL' && !origin) return;
-
-            const container = document.getElementById('suggestions-container');
-            const content = document.getElementById('suggestions-content');
-            const loadingLabel = document.getElementById('suggestions-loading');
-            container.style.display = 'block';
-            content.innerHTML = '';
-            loadingLabel.style.display = 'inline';
+            // Store for submission
+            document.getElementById('origin').value = from;
+            document.getElementById('destination').value = to;
+            document.getElementById('travel-date').value = fromDate;
 
             try {
-                const checkOut = document.getElementById('checkout-date')?.value || '';
-                const params = new URLSearchParams({ origin, destination, date, type });
-                if (checkOut) params.set('checkOut', checkOut);
-                const data = await apiRequest(`/bookings/suggestions?${params}`);
-                loadingLabel.style.display = 'none';
-
-                const results = Array.isArray(data.results) ? data.results : [];
-
-                if (!results.length || results.available === false) {
-                    content.innerHTML = `<p style="color:#64748b; font-size:0.82rem;">${data.results?.reason || 'No options found for this route and date.'}</p>`;
-                    return;
-                }
-
-                // Auto-fill cost with cheapest option
-                const cheapest = results.reduce((min, r) => {
-                    const p = r.price || r.pricePerNight || r.totalPrice || 0;
-                    return (p > 0 && p < (min || Infinity)) ? p : min;
-                }, 0);
-                if (cheapest > 0) {
-                    document.getElementById('estimated-cost').value = cheapest;
-                } else if (type === 'TRAIN') {
-                    document.getElementById('estimated-cost').value = '';
-                }
-
-                // Render results by type
-                let html = '<div style="display:flex; flex-direction:column; gap:0.5rem;">';
-                results.forEach((r, i) => {
-                    let line = '';
-                    if (type === 'FLIGHT') {
-                        line = `<strong>${r.airline}</strong> ${r.flightNumber} &nbsp;·&nbsp; ${r.departure?.slice(11,16) || '—'} → ${r.arrival?.slice(11,16) || '—'} &nbsp;·&nbsp; ${r.duration || ''} &nbsp;·&nbsp; <strong style="color:#4338ca;">₹${r.price?.toLocaleString()}</strong>`;
-                    } else if (type === 'TRAIN') {
-                        const depArr = [r.departure, r.arrival].filter(Boolean);
-                        const timing = depArr.length === 2 ? `${r.departure} → ${r.arrival}` : depArr[0] ? `Dep ${r.departure}` : '';
-                        const dayNote = (r.toDay && r.fromDay && r.toDay !== r.fromDay) ? ` (Day ${r.toDay})` : '';
-                        line = `<strong>${r.trainName}</strong> <span style="color:#64748b;">${r.trainNumber}</span>${timing ? ' &nbsp;·&nbsp; ' + timing + dayNote : ''} &nbsp;·&nbsp; <span style="color:#64748b; font-size:0.8rem;">Classes: ${r.classes?.join(', ')}</span>`;
-                    } else if (type === 'HOTEL') {
-                        const stars = r.stars ? '⭐'.repeat(Math.min(Math.round(r.stars), 5)) : '';
-                        const ratingStr = r.rating ? `${r.rating} ${r.reviewWord || ''}` : '';
-                        const dist = r.distanceFromCenter ? ` · ${r.distanceFromCenter} from centre` : '';
-                        line = `<strong>${r.name}</strong> ${stars} &nbsp;·&nbsp; <strong style="color:#4338ca;">₹${r.pricePerNight?.toLocaleString()}/night</strong>${dist}${ratingStr ? ' &nbsp;·&nbsp; ' + ratingStr : ''}`;
-                    } else {
-                        line = JSON.stringify(r);
-                    }
-                    const clickPrice = r.price || r.pricePerNight || r.totalPrice || 0;
-                    const bg = i === 0 ? 'background:#e0e7ff;border-color:#a5b4fc;' : 'background:white;';
-                    html += `<div onclick="document.getElementById('estimated-cost').value=${clickPrice}" style="padding:0.55rem 0.75rem; border-radius:8px; border:1px solid #c7d2fe; cursor:pointer; ${bg} font-size:0.82rem; line-height:1.5;" title="Click to use this price">${i===0?'<span style="font-size:0.7rem;color:#4338ca;font-weight:700;margin-right:4px;">BEST</span>':''}${line}</div>`;
-                });
-                html += '</div>';
-                content.innerHTML = html;
+                const params = new URLSearchParams({ from, to, fromDate });
+                if (toDate) params.set('toDate', toDate);
+                const plan = await apiRequest(`/bookings/trip-plan?${params}`);
+                renderTripPlan(plan, from, to, fromDate, toDate);
+                document.getElementById('submit-bar').style.display = 'block';
             } catch (err) {
-                loadingLabel.style.display = 'none';
-                content.innerHTML = `<p style="color:#e63946; font-size:0.82rem;">Could not fetch prices. ${err.message || ''}</p>`;
+                results.innerHTML = `<p style="color:#e63946; padding:1rem;">Error: ${err.message}</p>`;
+            } finally {
+                btn.disabled = false; btn.textContent = 'Search';
             }
         }
 
-        document.getElementById('booking-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type=submit]');
-            btn.disabled = true;
-            btn.innerText = 'Submitting...';
+        function renderTripPlan(plan, from, to, fromDate, toDate) {
+            const res = document.getElementById('trip-plan-results');
+            const nights = toDate ? Math.max(1, Math.round((new Date(toDate)-new Date(fromDate))/86400000)) : 1;
+            const apInfo = plan.nearestAirports?.length
+                ? plan.nearestAirports.map(a => `${a.city} (${a.code}${a.distanceKm > 0 ? `, ~${a.distanceKm}km` : ''})`).join(' · ')
+                : null;
+
+            let html = '';
+
+            // Banner
+            html += `<div style="background:#f0f4ff; border-radius:12px; padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.83rem; color:#3730a3;">
+                <strong>${from}</strong> → <strong>${to}</strong> &nbsp;·&nbsp; ${fromDate}${toDate ? ' → ' + toDate : ''} &nbsp;·&nbsp; ${nights} night${nights>1?'s':''}
+                ${apInfo ? `<br><span style="color:#6366f1;">Nearest airports to ${to}: ${apInfo}</span>` : ''}
+            </div>`;
+
+            // ── Outbound Flights ──
+            if (plan.outboundFlights?.length) {
+                html += `<div class="trip-section">
+                    <div class="trip-section-header">✈️ Flights to reach ${to} &nbsp;<span style="color:#94a3b8; font-weight:400; font-size:0.75rem;">(${fromDate})</span></div>`;
+                plan.outboundFlights.forEach(group => {
+                    const flights = Array.isArray(group.results) ? group.results : [];
+                    html += `<div class="via-label">via ${group.via} (${group.code})${group.km > 0 ? ' ~' + group.km + 'km from ' + to : ''}</div>`;
+                    if (!flights.length) {
+                        html += `<p class="no-result">No flights found ${from} → ${group.via}</p>`;
+                    } else {
+                        flights.slice(0,3).forEach((f,i) => {
+                            const dep = f.departure?.slice(11,16) || f.departure || '—';
+                            const arr = f.arrival?.slice(11,16) || f.arrival || '—';
+                            html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT')">
+                                <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} &nbsp;·&nbsp; ${dep} → ${arr} &nbsp;·&nbsp; ${f.duration||''} &nbsp;·&nbsp; ${f.stops===0?'Non-stop':f.stops+' stop'}</span>
+                                <span class="price">₹${f.price?.toLocaleString()}</span>
+                            </div>`;
+                        });
+                    }
+                });
+                html += `</div>`;
+            }
+
+            // ── Trains ──
+            html += `<div class="trip-section">
+                <div class="trip-section-header">🚂 Trains to ${to} &nbsp;<span style="color:#94a3b8; font-weight:400; font-size:0.75rem;">(${fromDate})</span></div>`;
+            const trains = Array.isArray(plan.trains) ? plan.trains : [];
+            if (!trains.length) {
+                html += `<p class="no-result">${plan.trainNote || 'No trains found for this route.'}</p>`;
+            } else {
+                trains.forEach((t,i) => {
+                    const timing = (t.departure && t.arrival) ? `${t.departure} → ${t.arrival}` : t.departure ? `Dep ${t.departure}` : '';
+                    const dayNote = (t.toDay && t.fromDay && t.toDay !== t.fromDay) ? ` · Day ${t.toDay}` : '';
+                    html += `<div class="trip-card" onclick="pickPrice(0,'TRAIN')">
+                        <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${t.trainName}</strong> <span style="color:#94a3b8;">${t.trainNumber}</span>${timing?' &nbsp;·&nbsp; '+timing+dayNote:''} &nbsp;·&nbsp; <span style="color:#64748b; font-size:0.78rem;">${t.classes?.join(', ')}</span></span>
+                        <span class="price" style="color:#64748b; font-size:0.75rem;">Check IRCTC</span>
+                    </div>`;
+                });
+            }
+            html += `</div>`;
+
+            // ── Hotels ──
+            html += `<div class="trip-section">
+                <div class="trip-section-header">🏨 Hotels in ${to} &nbsp;<span style="color:#94a3b8; font-weight:400; font-size:0.75rem;">(${nights} night${nights>1?'s':''})</span></div>`;
+            const hotels = Array.isArray(plan.hotels) ? plan.hotels : [];
+            if (!hotels.length) {
+                html += `<p class="no-result">${plan.hotelNote || 'No hotels found.'}</p>`;
+            } else {
+                hotels.forEach((h,i) => {
+                    const stars = h.stars ? '⭐'.repeat(Math.min(Math.round(h.stars),5)) : '';
+                    const rating = h.rating ? ` · ${h.rating} ${h.reviewWord||''}` : '';
+                    const dist = h.distanceFromCenter ? ` · ${h.distanceFromCenter} from centre` : '';
+                    html += `<div class="trip-card" onclick="pickPrice(${h.price||h.pricePerNight||0},'HOTEL')">
+                        <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${h.name}</strong> ${stars}${dist}${rating}</span>
+                        <span class="price">₹${(h.pricePerNight||0).toLocaleString()}<span style="font-size:0.72rem; font-weight:400;">/night</span></span>
+                    </div>`;
+                });
+            }
+            html += `</div>`;
+
+            // ── Return Flights ──
+            if (toDate && plan.returnFlights?.length) {
+                html += `<div class="trip-section">
+                    <div class="trip-section-header">✈️ Return Flights &nbsp;<span style="color:#94a3b8; font-weight:400; font-size:0.75rem;">(${toDate})</span></div>`;
+                plan.returnFlights.forEach(group => {
+                    const flights = Array.isArray(group.results) ? group.results : [];
+                    html += `<div class="via-label">from ${group.via} (${group.code})</div>`;
+                    if (!flights.length) {
+                        html += `<p class="no-result">No return flights found</p>`;
+                    } else {
+                        flights.slice(0,2).forEach((f,i) => {
+                            const dep = f.departure?.slice(11,16) || f.departure || '—';
+                            const arr = f.arrival?.slice(11,16) || f.arrival || '—';
+                            html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT')">
+                                <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} &nbsp;·&nbsp; ${dep} → ${arr} &nbsp;·&nbsp; ${f.duration||''}</span>
+                                <span class="price">₹${f.price?.toLocaleString()}</span>
+                            </div>`;
+                        });
+                    }
+                });
+                html += `</div>`;
+            }
+
+            res.innerHTML = html;
+        }
+
+        function pickPrice(price, type) {
+            if (price > 0) document.getElementById('estimated-cost').value = price;
+            document.getElementById('travel-type').value = type;
+            // Highlight selected card
+            document.querySelectorAll('.trip-card').forEach(c => c.classList.remove('selected'));
+            event.currentTarget?.classList?.add('selected');
+        }
+
+        async function submitTripBooking() {
+            const cost = document.getElementById('estimated-cost').value;
+            const type = document.getElementById('travel-type').value || 'FLIGHT';
+            const origin = document.getElementById('origin').value;
+            const destination = document.getElementById('destination').value;
+            const date = document.getElementById('travel-date').value;
+            if (!cost || cost <= 0) { alert('Please select an option or enter a cost.'); return; }
+            const btn = event.currentTarget;
+            btn.disabled = true; btn.textContent = 'Submitting…';
             try {
-                const type = document.getElementById('travel-type').value;
-                const details = {
-                    origin: document.getElementById('origin').value,
-                    destination: document.getElementById('destination').value,
-                    date: document.getElementById('travel-date').value,
-                };
-                if (type === 'HOTEL') {
-                    const co = document.getElementById('checkout-date').value;
-                    if (co) details.checkOut = co;
-                }
                 await apiRequest('/bookings', {
                     method: 'POST',
-                    body: { type, details, cost: document.getElementById('estimated-cost').value }
+                    body: { type, details: { origin, destination, date }, cost }
                 });
                 hideBookingModal();
                 await loadBookings();
             } catch (err) {
                 alert(err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'Submit Request';
+                btn.disabled = false; btn.textContent = 'Submit Request';
             }
-        });
+        }
 
         // ── AI Chat Widget ────────────────────────────────────────
         function toggleChat() {
