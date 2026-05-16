@@ -125,8 +125,9 @@
             <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.65rem; height: 370px; background: #f8fafc;"></div>
 
             <!-- Input -->
-            <div style="padding: 0.9rem 1rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.5rem; background: white;">
+            <div style="padding: 0.9rem 1rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.5rem; background: white; align-items: center;">
                 <input id="chat-input" placeholder="Describe your travel need..." style="flex: 1; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.65rem 0.9rem; font-size: 0.875rem; outline: none; font-family: inherit;" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); sendChat(); }">
+                <button id="voice-btn" onclick="toggleVoice()" title="Voice input" style="width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid #e2e8f0; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; transition: background 0.2s;">🎤</button>
                 <button onclick="sendChat()" id="chat-send" style="width: auto; padding: 0.65rem 1rem; border-radius: 10px; font-size: 0.875rem; background: linear-gradient(135deg, #6366f1, #8b5cf6); min-width: 60px;">Send</button>
             </div>
         </div>
@@ -300,6 +301,64 @@
             const msgs = document.getElementById('chat-messages');
             msgs.appendChild(el);
             msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        // ── Voice input ──────────────────────────────────────────────────────────
+        let voiceRecognition = null;
+        let voiceActive = false;
+
+        function toggleVoice() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Voice input is not supported in this browser. Try Chrome or Edge.');
+                return;
+            }
+
+            const btn = document.getElementById('voice-btn');
+
+            if (voiceActive) {
+                voiceRecognition?.stop();
+                return;
+            }
+
+            voiceRecognition = new SpeechRecognition();
+            voiceRecognition.lang = 'en-IN';
+            voiceRecognition.interimResults = true;
+            voiceRecognition.maxAlternatives = 1;
+
+            voiceRecognition.onstart = () => {
+                voiceActive = true;
+                btn.style.background = '#fee2e2';
+                btn.style.borderColor = '#ef4444';
+                btn.title = 'Listening… click to stop';
+                document.getElementById('chat-input').placeholder = 'Listening…';
+            };
+
+            voiceRecognition.onresult = (e) => {
+                const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+                document.getElementById('chat-input').value = transcript;
+            };
+
+            voiceRecognition.onend = () => {
+                voiceActive = false;
+                btn.style.background = 'white';
+                btn.style.borderColor = '#e2e8f0';
+                btn.title = 'Voice input';
+                const input = document.getElementById('chat-input');
+                input.placeholder = 'Describe your travel need…';
+                if (input.value.trim()) sendChat();
+            };
+
+            voiceRecognition.onerror = (e) => {
+                voiceActive = false;
+                btn.style.background = 'white';
+                btn.style.borderColor = '#e2e8f0';
+                if (e.error !== 'no-speech') {
+                    addBubble('assistant', `🎤 Mic error: ${e.error}. Make sure mic permission is allowed.`);
+                }
+            };
+
+            voiceRecognition.start();
         }
 
         async function sendChat() {

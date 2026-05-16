@@ -17,4 +17,9 @@ router.post('/login', [
   validate
 ], authController.login);
 
+router.post('/refresh', [
+  body('token').notEmpty().withMessage('token is required'),
+  validate
+], authController.refresh);
+
 module.exports = router;

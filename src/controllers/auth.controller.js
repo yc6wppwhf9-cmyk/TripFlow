@@ -39,12 +39,12 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    const user = await prisma.user.findUnique({ 
+
+    const user = await prisma.user.findUnique({
       where: { email },
       include: { employee: true, vendor: true }
     });
-    
+
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -68,6 +68,33 @@ exports.login = async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.refresh = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token is required' });
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    if (!user) return res.status(401).json({ error: 'User not found' });
+
+    const newToken = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({ token: newToken });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
