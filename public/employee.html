@@ -325,9 +325,13 @@
                 // Auto-fill cost with cheapest option
                 const cheapest = results.reduce((min, r) => {
                     const p = r.price || r.pricePerNight || r.totalPrice || 0;
-                    return p && p < (min || Infinity) ? p : min;
+                    return (p > 0 && p < (min || Infinity)) ? p : min;
                 }, 0);
-                if (cheapest > 0) document.getElementById('estimated-cost').value = cheapest;
+                if (cheapest > 0) {
+                    document.getElementById('estimated-cost').value = cheapest;
+                } else if (type === 'TRAIN') {
+                    document.getElementById('estimated-cost').value = '';
+                }
 
                 // Render results by type
                 let html = '<div style="display:flex; flex-direction:column; gap:0.5rem;">';
@@ -336,14 +340,21 @@
                     if (type === 'FLIGHT') {
                         line = `<strong>${r.airline}</strong> ${r.flightNumber} &nbsp;·&nbsp; ${r.departure?.slice(11,16) || '—'} → ${r.arrival?.slice(11,16) || '—'} &nbsp;·&nbsp; ${r.duration || ''} &nbsp;·&nbsp; <strong style="color:#4338ca;">₹${r.price?.toLocaleString()}</strong>`;
                     } else if (type === 'TRAIN') {
-                        line = `<strong>${r.trainName}</strong> (${r.trainNumber}) &nbsp;·&nbsp; Dep ${r.departure} → Arr ${r.arrival} &nbsp;·&nbsp; <span style="color:#64748b; font-size:0.8rem;">${r.note || ''}</span>`;
+                        const depArr = [r.departure, r.arrival].filter(Boolean);
+                        const timing = depArr.length === 2 ? `${r.departure} → ${r.arrival}` : depArr[0] ? `Dep ${r.departure}` : '';
+                        const dayNote = (r.toDay && r.fromDay && r.toDay !== r.fromDay) ? ` (Day ${r.toDay})` : '';
+                        line = `<strong>${r.trainName}</strong> <span style="color:#64748b;">${r.trainNumber}</span>${timing ? ' &nbsp;·&nbsp; ' + timing + dayNote : ''} &nbsp;·&nbsp; <span style="color:#64748b; font-size:0.8rem;">Classes: ${r.classes?.join(', ')}</span>`;
                     } else if (type === 'HOTEL') {
-                        line = `<strong>${r.name}</strong> ${'⭐'.repeat(Math.round(r.stars||0))} &nbsp;·&nbsp; ₹${r.pricePerNight?.toLocaleString()}/night &nbsp;·&nbsp; ${r.reviewWord || ''} (${r.reviewCount || 0} reviews)`;
+                        const stars = r.stars ? '⭐'.repeat(Math.min(Math.round(r.stars), 5)) : '';
+                        const ratingStr = r.rating ? `${r.rating} ${r.reviewWord || ''}` : '';
+                        const dist = r.distanceFromCenter ? ` · ${r.distanceFromCenter} from centre` : '';
+                        line = `<strong>${r.name}</strong> ${stars} &nbsp;·&nbsp; <strong style="color:#4338ca;">₹${r.pricePerNight?.toLocaleString()}/night</strong>${dist}${ratingStr ? ' &nbsp;·&nbsp; ' + ratingStr : ''}`;
                     } else {
                         line = JSON.stringify(r);
                     }
+                    const clickPrice = r.price || r.pricePerNight || r.totalPrice || 0;
                     const bg = i === 0 ? 'background:#e0e7ff;border-color:#a5b4fc;' : 'background:white;';
-                    html += `<div onclick="document.getElementById('estimated-cost').value=${r.price||r.pricePerNight||r.totalPrice||0}" style="padding:0.55rem 0.75rem; border-radius:8px; border:1px solid #c7d2fe; cursor:pointer; ${bg} font-size:0.82rem; line-height:1.5;" title="Click to use this price">${i===0?'<span style="font-size:0.7rem;color:#4338ca;font-weight:700;margin-right:4px;">BEST</span>':''}${line}</div>`;
+                    html += `<div onclick="document.getElementById('estimated-cost').value=${clickPrice}" style="padding:0.55rem 0.75rem; border-radius:8px; border:1px solid #c7d2fe; cursor:pointer; ${bg} font-size:0.82rem; line-height:1.5;" title="Click to use this price">${i===0?'<span style="font-size:0.7rem;color:#4338ca;font-weight:700;margin-right:4px;">BEST</span>':''}${line}</div>`;
                 });
                 html += '</div>';
                 content.innerHTML = html;

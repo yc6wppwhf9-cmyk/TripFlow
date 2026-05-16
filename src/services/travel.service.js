@@ -313,8 +313,27 @@ async function getTrainSchedule(trainNo) {
   return res.data;
 }
 
+// Station code aliases — some APIs use alternate codes
+const STATION_ALIASES = {
+  'CSTM': ['CSTM', 'CST', 'CSMT', 'C SHIVAJI'],
+  'BCT':  ['BCT', 'MUMBAI CENTRAL', 'BANDRA'],
+  'LTT':  ['LTT', 'LOKMANYA'],
+  'NDLS': ['NDLS', 'NEW DELHI', 'NEWDELHI'],
+  'DLI':  ['DLI', 'OLD DELHI', 'DELHI JN'],
+  'NZM':  ['NZM', 'HAZRAT NIZAMUDDIN'],
+  'SBC':  ['SBC', 'BANGALORE', 'BENGALURU', 'KSR'],
+  'MAS':  ['MAS', 'CHENNAI CENTRAL', 'MADRAS'],
+  'HWH':  ['HWH', 'HOWRAH'],
+  'HYB':  ['HYB', 'HYDERABAD', 'SECUNDERABAD', 'SC'],
+};
+
 function findStop(schedule, code) {
-  return schedule.find(s => s.station.toUpperCase().includes(code.toUpperCase()));
+  const upper = code.toUpperCase();
+  const aliases = STATION_ALIASES[upper] || [upper];
+  return schedule.find(s => {
+    const name = s.station.toUpperCase();
+    return aliases.some(alias => name.includes(alias));
+  });
 }
 
 // ── Trains via IRCTC Railway API (real schedule data) ────────────────────────
@@ -344,11 +363,15 @@ async function searchTrains(origin, destination, date) {
       const fromStop = findStop(stops, fromCode);
       const toStop = findStop(stops, toCode);
 
+      const isTimeStr = v => v && v !== 'Source' && v !== 'Destination' && v !== 'Start' && v !== 'End' && /\d{1,2}:\d{2}/.test(v);
+      const dep = fromStop?.departs;
+      const arr = toStop?.arrives;
+
       results.push({
         trainNumber: trainNo,
-        trainName: TRAIN_NAMES[trainNo] || data.train_no,
-        departure: fromStop?.departs || fromStop?.arrives || '—',
-        arrival: toStop?.arrives || '—',
+        trainName: TRAIN_NAMES[trainNo] || data.train_name || trainNo,
+        departure: isTimeStr(dep) ? dep : (isTimeStr(fromStop?.arrives) ? fromStop.arrives : null),
+        arrival: isTimeStr(arr) ? arr : null,
         fromDay: fromStop?.day,
         toDay: toStop?.day,
         classes: ['1A', '2A', '3A', 'SL'],
@@ -392,21 +415,37 @@ async function searchHotels(city, checkIn, checkOut) {
       }
     });
 
-    const hotels = res.data?.result || [];
-    if (!hotels.length) return { available: false, reason: `No hotels found in "${city}" for those dates.` };
+    const allHotels = res.data?.result || [];
+    if (!allHotels.length) return { available: false, reason: `No hotels found in "${city}" for those dates.` };
 
-    return hotels.slice(0, 5).map(h => ({
-      name: h.hotel_name,
-      stars: h.class,
-      pricePerNight: Math.round(h.price_breakdown?.gross_price || 0),
-      totalPrice: Math.round(h.min_total_price || 0),
-      currency: 'INR',
-      rating: h.review_score,
-      reviewWord: h.review_score_word,
-      reviewCount: h.review_nr,
-      address: h.address,
-      distanceFromCenter: h.distance_to_cc_formatted
-    }));
+    // Prefer hotels with at least 1 star; fall back to all if none found
+    const hotels = allHotels.filter(h => h.class >= 1).length
+      ? allHotels.filter(h => h.class >= 1)
+      : allHotels;
+
+    return hotels.slice(0, 5).map(h => {
+      const nights = Math.max(1, (() => {
+        try {
+          const d1 = new Date(checkIn), d2 = new Date(checkOut || checkIn);
+          return Math.round((d2 - d1) / 86400000) || 1;
+        } catch { return 1; }
+      })());
+      const total = Math.round(h.min_total_price || h.price_breakdown?.gross_price || 0);
+      const perNight = Math.round(total / nights);
+      return {
+        name: h.hotel_name,
+        stars: h.class || 0,
+        pricePerNight: perNight,
+        totalPrice: total,
+        price: perNight,
+        currency: 'INR',
+        rating: h.review_score,
+        reviewWord: h.review_score_word,
+        reviewCount: h.review_nr,
+        address: h.address,
+        distanceFromCenter: h.distance_to_cc_formatted
+      };
+    });
   } catch (err) {
     const detail = err.response?.data?.message || err.message;
     return { available: false, reason: `Hotel search error: ${detail}` };
