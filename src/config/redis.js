@@ -2,12 +2,14 @@ const Redis = require('redis');
 const Bull = require('bull');
 
 const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+const isTLS = redisUrl.startsWith('rediss://');
 
 const redisClient = Redis.createClient({
-  url: redisUrl
+  url: redisUrl,
+  socket: isTLS ? { tls: true, rejectUnauthorized: false } : {}
 });
 
-redisClient.on('error', (err) => console.log('Redis Client Error: Redis might not be running. Queues will not work.'));
+redisClient.on('error', (err) => console.log('Redis Client Error:', err.message));
 
 async function connectRedis() {
   try {
@@ -20,17 +22,20 @@ async function connectRedis() {
   }
 }
 
-// Bull queues (wrapped to handle errors)
+const bullOptions = isTLS
+  ? { redis: { tls: { rejectUnauthorized: false } } }
+  : {};
+
 let emailQueue, whatsappQueue;
 
 try {
-  emailQueue = new Bull('email-notifications', redisUrl);
-  whatsappQueue = new Bull('whatsapp-notifications', redisUrl);
-  
-  emailQueue.on('error', (err) => console.log('Email Queue Error: Redis required for Bull.'));
-  whatsappQueue.on('error', (err) => console.log('WhatsApp Queue Error: Redis required for Bull.'));
+  emailQueue = new Bull('email-notifications', redisUrl, bullOptions);
+  whatsappQueue = new Bull('whatsapp-notifications', redisUrl, bullOptions);
+
+  emailQueue.on('error', (err) => console.log('Email Queue Error:', err.message));
+  whatsappQueue.on('error', (err) => console.log('WhatsApp Queue Error:', err.message));
 } catch (err) {
-  console.log('Could not initialize Bull queues. Redis might be missing.');
+  console.log('Could not initialize Bull queues:', err.message);
 }
 
 module.exports = {
