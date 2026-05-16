@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - TripDesk</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="dashboard-nav glass">
+        <div class="logo">TripDesk</div>
+        <div class="nav-links">
+            <a href="#" class="active">My Trips</a>
+            <a href="#" onclick="showBookingModal()">New Request</a>
+        </div>
+        <div class="user-info">
+            <span id="user-name" style="font-weight: 600; color: var(--text-main);"></span>
+            <button onclick="logout()" class="secondary" style="width: auto; padding: 0.6rem 1.2rem;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-actions" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
+            <div>
+                <p style="color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem; margin-bottom: 0.5rem;">Dashboard</p>
+                <h1>My Travel Requests</h1>
+            </div>
+            <button onclick="showBookingModal()" style="padding: 1rem 2rem;">+ New Trip Request</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Details</th>
+                        <th>Stage</th>
+                        <th>Cost</th>
+                        <th>PNR</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="bookings-list">
+                    <!-- Loaded dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="booking-modal" class="modal">
+        <div class="modal-content">
+            <h2>New Travel Request</h2>
+            <form id="booking-form">
+                <div class="form-group">
+                    <label>Travel Type</label>
+                    <select id="travel-type" required>
+                        <option value="FLIGHT">Flight</option>
+                        <option value="HOTEL">Hotel</option>
+                        <option value="TRAIN">Train</option>
+                        <option value="CAB">Cab</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Origin / Location</label>
+                    <input type="text" id="origin" required placeholder="e.g. New York">
+                </div>
+                <div class="form-group">
+                    <label>Destination / Hotel Name</label>
+                    <input type="text" id="destination" required placeholder="e.g. London" onblur="fetchSuggestions()">
+                </div>
+                
+                <div id="suggestions-container" style="display: none; margin-bottom: 1.5rem; background: #fdfaf6; padding: 1rem; border-radius: 8px; border: 1px solid #eee;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--accent-color);">AI Suggestions for you</h4>
+                    <div id="suggestions-content" style="font-size: 0.85rem;">
+                        <!-- Suggestions will be injected here -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="travel-date" required>
+                </div>
+                <div class="form-group">
+                    <label>Estimated Cost ($)</label>
+                    <input type="number" id="estimated-cost" required>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2.5rem;">
+                    <button type="submit" style="flex: 2; padding: 1.1rem;">Submit Travel Request</button>
+                    <button type="button" onclick="hideBookingModal()" class="secondary" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        async function init() {
+            const user = await checkAuth(['EMPLOYEE']);
+            document.getElementById('user-name').innerText = user.name;
+            await loadBookings();
+            showBookingModal(); // Open by default
+        }
+        init();
+
+        async function loadBookings() {
+            try {
+                const bookings = await apiRequest('/bookings/mine');
+                const list = document.getElementById('bookings-list');
+                list.innerHTML = bookings.map(b => `
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-main);">${b.type}</td>
+                        <td>
+                            <div style="font-weight: 500;">${b.details.origin} → ${b.details.destination}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">${b.details.date}</div>
+                        </td>
+                        <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g, '-')}">${b.stage.replace(/_/g, ' ')}</span></td>
+                        <td style="font-weight: 600;">$${b.cost || 'N/A'}</td>
+                        <td style="font-family: monospace; color: var(--accent);">${b.pnr || '—'}</td>
+                        <td>
+                            ${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: none;">View Ticket</a>` : '—'}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function showBookingModal() {
+            document.getElementById('booking-modal').style.display = 'flex';
+        }
+
+        function hideBookingModal() {
+            document.getElementById('booking-modal').style.display = 'none';
+            document.getElementById('suggestions-container').style.display = 'none';
+        }
+
+        async function fetchSuggestions() {
+            const origin = document.getElementById('origin').value;
+            const destination = document.getElementById('destination').value;
+            const container = document.getElementById('suggestions-container');
+            const content = document.getElementById('suggestions-content');
+
+            if (!origin || !destination) return;
+
+            container.style.display = 'block';
+            content.innerHTML = '<p>Getting AI suggestions...</p>';
+
+            try {
+                const data = await apiRequest(`/bookings/suggestions?origin=${origin}&destination=${destination}`);
+                
+                let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">';
+                
+                html += '<div><strong>Flights:</strong><ul style="padding-left: 1rem;">';
+                data.flights.forEach(f => {
+                    html += `<li>${f.option} - $${f.price} (${f.time})</li>`;
+                });
+                html += '</ul></div>';
+
+                html += '<div><strong>Hotels:</strong><ul style="padding-left: 1rem;">';
+                data.hotels.forEach(h => {
+                    html += `<li>${h.name} - $${h.price} (Rating: ${h.rating})</li>`;
+                });
+                html += '</ul></div>';
+                
+                html += '</div>';
+                content.innerHTML = html;
+            } catch (err) {
+                content.innerHTML = '<p style="color: #e63946;">Could not fetch suggestions.</p>';
+            }
+        }
+
+        document.getElementById('booking-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const type = document.getElementById('travel-type').value;
+            const origin = document.getElementById('origin').value;
+            const destination = document.getElementById('destination').value;
+            const date = document.getElementById('travel-date').value;
+            const cost = document.getElementById('estimated-cost').value;
+
+            try {
+                await apiRequest('/bookings', {
+                    method: 'POST',
+                    body: {
+                        type,
+                        details: { origin, destination, date },
+                        cost
+                    }
+                });
+                hideBookingModal();
+                loadBookings();
+                alert('Request submitted successfully!');
+            } catch (err) {
+                alert(err.message);
+            }
+        });
+    </script>
+</body>
+</html>

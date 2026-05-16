@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Dashboard - TripDesk</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="dashboard-nav">
+        <div class="logo">TripDesk Vendor</div>
+        <div class="user-info">
+            <span id="user-name"></span>
+            <button onclick="logout()" class="secondary" style="width: auto; padding: 0.5rem 1rem;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Booking Requests</h1>
+        <p style="color: var(--secondary-text); margin-bottom: 2rem;">Process approved travel requests and upload tickets.</p>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Type</th>
+                        <th>Details</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="requests-list">
+                    <!-- Loaded dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="modal">
+        <div class="modal-content">
+            <h2>Upload Ticket & PNR</h2>
+            <form id="upload-form" style="margin-top: 1.5rem;">
+                <input type="hidden" id="booking-id">
+                <div class="form-group">
+                    <label>PNR Number</label>
+                    <input type="text" id="pnr" required placeholder="e.g. AB1234">
+                </div>
+                <div class="form-group">
+                    <label>Ticket File (PDF/Image)</label>
+                    <input type="file" id="ticket-file" required accept=".pdf,image/*">
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" id="upload-btn">Upload & Complete</button>
+                    <button type="button" onclick="hideUploadModal()" class="secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        const user = checkAuth();
+        if (user) {
+            updateUserInfo();
+            loadRequests();
+        }
+
+        async function loadRequests() {
+            try {
+                const requests = await apiRequest('/vendor/requests');
+                const list = document.getElementById('requests-list');
+                list.innerHTML = requests.map(b => `
+                    <tr>
+                        <td><strong>${b.employee.user.name}</strong></td>
+                        <td>${b.type}</td>
+                        <td>${b.details.origin} to ${b.details.destination} (${b.details.date})</td>
+                        <td>
+                            <button onclick="showUploadModal('${b.id}')" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.85rem;">Process & Upload</button>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="4" style="text-align:center;">No pending booking requests</td></tr>';
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function showUploadModal(id) {
+            document.getElementById('booking-id').value = id;
+            document.getElementById('upload-modal').style.display = 'flex';
+        }
+
+        function hideUploadModal() {
+            document.getElementById('upload-modal').style.display = 'none';
+        }
+
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('booking-id').value;
+            const pnr = document.getElementById('pnr').value;
+            const file = document.getElementById('ticket-file').files[0];
+            const btn = document.getElementById('upload-btn');
+
+            const formData = new FormData();
+            formData.append('pnr', pnr);
+            formData.append('ticket', file);
+
+            btn.disabled = true;
+            btn.textContent = 'Uploading...';
+
+            try {
+                await apiRequest(`/vendor/${id}/upload-ticket`, {
+                    method: 'POST',
+                    body: formData
+                });
+                hideUploadModal();
+                loadRequests();
+                alert('Ticket uploaded and booking completed!');
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Upload & Complete';
+            }
+        });
+    </script>
+</body>
+</html>

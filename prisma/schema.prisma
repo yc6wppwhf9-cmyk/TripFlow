@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+  ADMIN
+  VENDOR
+}
+
+enum Stage {
+  PENDING_MANAGER
+  PENDING_VENDOR
+  COMPLETED
+  REJECTED
+}
+
+enum BookingType {
+  FLIGHT
+  HOTEL
+  TRAIN
+  CAB
+}
+
+model User {
+  id               String         @id @default(uuid())
+  email            String         @unique
+  password         String
+  name             String
+  phone            String?
+  role             Role           @default(EMPLOYEE)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  employee         Employee?      @relation("UserToEmployee")
+  managedEmployees Employee[]     @relation("ManagerToEmployees")
+  vendor           Vendor?
+  notifications    Notification[]
+}
+
+model Employee {
+  id         String    @id @default(uuid())
+  userId     String    @unique
+  user       User      @relation("UserToEmployee", fields: [userId], references: [id])
+  department String
+  managerId  String?
+  manager    User?     @relation("ManagerToEmployees", fields: [managerId], references: [id])
+  policyId   String?
+  policy     Policy?   @relation(fields: [policyId], references: [id])
+  bookings   Booking[]
+
+  @@index([userId])
+  @@index([managerId])
+}
+
+model Vendor {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id])
+  companyName String
+  serviceType String
+  bookings    Booking[]
+
+  @@index([userId])
+}
+
+model Booking {
+  id              String      @id @default(uuid())
+  employeeId      String
+  employee        Employee    @relation(fields: [employeeId], references: [id])
+  vendorId        String?
+  vendor          Vendor?     @relation(fields: [vendorId], references: [id])
+  type            BookingType
+  details         Json
+  stage           Stage       @default(PENDING_MANAGER)
+  cost            Float?
+  ticketUrl       String?
+  pnr             String?
+  rejectionReason String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([employeeId])
+  @@index([vendorId])
+  @@index([stage])
+}
+
+model Policy {
+  id        String     @id @default(uuid())
+  name      String
+  rules     Json
+  employees Employee[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripDesk | Admin Intelligence</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="dashboard-nav glass">
+        <div class="logo">TripDesk</div>
+        <div class="nav-links">
+            <a href="#" class="active">Analytics</a>
+            <a href="#" onclick="showPolicyModal()">Policies</a>
+            <a href="#" onclick="showEmployeeModal()">Users</a>
+        </div>
+        <div class="user-info">
+            <span id="user-name" style="font-weight: 600;">Admin</span>
+            <button onclick="logout()" class="secondary">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-actions" style="margin-bottom: 3rem;">
+            <p style="color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem; margin-bottom: 0.5rem;">Intelligence Hub</p>
+            <h1>Company Insights</h1>
+        </div>
+
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-bottom: 3rem;">
+            <div class="stat-card glass">
+                <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Total Spend</p>
+                <div class="stat-value" id="stat-spend">$0</div>
+                <div style="color: #059669; font-size: 0.8rem; font-weight: 600;">↑ 12% vs last month</div>
+            </div>
+            <div class="stat-card glass">
+                <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Active Requests</p>
+                <div class="stat-value" id="stat-active">0</div>
+                <div style="color: var(--text-muted); font-size: 0.8rem;">Current billing cycle</div>
+            </div>
+            <div class="stat-card glass">
+                <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Compliance</p>
+                <div class="stat-value" id="stat-compliance">98%</div>
+                <div style="color: #059669; font-size: 0.8rem; font-weight: 600;">Policy adhered</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 3rem; background: var(--white);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2>AI Policy Analyzer</h2>
+                <button onclick="analyzePolicy()" style="background: var(--secondary-gradient);">Analyze with Claude</button>
+            </div>
+            <textarea id="policy-text" rows="5" placeholder="Paste travel policy text here to extract rules automatically..." style="width: 100%; border: 1px solid #e2e8f0;"></textarea>
+            <div id="policy-results" style="margin-top: 1.5rem; display: none; padding: 1.5rem; background: #f8fafc; border-radius: 12px;"></div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Type</th>
+                        <th>Stage</th>
+                        <th>Cost</th>
+                        <th>Last Update</th>
+                    </tr>
+                </thead>
+                <tbody id="all-bookings">
+                    <!-- Loaded dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modals (Simplified for brevity) -->
+    <div id="user-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Add Employee</h2>
+            <form id="user-form">
+                <div class="form-group"><label>Name</label><input type="text" id="emp-name" required style="width: 100%;"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="emp-email" required style="width: 100%;"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="emp-pass" required style="width: 100%;"></div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="emp-role" style="width: 100%;">
+                        <option value="EMPLOYEE">Employee</option>
+                        <option value="MANAGER">Manager</option>
+                        <option value="VENDOR">Vendor</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" style="flex: 1;">Save User</button>
+                    <button type="button" onclick="hideModal('user-modal')" class="secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        async function init() {
+            const user = await checkAuth(['ADMIN']);
+            document.getElementById('user-name').innerText = user.name;
+            loadStats();
+        }
+        init();
+
+        async function loadStats() {
+            try {
+                const bookings = await apiRequest('/admin/bookings');
+                const list = document.getElementById('all-bookings');
+                let total = 0;
+                let active = 0;
+
+                list.innerHTML = bookings.map(b => {
+                    if (b.stage !== 'REJECTED') total += b.cost || 0;
+                    if (b.stage === 'PENDING_MANAGER' || b.stage === 'PENDING_VENDOR') active++;
+                    
+                    return `
+                        <tr>
+                            <td style="font-weight: 600;">${b.employee.user.name}</td>
+                            <td>${b.type}</td>
+                            <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g, '-')}">${b.stage.replace(/_/g, ' ')}</span></td>
+                            <td style="font-weight: 600;">$${b.cost || '—'}</td>
+                            <td style="color: var(--text-muted); font-size: 0.85rem;">${new Date(b.updatedAt).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                document.getElementById('stat-spend').innerText = `$${total.toLocaleString()}`;
+                document.getElementById('stat-active').innerText = active;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function analyzePolicy() {
+            const text = document.getElementById('policy-text').value;
+            if (!text) return alert('Please paste policy text');
+            
+            const btn = event.target;
+            btn.innerText = 'Analyzing...';
+            btn.disabled = true;
+
+            try {
+                const results = await apiRequest('/admin/policies/analyze', 'POST', { text });
+                const div = document.getElementById('policy-results');
+                div.style.display = 'block';
+                div.innerHTML = `
+                    <h4 style="margin-bottom: 1rem;">Extraction Results:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <p>Flight Limit: <strong>$${results.flightLimit || 'N/A'}</strong></p>
+                        <p>Hotel Limit: <strong>$${results.hotelLimit || 'N/A'}</strong></p>
+                        <p>Cab Limit: <strong>$${results.cabLimit || 'N/A'}</strong></p>
+                        <p>Global Budget: <strong>$${results.globalMonthlyBudget || 'N/A'}</strong></p>
+                    </div>
+                `;
+            } catch (err) {
+                alert('Analysis failed: ' + err.message);
+            } finally {
+                btn.innerText = 'Analyze with Claude';
+                btn.disabled = false;
+            }
+        }
+
+        function showEmployeeModal() { document.getElementById('user-modal').style.display = 'flex'; }
+        function hideModal(id) { document.getElementById(id).style.display = 'none'; }
+        
+        document.getElementById('user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('emp-name').value,
+                email: document.getElementById('emp-email').value,
+                password: document.getElementById('emp-pass').value,
+                role: document.getElementById('emp-role').value
+            };
+            try {
+                await apiRequest('/admin/employees', 'POST', payload);
+                alert('User created!');
+                hideModal('user-modal');
+                loadStats();
+            } catch (err) {
+                alert(err.message);
+            }
+        });
+    </script>
+</body>
+</html>
