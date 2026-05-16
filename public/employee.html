@@ -5,6 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TripFlow | Employee Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .flatpickr-calendar { font-family: inherit; }
+        /* Style the visible altInput to match other trip-planner inputs */
+        #tp-from-date + input.flatpickr-input,
+        #tp-to-date + input.flatpickr-input {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+            background: white;
+            box-sizing: border-box;
+        }
+        #tp-from-date + input.flatpickr-input:focus,
+        #tp-to-date + input.flatpickr-input:focus {
+            border-color: #6366f1;
+        }
+    </style>
     <style>
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
@@ -99,11 +121,11 @@
                     </div>
                     <div>
                         <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:0.3rem;">DEPARTURE</label>
-                        <input id="tp-from-date" type="date" style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none;">
+                        <input id="tp-from-date" type="text" readonly placeholder="DD/MM/YYYY" style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none; cursor:pointer;">
                     </div>
                     <div>
                         <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:0.3rem;">RETURN (OPT)</label>
-                        <input id="tp-to-date" type="date" style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none;">
+                        <input id="tp-to-date" type="text" readonly placeholder="DD/MM/YYYY" style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none; cursor:pointer;">
                     </div>
                     <button type="button" onclick="runTripPlan()" id="tp-search-btn"
                         style="padding:0.7rem 1.2rem; border-radius:10px; font-size:0.85rem; white-space:nowrap; height:fit-content;">
@@ -145,7 +167,7 @@
             position: absolute;
             top: 100%;
             left: 0;
-            right: 0;
+            min-width: 240px;
             background: white;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
@@ -230,6 +252,7 @@
         </button>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
@@ -244,6 +267,25 @@
             await loadBookings();
         }
         init();
+
+        // Date pickers with DD/MM/YYYY display, ISO value stored in hidden input
+        const _fpFrom = flatpickr('#tp-from-date', {
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'd/m/Y',
+            minDate: 'today',
+            disableMobile: true
+        });
+        const _fpTo = flatpickr('#tp-to-date', {
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'd/m/Y',
+            minDate: 'today',
+            disableMobile: true,
+            onReady(_, __, fp) {
+                _fpFrom.config.onChange.push(() => { fp.set('minDate', _fpFrom.selectedDates[0]); });
+            }
+        });
 
         async function loadBookings() {
             try {
