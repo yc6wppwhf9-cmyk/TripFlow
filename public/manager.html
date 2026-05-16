@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager Dashboard - TripDesk</title>
+    <title>TripFlow | Manager Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <nav class="dashboard-nav glass">
-        <div class="logo">TripDesk</div>
+        <div class="logo">TripFlow</div>
         <div class="nav-links">
             <a href="#" class="active">Approvals</a>
         </div>
@@ -114,17 +114,16 @@
 
         async function loadVendors() {
             try {
-                // In a real app, you'd have a vendor list endpoint. For now, let's assume admin or use a generic list.
-                // Using admin endpoint to get vendors if allowed, or just hardcoded for demo.
-                // We'll add a simple endpoint for vendors in admin controller.
-                // For now, let's use a hardcoded fallback if it fails.
-                const data = await apiRequest('/admin/employees').catch(() => []); // Admin endpoint has users
+                const data = await apiRequest('/approvals/vendors');
                 const vendorSelect = document.getElementById('vendor-id');
-                // Mock vendor for demo if list is empty
-                vendorSelect.innerHTML = '<option value="">Select a vendor</option>' + 
-                    '<option value="vendor-id-123">Global Travel Services</option>';
+                if (!data.length) {
+                    vendorSelect.innerHTML = '<option value="">No vendors available</option>';
+                    return;
+                }
+                vendorSelect.innerHTML = '<option value="">Select a vendor</option>' +
+                    data.map(v => `<option value="${v.id}">${v.companyName} (${v.serviceType})</option>`).join('');
             } catch (err) {
-                console.error(err);
+                console.error('Could not load vendors:', err.message);
             }
         }
 

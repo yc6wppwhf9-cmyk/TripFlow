@@ -66,6 +66,26 @@ exports.getEmployees = async (req, res) => {
   }
 };
 
+exports.getVendors = async (req, res) => {
+  try {
+    const vendors = await prisma.vendor.findMany({ include: { user: true } });
+    res.json(vendors);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.analyzePolicy = async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ error: 'Policy text is required' });
+    const rules = await claudeService.extractPolicyRules(text);
+    res.json(rules);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.createEmployee = async (req, res) => {
   // Similar to register but specific for admin
   try {

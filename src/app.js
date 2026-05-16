@@ -20,6 +20,7 @@ app.use('/api/bookings', require('./routes/booking.routes'));
 app.use('/api/approvals', require('./routes/approval.routes'));
 app.use('/api/vendor', require('./routes/vendor.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/ai', require('./routes/ai.routes'));
 app.use('/api/notifications', require('./routes/notification.routes'));
 
 // Health check

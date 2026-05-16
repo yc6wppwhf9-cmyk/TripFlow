@@ -7,6 +7,7 @@ const role = require('../middleware/role.middleware');
 router.use(auth);
 router.use(role(['MANAGER', 'ADMIN']));
 
+router.get('/vendors', approvalController.getVendors);
 router.get('/pending', approvalController.getPendingApprovals);
 router.post('/:id/approve', approvalController.approveBooking);
 router.post('/:id/reject', approvalController.rejectBooking);

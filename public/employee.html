@@ -3,12 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Dashboard - TripDesk</title>
+    <title>TripFlow | Employee Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chat-bubble { animation: fadeIn 0.2s ease; }
+        #chat-panel { display: none; flex-direction: column; }
+        #chat-panel.open { display: flex; }
+        #chat-messages::-webkit-scrollbar { width: 4px; }
+        #chat-messages::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+    </style>
 </head>
 <body>
     <nav class="dashboard-nav glass">
-        <div class="logo">TripDesk</div>
+        <div class="logo">TripFlow</div>
         <div class="nav-links">
             <a href="#" class="active">My Trips</a>
             <a href="#" onclick="showBookingModal()">New Request</a>
@@ -37,17 +52,17 @@
                         <th>Stage</th>
                         <th>Cost</th>
                         <th>PNR</th>
-                        <th>Actions</th>
+                        <th>Ticket</th>
                     </tr>
                 </thead>
                 <tbody id="bookings-list">
-                    <!-- Loaded dynamically -->
+                    <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Booking Modal -->
+    <!-- Manual Booking Modal -->
     <div id="booking-modal" class="modal">
         <div class="modal-content">
             <h2>New Travel Request</h2>
@@ -63,44 +78,77 @@
                 </div>
                 <div class="form-group">
                     <label>Origin / Location</label>
-                    <input type="text" id="origin" required placeholder="e.g. New York">
+                    <input type="text" id="origin" required placeholder="e.g. Mumbai">
                 </div>
                 <div class="form-group">
                     <label>Destination / Hotel Name</label>
-                    <input type="text" id="destination" required placeholder="e.g. London" onblur="fetchSuggestions()">
+                    <input type="text" id="destination" required placeholder="e.g. Delhi" onblur="fetchSuggestions()">
                 </div>
-                
+
                 <div id="suggestions-container" style="display: none; margin-bottom: 1.5rem; background: #fdfaf6; padding: 1rem; border-radius: 8px; border: 1px solid #eee;">
-                    <h4 style="margin-bottom: 0.5rem; color: var(--accent-color);">AI Suggestions for you</h4>
-                    <div id="suggestions-content" style="font-size: 0.85rem;">
-                        <!-- Suggestions will be injected here -->
-                    </div>
+                    <h4 style="margin-bottom: 0.5rem; color: var(--accent-color);">AI Suggestions</h4>
+                    <div id="suggestions-content" style="font-size: 0.85rem;"></div>
                 </div>
 
                 <div class="form-group">
-                    <label>Date</label>
+                    <label>Travel Date</label>
                     <input type="date" id="travel-date" required>
                 </div>
                 <div class="form-group">
-                    <label>Estimated Cost ($)</label>
-                    <input type="number" id="estimated-cost" required>
+                    <label>Estimated Cost (USD)</label>
+                    <input type="number" id="estimated-cost" required min="1">
                 </div>
                 <div style="display: flex; gap: 1rem; margin-top: 2.5rem;">
-                    <button type="submit" style="flex: 2; padding: 1.1rem;">Submit Travel Request</button>
+                    <button type="submit" style="flex: 2; padding: 1.1rem;">Submit Request</button>
                     <button type="button" onclick="hideBookingModal()" class="secondary" style="flex: 1;">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- AI Chat Widget -->
+    <div id="ai-chat" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 1000;">
+
+        <!-- Chat Panel -->
+        <div id="chat-panel" style="position: absolute; bottom: 70px; right: 0; width: 360px; height: 520px; background: white; border-radius: 20px; box-shadow: 0 8px 40px rgba(0,0,0,0.18); overflow: hidden;">
+            <!-- Header -->
+            <div style="padding: 1.1rem 1.4rem; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">✈️</div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; font-size: 0.95rem;">TripFlow Assistant</div>
+                    <div style="font-size: 0.72rem; opacity: 0.85;">AI-powered travel booking</div>
+                </div>
+                <button onclick="toggleChat()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; padding: 0;">×</button>
+            </div>
+
+            <!-- Messages -->
+            <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.65rem; height: 370px; background: #f8fafc;"></div>
+
+            <!-- Input -->
+            <div style="padding: 0.9rem 1rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.5rem; background: white;">
+                <input id="chat-input" placeholder="Describe your travel need..." style="flex: 1; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.65rem 0.9rem; font-size: 0.875rem; outline: none; font-family: inherit;" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); sendChat(); }">
+                <button onclick="sendChat()" id="chat-send" style="width: auto; padding: 0.65rem 1rem; border-radius: 10px; font-size: 0.875rem; background: linear-gradient(135deg, #6366f1, #8b5cf6); min-width: 60px;">Send</button>
+            </div>
+        </div>
+
+        <!-- Toggle Button -->
+        <button id="chat-btn" onclick="toggleChat()" style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(99,102,241,0.45); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: transform 0.2s; color: white; position: relative; z-index: 1;">
+            ✈️
+        </button>
+    </div>
+
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
+        let currentUser = null;
+        let chatMessages = [];
+        let chatOpen = false;
+
         async function init() {
-            const user = await checkAuth(['EMPLOYEE']);
-            document.getElementById('user-name').innerText = user.name;
+            currentUser = checkAuth();
+            if (!currentUser) return;
+            document.getElementById('user-name').innerText = currentUser.name;
             await loadBookings();
-            showBookingModal(); // Open by default
         }
         init();
 
@@ -108,30 +156,30 @@
             try {
                 const bookings = await apiRequest('/bookings/mine');
                 const list = document.getElementById('bookings-list');
+                if (!bookings.length) {
+                    list.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding: 2rem;">No travel requests yet. Use the AI assistant or click + New Trip Request.</td></tr>';
+                    return;
+                }
                 list.innerHTML = bookings.map(b => `
                     <tr>
                         <td style="font-weight: 700; color: var(--text-main);">${b.type}</td>
                         <td>
-                            <div style="font-weight: 500;">${b.details.origin} → ${b.details.destination}</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted);">${b.details.date}</div>
+                            <div style="font-weight: 500;">${b.details.origin || '—'} → ${b.details.destination || '—'}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">${b.details.date || ''}</div>
                         </td>
                         <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g, '-')}">${b.stage.replace(/_/g, ' ')}</span></td>
-                        <td style="font-weight: 600;">$${b.cost || 'N/A'}</td>
+                        <td style="font-weight: 600;">$${b.cost || '—'}</td>
                         <td style="font-family: monospace; color: var(--accent);">${b.pnr || '—'}</td>
-                        <td>
-                            ${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: none;">View Ticket</a>` : '—'}
-                        </td>
+                        <td>${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: none;">View</a>` : '—'}</td>
                     </tr>
                 `).join('');
             } catch (err) {
-                alert(err.message);
+                console.error(err.message);
             }
         }
 
-        function showBookingModal() {
-            document.getElementById('booking-modal').style.display = 'flex';
-        }
-
+        // ── Manual Booking Modal ──────────────────────────────────
+        function showBookingModal() { document.getElementById('booking-modal').style.display = 'flex'; }
         function hideBookingModal() {
             document.getElementById('booking-modal').style.display = 'none';
             document.getElementById('suggestions-container').style.display = 'none';
@@ -140,62 +188,154 @@
         async function fetchSuggestions() {
             const origin = document.getElementById('origin').value;
             const destination = document.getElementById('destination').value;
-            const container = document.getElementById('suggestions-container');
-            const content = document.getElementById('suggestions-content');
-
             if (!origin || !destination) return;
 
+            const container = document.getElementById('suggestions-container');
+            const content = document.getElementById('suggestions-content');
             container.style.display = 'block';
             content.innerHTML = '<p>Getting AI suggestions...</p>';
 
             try {
-                const data = await apiRequest(`/bookings/suggestions?origin=${origin}&destination=${destination}`);
-                
-                let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">';
-                
-                html += '<div><strong>Flights:</strong><ul style="padding-left: 1rem;">';
-                data.flights.forEach(f => {
-                    html += `<li>${f.option} - $${f.price} (${f.time})</li>`;
-                });
-                html += '</ul></div>';
-
-                html += '<div><strong>Hotels:</strong><ul style="padding-left: 1rem;">';
-                data.hotels.forEach(h => {
-                    html += `<li>${h.name} - $${h.price} (Rating: ${h.rating})</li>`;
-                });
-                html += '</ul></div>';
-                
+                const data = await apiRequest(`/bookings/suggestions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`);
+                let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">';
+                if (data.flights?.length) {
+                    html += '<div><strong>Flights:</strong><ul style="padding-left:1rem; margin:0.3rem 0;">';
+                    data.flights.forEach(f => { html += `<li>${f.option} — $${f.price} (${f.time})</li>`; });
+                    html += '</ul></div>';
+                }
+                if (data.hotels?.length) {
+                    html += '<div><strong>Hotels:</strong><ul style="padding-left:1rem; margin:0.3rem 0;">';
+                    data.hotels.forEach(h => { html += `<li>${h.name} — $${h.price} ⭐${h.rating}</li>`; });
+                    html += '</ul></div>';
+                }
                 html += '</div>';
                 content.innerHTML = html;
-            } catch (err) {
-                content.innerHTML = '<p style="color: #e63946;">Could not fetch suggestions.</p>';
+            } catch {
+                content.innerHTML = '<p style="color:#e63946;">Could not fetch suggestions.</p>';
             }
         }
 
         document.getElementById('booking-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const type = document.getElementById('travel-type').value;
-            const origin = document.getElementById('origin').value;
-            const destination = document.getElementById('destination').value;
-            const date = document.getElementById('travel-date').value;
-            const cost = document.getElementById('estimated-cost').value;
-
+            const btn = e.target.querySelector('button[type=submit]');
+            btn.disabled = true;
+            btn.innerText = 'Submitting...';
             try {
                 await apiRequest('/bookings', {
                     method: 'POST',
                     body: {
-                        type,
-                        details: { origin, destination, date },
-                        cost
+                        type: document.getElementById('travel-type').value,
+                        details: {
+                            origin: document.getElementById('origin').value,
+                            destination: document.getElementById('destination').value,
+                            date: document.getElementById('travel-date').value,
+                        },
+                        cost: document.getElementById('estimated-cost').value
                     }
                 });
                 hideBookingModal();
-                loadBookings();
-                alert('Request submitted successfully!');
+                document.getElementById('booking-form').reset();
+                await loadBookings();
             } catch (err) {
                 alert(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Submit Request';
             }
         });
+
+        // ── AI Chat Widget ────────────────────────────────────────
+        function toggleChat() {
+            chatOpen = !chatOpen;
+            const panel = document.getElementById('chat-panel');
+            panel.classList.toggle('open', chatOpen);
+
+            if (chatOpen && chatMessages.length === 0) {
+                const name = currentUser?.name?.split(' ')[0] || 'there';
+                addBubble('assistant', `Hi ${name}! ✈️ I'm your TripFlow travel assistant.\n\nTell me where you need to go and I'll handle the booking. For example:\n*"I need to fly from Mumbai to Delhi on June 20"*`);
+            }
+            if (chatOpen) setTimeout(() => document.getElementById('chat-input').focus(), 100);
+        }
+
+        function addBubble(role, text) {
+            const isUser = role === 'user';
+            const wrap = document.createElement('div');
+            wrap.className = 'chat-bubble';
+            wrap.style.cssText = `display:flex; justify-content:${isUser ? 'flex-end' : 'flex-start'};`;
+
+            const bubble = document.createElement('div');
+            bubble.style.cssText = `
+                max-width: 82%;
+                padding: 0.65rem 0.95rem;
+                border-radius: ${isUser ? '16px 16px 4px 16px' : '4px 16px 16px 16px'};
+                background: ${isUser ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'white'};
+                color: ${isUser ? 'white' : '#1e293b'};
+                font-size: 0.855rem;
+                line-height: 1.55;
+                border: ${isUser ? 'none' : '1px solid #e2e8f0'};
+                box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+                white-space: pre-wrap;
+            `;
+            bubble.innerHTML = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            wrap.appendChild(bubble);
+            const msgs = document.getElementById('chat-messages');
+            msgs.appendChild(wrap);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        function showTyping() {
+            const el = document.createElement('div');
+            el.id = 'typing-dot';
+            el.className = 'chat-bubble';
+            el.style.cssText = 'display:flex; justify-content:flex-start;';
+            el.innerHTML = `
+                <div style="padding:0.65rem 1rem; border-radius:4px 16px 16px 16px; background:white; border:1px solid #e2e8f0; display:flex; gap:4px; align-items:center;">
+                    <span style="width:7px;height:7px;background:#8b5cf6;border-radius:50%;animation:bounce 0.9s infinite;display:block;"></span>
+                    <span style="width:7px;height:7px;background:#8b5cf6;border-radius:50%;animation:bounce 0.9s 0.18s infinite;display:block;"></span>
+                    <span style="width:7px;height:7px;background:#8b5cf6;border-radius:50%;animation:bounce 0.9s 0.36s infinite;display:block;"></span>
+                </div>`;
+            const msgs = document.getElementById('chat-messages');
+            msgs.appendChild(el);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const sendBtn = document.getElementById('chat-send');
+            input.value = '';
+            input.disabled = true;
+            sendBtn.disabled = true;
+
+            chatMessages.push({ role: 'user', content: text });
+            addBubble('user', text);
+            showTyping();
+
+            try {
+                const data = await apiRequest('/ai/chat', {
+                    method: 'POST',
+                    body: { messages: chatMessages }
+                });
+
+                document.getElementById('typing-dot')?.remove();
+                chatMessages.push({ role: 'assistant', content: data.reply });
+                addBubble('assistant', data.reply);
+
+                if (data.booking) await loadBookings();
+            } catch (err) {
+                document.getElementById('typing-dot')?.remove();
+                addBubble('assistant', '❌ Something went wrong. Please try again.');
+            } finally {
+                input.disabled = false;
+                sendBtn.disabled = false;
+                input.focus();
+            }
+        }
     </script>
 </body>
 </html>

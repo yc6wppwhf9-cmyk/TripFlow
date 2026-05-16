@@ -12,5 +12,7 @@ router.get('/stats', adminController.getStats);
 router.post('/policy', adminController.updatePolicy);
 router.get('/employees', adminController.getEmployees);
 router.post('/employees', adminController.createEmployee);
+router.get('/vendors', adminController.getVendors);
+router.post('/policies/analyze', adminController.analyzePolicy);
 
 module.exports = router;

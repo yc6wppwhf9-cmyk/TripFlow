@@ -4,7 +4,7 @@ const anthropic = process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_API_KE
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   : null;
 
-const CLAUDE_MODEL = "claude-3-5-sonnet-20240620";
+const CLAUDE_MODEL = "claude-3-5-sonnet-20241022";
 
 exports.generateApprovalEmail = async (booking, employee) => {
   if (!anthropic) return "Subject: Travel Request\n\n[Claude not configured - Default Email Content]";

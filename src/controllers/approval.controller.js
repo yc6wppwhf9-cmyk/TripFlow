@@ -1,6 +1,15 @@
 const prisma = require('../config/db');
 const approvalService = require('../services/approval.service');
 
+exports.getVendors = async (req, res) => {
+  try {
+    const vendors = await prisma.vendor.findMany({ include: { user: true } });
+    res.json(vendors);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.getPendingApprovals = async (req, res) => {
   try {
     const bookings = await prisma.booking.findMany({

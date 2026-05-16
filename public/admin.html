@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TripDesk | Admin Intelligence</title>
+    <title>TripFlow | Admin Intelligence</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <nav class="dashboard-nav glass">
-        <div class="logo">TripDesk</div>
+        <div class="logo">TripFlow</div>
         <div class="nav-links">
             <a href="#" class="active">Analytics</a>
             <a href="#" onclick="showPolicyModal()">Policies</a>
@@ -143,7 +143,7 @@
             btn.disabled = true;
 
             try {
-                const results = await apiRequest('/admin/policies/analyze', 'POST', { text });
+                const results = await apiRequest('/admin/policies/analyze', { method: 'POST', body: { text } });
                 const div = document.getElementById('policy-results');
                 div.style.display = 'block';
                 div.innerHTML = `
