@@ -1,13 +1,10 @@
 const Redis = require('redis');
 const Bull = require('bull');
 
-const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+const redisUrl = (process.env.REDIS_URL || 'redis://127.0.0.1:6379').replace(/^"|"$/g, '');
 const isTLS = redisUrl.startsWith('rediss://');
 
-const redisClient = Redis.createClient({
-  url: redisUrl,
-  socket: isTLS ? { tls: true, rejectUnauthorized: false } : {}
-});
+const redisClient = Redis.createClient({ url: redisUrl });
 
 redisClient.on('error', (err) => console.log('Redis Client Error:', err.message));
 
