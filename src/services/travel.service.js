@@ -2,16 +2,17 @@ const axios = require('axios');
 
 // ── IATA airport codes for major cities ──────────────────────────────────────
 const CITY_TO_IATA = {
-  // India
+  // India — Metro
   'delhi': 'DEL', 'new delhi': 'DEL',
   'mumbai': 'BOM', 'bombay': 'BOM',
   'bangalore': 'BLR', 'bengaluru': 'BLR',
   'hyderabad': 'HYD',
   'chennai': 'MAA', 'madras': 'MAA',
   'kolkata': 'CCU', 'calcutta': 'CCU',
+  // India — Tier 2
   'pune': 'PNQ',
   'ahmedabad': 'AMD',
-  'goa': 'GOI',
+  'goa': 'GOI', 'panaji': 'GOI',
   'jaipur': 'JAI',
   'lucknow': 'LKO',
   'kochi': 'COK', 'cochin': 'COK',
@@ -26,7 +27,7 @@ const CITY_TO_IATA = {
   'patna': 'PAT',
   'raipur': 'RPR',
   'surat': 'STV',
-  'mangalore': 'IXE',
+  'mangalore': 'IXE', 'mangaluru': 'IXE',
   'trichy': 'TRZ', 'tiruchirappalli': 'TRZ',
   'madurai': 'IXM',
   'ranchi': 'IXR',
@@ -35,6 +36,54 @@ const CITY_TO_IATA = {
   'leh': 'IXL',
   'srinagar': 'SXR',
   'port blair': 'IXZ',
+  'jabalpur': 'JLR',
+  'vadodara': 'BDQ', 'baroda': 'BDQ',
+  'rajkot': 'RAJ',
+  'aurangabad': 'IXU',
+  'jodhpur': 'JDH',
+  'udaipur': 'UDR',
+  'hubli': 'HBX',
+  'belgaum': 'IXG', 'belagavi': 'IXG',
+  'tirupati': 'TIR',
+  'vijayawada': 'VGA',
+  'rajahmundry': 'RJA',
+  'salem': 'SXV',
+  'tuticorin': 'TCR', 'thoothukudi': 'TCR',
+  'pondicherry': 'PNY',
+  'shimla': 'SLV',
+  'dehradun': 'DED',
+  'gorakhpur': 'GOP',
+  'allahabad': 'IXD', 'prayagraj': 'IXD',
+  'gwalior': 'GWL',
+  'jammu': 'IXJ',
+  'dibrugarh': 'DIB',
+  'guwahati': 'GAU',
+  'imphal': 'IMF',
+  'dimapur': 'DMU',
+  'agartala': 'IXA',
+  'aizawl': 'AJL',
+  'shillong': 'SHL',
+  'bagdogra': 'IXB',
+  'silchar': 'IXS',
+  'jorhat': 'JRH',
+  'tezpur': 'TEZ',
+  'lilabari': 'IXI',
+  'portblair': 'IXZ',
+  'kavaratti': 'AGX',
+  'darbhanga': 'DBR',
+  'pune': 'PNQ',
+  'shirdi': 'SAG',
+  'nashik': 'ISK',
+  'kolhapur': 'KLH',
+  'solapur': 'SSE',
+  'akola': 'AKD',
+  'nanded': 'NDC',
+  'latur': 'LTU',
+  'ozar': 'ISK',
+  'kannur': 'CNN',
+  'calicut': 'CCJ', 'kozhikode': 'CCJ',
+  'thrissur': 'TCR',
+  'trivandrum': 'TRV', 'thiruvananthapuram': 'TRV',
   // International
   'london': 'LHR',
   'dubai': 'DXB',
@@ -52,6 +101,39 @@ const CITY_TO_IATA = {
   'sydney': 'SYD',
   'milan': 'MXP',
   'rome': 'FCO',
+  'toronto': 'YYZ',
+  'los angeles': 'LAX',
+  'chicago': 'ORD',
+  'san francisco': 'SFO',
+  'seattle': 'SEA',
+  'washington': 'IAD',
+  'dallas': 'DFW',
+  'houston': 'IAH',
+  'boston': 'BOS',
+  'miami': 'MIA',
+  'abu dhabi': 'AUH',
+  'doha': 'DOH',
+  'riyadh': 'RUH',
+  'jeddah': 'JED',
+  'muscat': 'MCT',
+  'colombo': 'CMB',
+  'dhaka': 'DAC',
+  'kathmandu': 'KTM',
+  'nairobi': 'NBO',
+  'johannesburg': 'JNB',
+  'istanbul': 'IST',
+  'zurich': 'ZRH',
+  'vienna': 'VIE',
+  'madrid': 'MAD',
+  'barcelona': 'BCN',
+  'seoul': 'ICN',
+  'jakarta': 'CGK',
+  'manila': 'MNL',
+  'taipei': 'TPE',
+  'ho chi minh city': 'SGN', 'saigon': 'SGN',
+  'hanoi': 'HAN',
+  'melbourne': 'MEL',
+  'auckland': 'AKL',
 };
 
 // ── Indian Railway station codes ─────────────────────────────────────────────
@@ -87,7 +169,10 @@ const CITY_TO_STATION = {
 };
 
 function resolveIATA(city) {
-  return CITY_TO_IATA[city.toLowerCase().trim()] || city.toUpperCase().slice(0, 3);
+  const key = city.toLowerCase().trim();
+  const code = CITY_TO_IATA[key];
+  if (!code) throw new Error(`Airport not found for "${city}". Please use a city with an airport (e.g. Mumbai, Delhi, Patna).`);
+  return code;
 }
 
 function resolveStation(city) {
@@ -136,11 +221,15 @@ async function searchFlights(origin, destination, date) {
   }
 
   try {
+    let depCode, arrCode;
+    try { depCode = resolveIATA(origin); } catch (e) { return { available: false, reason: e.message }; }
+    try { arrCode = resolveIATA(destination); } catch (e) { return { available: false, reason: e.message }; }
+
     const res = await axios.get('https://google-flights2.p.rapidapi.com/api/v1/searchFlights', {
       headers: FLIGHT_HEADERS(),
       params: {
-        departure_id: resolveIATA(origin),
-        arrival_id: resolveIATA(destination),
+        departure_id: depCode,
+        arrival_id: arrCode,
         outbound_date: date,
         currency: 'INR',
         adults: 1,
