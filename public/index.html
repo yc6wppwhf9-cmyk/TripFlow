@@ -297,7 +297,7 @@
                 <div class="field">
                     <div class="field-row">
                         <label for="password">Password</label>
-                        <a href="#" onclick="alert('Please contact your HR Travel administrator to reset your credentials.'); return false;">Forgot Password?</a>
+                        <a href="#" id="forgot-pw-link">Forgot Password?</a>
                     </div>
                     <div class="input-wrap">
                         <input type="password" id="password" name="password" required
@@ -336,6 +336,15 @@
     <script src="js/auth.js"></script>
     <script>
         checkAuth();
+
+        document.getElementById('forgot-pw-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            const errorBox = document.getElementById('error-msg');
+            errorBox.style.display = 'block';
+            errorBox.style.background = '#e3f2fd';
+            errorBox.style.color = '#0d47a1';
+            errorBox.textContent = 'To reset your password, contact your HR Travel administrator or email it-support@company.com';
+        });
 
         const toggleBtn = document.getElementById('toggle-pw');
         const pwField   = document.getElementById('password');

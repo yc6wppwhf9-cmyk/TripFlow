@@ -115,7 +115,8 @@ exports.createBooking = async (req, res) => {
 
     const parsedCost = parseFloat(cost);
 
-    if (!managerOverride) {
+    const canOverride = managerOverride && ['MANAGER', 'ADMIN', 'HR'].includes(req.user.role);
+    if (!canOverride) {
       const violation = await checkPolicyLimits(req.user.employee.id, type, parsedCost);
       if (violation) return res.status(422).json(violation);
     }
@@ -134,7 +135,7 @@ exports.createBooking = async (req, res) => {
 
     res.status(201).json(booking);
   } catch (error) {
-    res.status(501).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 

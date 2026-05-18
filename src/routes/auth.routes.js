@@ -3,6 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/auth.controller');
 const { body } = require('express-validator');
 const validate = require('../middleware/validate.middleware');
+const auth = require('../middleware/auth.middleware');
 
 router.post('/register', [
   body('email').isEmail(),
@@ -21,5 +22,7 @@ router.post('/refresh', [
   body('token').notEmpty().withMessage('token is required'),
   validate
 ], authController.refresh);
+
+router.get('/me', auth, authController.me);
 
 module.exports = router;

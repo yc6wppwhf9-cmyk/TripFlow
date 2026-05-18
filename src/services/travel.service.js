@@ -183,6 +183,38 @@ const CITY_TO_STATION = {
   'bhubaneswar': 'BBS',
   'raipur': 'R',
   'goa': 'MAO', 'madgaon': 'MAO',
+  'muzaffarpur': 'MFP', 'mfp': 'MFP',
+  'darbhanga': 'DBG',
+  'samastipur': 'SPJ',
+  'hajipur': 'HJP',
+  'chapra': 'CPR',
+  'motihari': 'MTA',
+  'sitamarhi': 'SMI',
+  'gaya': 'GAYA',
+  'bhagalpur': 'BGP',
+  'dhanbad': 'DHN',
+  'jamshedpur': 'TATA',
+  'gorakhpur': 'GKP',
+  'kanpur': 'CNB',
+  'allahabad': 'ALD', 'prayagraj': 'ALD',
+  'gwalior': 'GWL',
+  'jammu': 'JAT',
+  'dehradun': 'DDN',
+  'ajmer': 'AII',
+  'jodhpur': 'JU',
+  'udaipur': 'UDZ',
+  'aurangabad': 'AWB',
+  'nashik': 'NK',
+  'kolhapur': 'KOP',
+  'solapur': 'SUR',
+  'vijayawada': 'BZA',
+  'rajahmundry': 'RJY',
+  'tirupati': 'TPTY',
+  'trichy': 'TPJ', 'tiruchirappalli': 'TPJ',
+  'salem': 'CLT',
+  'trivandrum': 'TVC', 'thiruvananthapuram': 'TVC',
+  'mangalore': 'MAQ', 'mangaluru': 'MAQ',
+  'hubli': 'UBL',
 };
 
 function resolveIATA(city) {
@@ -232,20 +264,21 @@ async function searchFlights(origin, destination, date) {
 
     if (!all.length) return { available: false, reason: 'No flights found for this route and date.' };
 
-    return all.slice(0, 5).map(it => {
-      const seg = it.flights?.[0];
+    return all.map(it => {
+      const seg  = it.flights?.[0];
+      const last = it.flights?.[it.flights.length - 1];
       return {
-        airline: seg?.airline || 'Unknown',
+        airline:      seg?.airline || 'Unknown',
         flightNumber: seg?.flight_number || '',
-        aircraft: seg?.aircraft || '',
-        departure: seg?.departure_airport?.time,
-        arrival: seg?.arrival_airport?.time,
-        duration: it.duration?.text,
-        stops: it.stops,
-        price: Math.round(it.price || 0),
-        currency: 'INR'
+        aircraft:     seg?.aircraft || '',
+        departure:    seg?.departure_airport?.time,
+        arrival:      last?.arrival_airport?.time,
+        duration:     it.duration?.text,
+        stops:        it.stops ?? 0,
+        price:        Math.round(it.price || 0),
+        currency:     'INR'
       };
-    });
+    }).filter(f => f.price > 0);
   } catch (err) {
     const detail = err.response?.data?.message || err.message;
     return { available: false, reason: `Flight search error: ${detail}` };
@@ -266,6 +299,20 @@ const ROUTE_TRAINS = {
   'NDLS-LKO':  ['12230','12004'],         'LKO-NDLS':  ['12229','12003'],
   'CSTM-SBC':  ['11302','16536'],         'SBC-CSTM':  ['11301','16535'],
   'CSTM-HWH':  ['12810','12322'],         'HWH-CSTM':  ['12809','12321'],
+  // Mumbai ↔ Bihar / East UP
+  'CSTM-MFP':  ['12141','11061'],         'MFP-CSTM':  ['12142','11062'],
+  'CSTM-PNBE': ['12141','11061'],         'PNBE-CSTM': ['12142','11062'],
+  'CSTM-DBG':  ['22945','15069'],         'DBG-CSTM':  ['22946','15070'],
+  'CSTM-GKP':  ['15018','11016'],         'GKP-CSTM':  ['15017','11015'],
+  'CSTM-BSB':  ['15018','12168'],         'BSB-CSTM':  ['15017','12167'],
+  // Delhi ↔ Bihar / East
+  'NDLS-MFP':  ['12557','12569'],         'MFP-NDLS':  ['12558','12570'],
+  'NDLS-PNBE': ['12310','12302'],         'PNBE-NDLS': ['12309','12301'],
+  'NDLS-GKP':  ['12555','12541'],         'GKP-NDLS':  ['12556','12542'],
+  // Mumbai ↔ South
+  'CSTM-MAS':  ['11041','12164'],         'MAS-CSTM':  ['11042','12163'],
+  // Delhi ↔ Punjab
+  'NDLS-ASR':  ['12014','12030'],         'ASR-NDLS':  ['12013','12029'],
 };
 
 const TRAIN_NAMES = {
@@ -286,69 +333,78 @@ const TRAIN_NAMES = {
   '12715':'Sachkhand Express','12716':'Sachkhand Express',
   '12229':'Lucknow Mail','12230':'Lucknow Mail',
   '12003':'Lucknow Shatabdi','12004':'Lucknow Shatabdi',
+  // Mumbai ↔ Bihar/East
+  '12141':'Mumbai LTT Muzaffarpur SF Express','12142':'Muzaffarpur Mumbai LTT SF Express',
+  '11061':'LTT Darbhanga Express','11062':'Darbhanga LTT Express',
+  '22945':'Mumbai Darbhanga SF Express','22946':'Darbhanga Mumbai SF Express',
+  '15069':'LTT Darbhanga Express (via Patna)','15070':'Darbhanga LTT Express (via Patna)',
+  '15018':'LTT Gorakhpur Express','15017':'Gorakhpur LTT Express',
+  '11016':'LTT Kushinagar Express','11015':'Kushinagar LTT Express',
+  '12167':'LTT Varanasi SF Express','12168':'Varanasi LTT SF Express',
+  // Delhi ↔ Bihar
+  '12557':'Sapt Kranti Express (Delhi-MFP)','12558':'Sapt Kranti Express (MFP-Delhi)',
+  '12569':'Jansadharan Express','12570':'Jansadharan Express',
+  '12310':'Rajdhani Express (Patna)','12309':'Rajdhani Express (Patna)',
+  '12555':'Gorakhdham Express','12556':'Gorakhdham Express',
+  '12541':'Gorakhpur Shatabdi','12542':'Gorakhpur Shatabdi',
+  // Mumbai ↔ South
+  '11041':'Mumbai Chennai Express','11042':'Chennai Mumbai Express',
+  '12163':'Dadar Chennai Express','12164':'Chennai Dadar Express',
+  // Delhi ↔ Punjab
+  '12014':'Amritsar Shatabdi','12013':'Amritsar Shatabdi',
+  '12030':'Swarna Shatabdi','12029':'Swarna Shatabdi',
 };
 
 // ── Trains ────────────────────────────────────────────────────────────────────
-// Primary:  irctc-api3.p.rapidapi.com  (subscribed — uses POST form data)
-// Fallback: Claude AI  (works without any subscription)
-
-// Convert ISO date (YYYY-MM-DD) to DD-MM-YYYY required by irctc-api3
-function toIRCTCDate(isoDate) {
-  const [y, m, d] = isoDate.split('-');
-  return `${d}-${m}-${y}`;
-}
+// Primary:  irctc1.p.rapidapi.com  (REST GET — most reliable IRCTC wrapper on RapidAPI)
+// Fallback: known-routes table, then Claude AI
 
 async function searchTrains(origin, destination, date) {
   const fromCode = resolveStation(origin);
   const toCode   = resolveStation(destination);
 
-  // 1. Try irctc-api3 API if key is present
+  // 1. Try irctc1 REST API (returns live schedule data from IRCTC backend)
   if (process.env.RAPIDAPI_KEY) {
     try {
-      const params = new URLSearchParams({
-        source:      fromCode,
-        destination: toCode,
-        date:        toIRCTCDate(date)
-      });
-      const res = await axios.post(
-        'https://irctc-api3.p.rapidapi.com/search.php',
-        params.toString(),
+      const dateOfJourney = date.replace(/-/g, ''); // YYYYMMDD
+      const res = await axios.get(
+        'https://irctc1.p.rapidapi.com/api/v3/trainsBetweenStations',
         {
           headers: {
             'X-RapidAPI-Key':  process.env.RAPIDAPI_KEY,
-            'X-RapidAPI-Host': 'irctc-api3.p.rapidapi.com',
-            'Content-Type':    'application/x-www-form-urlencoded'
+            'X-RapidAPI-Host': 'irctc1.p.rapidapi.com'
           },
-          timeout: 8000
+          params: {
+            fromStationCode: fromCode,
+            toStationCode:   toCode,
+            dateOfJourney
+          },
+          timeout: 10000
         }
       );
-      const list = res.data?.trains?.data?.trainList || [];
+
+      const list = res.data?.data;
       if (Array.isArray(list) && list.length) {
-        return list.slice(0, 5).map(t => {
-          // Build per-class fare summary from availabilityCache
-          const cache = t.availabilityCache || {};
-          const fares = Object.entries(cache).map(([cls, info]) =>
-            `${cls}: ₹${info.fare} (${info.availabilityDisplayName || info.availability || ''})`
-          ).join(' · ');
-
-          // duration is in minutes — convert to "Xh Ym"
-          const dur = t.duration
-            ? `${Math.floor(t.duration / 60)}h ${t.duration % 60}m`
-            : null;
-
-          return {
-            trainNumber: t.trainNumber,
-            trainName:   t.trainName,
-            departure:   t.departureTime,
-            arrival:     t.arrivalTime,
-            duration:    dur,
-            classes:     t.avlClasses || ['SL', '3A', '2A', '1A'],
-            fares:       fares || null,
-            note:        'Book at IRCTC.co.in'
-          };
-        });
+        return list.slice(0, 5).map(t => ({
+          trainNumber: t.train_number,
+          trainName:   t.train_name,
+          departure:   t.from_sta,
+          arrival:     t.to_sta,
+          duration:    t.travel_time,
+          classes:     Array.isArray(t.classes) && t.classes.length ? t.classes : ['SL', '3A', '2A', '1A'],
+          runDays:     Array.isArray(t.run_days) ? t.run_days.join(', ') : null,
+          note:        'Live IRCTC data — book at IRCTC.co.in'
+        }));
       }
-    } catch (_) { /* fall through to known-routes table */ }
+    } catch (err) {
+      const status = err.response?.status;
+      const msg    = err.response?.data?.message || err.message;
+      if (status === 403 || status === 401) {
+        console.warn(`[trains] irctc1 API: not subscribed or invalid key (${status}). Subscribe at rapidapi.com/nabeelp/api/irctc1`);
+      } else {
+        console.warn(`[trains] irctc1 API failed (${status || 'timeout'}): ${msg}`);
+      }
+    }
   }
 
   // 2. Instant result for known popular routes (no API call needed)
@@ -366,15 +422,15 @@ async function searchTrains(origin, destination, date) {
     }));
   }
 
-  // 3. Claude fallback for all other routes
+  // 3. Claude fallback for all other routes — clearly labelled as estimated
   try {
-    const raw    = await askClaude(`List up to 4 real Indian Railways trains from ${origin} to ${destination}. Return ONLY a JSON array. Each object: { "trainNumber": "string", "trainName": "string", "departure": "HH:MM", "arrival": "HH:MM", "classes": ["1A","2A","3A","SL"] }. If no trains exist return [].`);
+    const raw    = await askClaude(`List up to 3 real Indian Railways trains that run between ${origin} and ${destination}. Only include trains you are highly confident exist on this route. Return ONLY a JSON array. Each object: { "trainNumber": "string", "trainName": "string", "departure": "HH:MM", "arrival": "HH:MM", "classes": ["SL","3A","2A","1A"] }. If you are not confident about any trains on this route, return [].`);
     const trains = JSON.parse(raw);
     if (!Array.isArray(trains) || !trains.length)
-      return { available: false, reason: `No trains found for ${origin} → ${destination}. Check IRCTC.co.in.` };
-    return trains.map(t => ({ ...t, note: 'Book at IRCTC.co.in' }));
+      return { available: false, reason: `No trains found for ${origin} → ${destination}. Check IRCTC.co.in for live availability.` };
+    return trains.map(t => ({ ...t, note: 'Estimated — verify schedule and availability at IRCTC.co.in before booking' }));
   } catch {
-    return { available: false, reason: `Train search unavailable. Check IRCTC.co.in.` };
+    return { available: false, reason: `Train search unavailable for this route. Check IRCTC.co.in directly.` };
   }
 }
 

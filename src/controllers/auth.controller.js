@@ -72,6 +72,31 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.me = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: {
+        employee: {
+          include: { manager: { include: { user: true } } }
+        }
+      }
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      manager: user.employee?.manager?.user
+        ? { name: user.employee.manager.user.name, email: user.employee.manager.user.email }
+        : null
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.refresh = async (req, res) => {
   try {
     const { token } = req.body;
