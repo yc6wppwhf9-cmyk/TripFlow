@@ -5,24 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TripFlow | Sign In</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             min-height: 100vh;
-            background: #f5f0e8; /* Warm aged paper */
+            background: #faf8ff;
             font-family: 'Inter', system-ui, sans-serif;
-            color: #1a1a1a;
+            color: #191b23;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 1.5rem;
+            -webkit-font-smoothing: antialiased;
         }
 
         main {
             width: 100%;
-            max-width: 460px;
+            max-width: 440px;
             position: relative;
         }
 
@@ -32,47 +33,53 @@
             align-items: center;
             gap: 0.75rem;
             margin-bottom: 2rem;
+            justify-content: center;
         }
         .brand-name {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 2.5rem;
+            font-size: 1.85rem;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: -0.04em;
-            color: #1a1a1a;
-            line-height: 0.9;
+            letter-spacing: -0.03em;
+            color: #003d9b;
+            line-height: 1;
         }
         .brand-tag {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
             text-transform: uppercase;
-            background: #ffcc00;
-            padding: 0.2rem 0.5rem;
-            border: 2px solid #1a1a1a;
-            box-shadow: 2px 2px 0px #1a1a1a;
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
         }
 
-        /* ── Brutalist Card ── */
-        .brutalist-card {
+        /* ── Systematic Card ── */
+        .card {
             background: #ffffff;
-            border: 3px solid #1a1a1a;
-            box-shadow: 6px 6px 0px #1a1a1a;
+            border: 1px solid #c3c6d6;
+            border-radius: 16px;
+            box-shadow: 0px 10px 15px rgba(0,0,0,0.03), 0px 4px 6px rgba(0,0,0,0.02);
             padding: 2.5rem 2rem;
             margin-bottom: 2rem;
         }
 
         .card-head {
             margin-bottom: 2rem;
-            border-bottom: 3px solid #1a1a1a;
-            padding-bottom: 1rem;
+            border-bottom: 1px solid #ededf8;
+            padding-bottom: 1.25rem;
+            text-align: center;
         }
         .card-head h2 {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #1a1a1a;
-            text-transform: uppercase;
-            letter-spacing: -0.02em;
+            color: #191b23;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.25rem;
+        }
+        .card-head p {
+            font-size: 0.85rem;
+            color: #585f6c;
+            font-weight: 500;
         }
 
         /* ── Fields ── */
@@ -83,21 +90,17 @@
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
         .field label {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #434654;
         }
         .field a {
-            font-family: 'Space Grotesk', sans-serif;
             font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #0055ff;
+            font-weight: 600;
+            color: #003d9b;
             text-decoration: none;
         }
         .field a:hover {
@@ -109,215 +112,127 @@
         }
         .input-wrap input {
             width: 100%;
-            background: transparent;
-            border: none;
-            border-bottom: 3px solid #1a1a1a;
-            padding: 0.75rem 0.25rem;
+            background: #ffffff;
+            border: 1px solid #c3c6d6;
+            border-radius: 8px;
+            padding: 0.65rem 0.85rem;
             font-family: 'Inter', sans-serif;
-            font-size: 1rem;
+            font-size: 0.92rem;
             font-weight: 500;
-            color: #1a1a1a;
+            color: #191b23;
             outline: none;
-            transition: all 0.15s steps(4);
+            transition: all 0.2s ease-in-out;
+            display: block;
         }
         .input-wrap input::placeholder {
-            color: rgba(26,26,26,0.35);
+            color: #737685;
         }
         .input-wrap input:focus {
-            border-bottom-color: #0055ff;
-            background: rgba(0,85,255,0.04);
+            border-color: #003d9b;
+            box-shadow: 0px 0px 0px 3px rgba(0, 61, 155, 0.12);
         }
 
         .toggle-pw {
             position: absolute;
-            right: 0.5rem;
+            right: 0.75rem;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             cursor: pointer;
-            color: #1a1a1a;
+            color: #585f6c;
             padding: 0;
             display: flex;
             align-items: center;
+        }
+        .toggle-pw:hover {
+            color: #191b23;
         }
 
         /* ── Checkbox ── */
         .remember-wrap {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
             margin-bottom: 2rem;
         }
         .remember-wrap input[type="checkbox"] {
             appearance: none;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #1a1a1a;
+            width: 16px;
+            height: 16px;
+            border: 1px solid #c3c6d6;
+            border-radius: 4px;
             background: #ffffff;
             cursor: pointer;
             position: relative;
             outline: none;
-            transition: all 0.1s steps(2);
+            transition: all 0.15s ease-in-out;
         }
         .remember-wrap input[type="checkbox"]:checked {
-            background: #ffcc00;
+            background: #003d9b;
+            border-color: #003d9b;
         }
         .remember-wrap input[type="checkbox"]:checked::after {
             content: '✓';
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            font-weight: 900;
-            font-size: 12px;
-            color: #1a1a1a;
+            font-weight: 700;
+            font-size: 10px;
+            color: #ffffff;
         }
         .remember-wrap label {
-            font-size: 0.875rem;
-            font-weight: 600;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #434654;
             cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
         }
 
         /* ── Buttons ── */
         .btn-primary {
             width: 100%;
-            padding: 0.875rem 1.5rem;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            padding: 0.75rem 1.5rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
-            border: 3px solid #1a1a1a;
-            background: #ffcc00; /* Accent Yellow */
-            color: #1a1a1a;
-            box-shadow: 4px 4px 0px #1a1a1a;
-            transition: all 0.15s steps(4);
+            border-radius: 8px;
+            border: 1px solid #003d9b;
+            background: #003d9b;
+            color: #ffffff;
+            transition: all 0.2s ease-in-out;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
         }
         .btn-primary:hover:not(:disabled) {
-            background: #1a1a1a;
-            color: #ffcc00;
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px #1a1a1a;
+            background: #0052cc;
+            border-color: #0052cc;
+            box-shadow: 0px 2px 4px rgba(0,0,0,0.08);
         }
         .btn-primary:active:not(:disabled) {
-            transform: translate(2px, 2px);
-            box-shadow: 0px 0px 0px #1a1a1a;
+            opacity: 0.9;
         }
         .btn-primary:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .divider-or {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin: 1.5rem 0;
-        }
-        .divider-or::before, .divider-or::after {
-            content: '';
-            flex: 1;
-            height: 3px;
-            background: #1a1a1a;
-        }
-        .divider-or span {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #1a1a1a;
-        }
-
-        .btn-sso {
-            width: 100%;
-            padding: 0.875rem 1.5rem;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-            border: 3px solid #1a1a1a;
-            background: #ffffff;
-            color: #1a1a1a;
-            box-shadow: 4px 4px 0px #1a1a1a;
-            transition: all 0.15s steps(4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        .btn-sso:hover {
-            background: #1a1a1a;
-            color: #ffffff;
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px #1a1a1a;
-        }
-        .btn-sso:active {
-            transform: translate(2px, 2px);
-            box-shadow: 0px 0px 0px #1a1a1a;
         }
 
         /* ── Error Box ── */
         .error-box {
             display: none;
             margin-top: 1.5rem;
-            padding: 1rem;
-            background: #e63b2e;
-            color: #ffffff;
-            border: 3px solid #1a1a1a;
-            box-shadow: 4px 4px 0px #1a1a1a;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            text-transform: uppercase;
+            padding: 0.75rem 1rem;
+            background: #ffebee;
+            color: #c62828;
+            border-radius: 8px;
             font-size: 0.85rem;
-        }
-
-        /* ── Footer ── */
-        .login-footer {
+            font-weight: 600;
             text-align: center;
         }
-        .login-footer p {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-        .login-footer p a {
-            color: #0055ff;
-            text-decoration: none;
-            font-weight: 700;
-        }
-        .login-footer p a:hover {
-            text-decoration: underline;
-        }
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-        .footer-links a {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #1a1a1a;
-            text-decoration: none;
-        }
-        .footer-links a:hover {
-            color: #0055ff;
-        }
 
-        /* ── Side Info Block (Desktop Only) ── */
+        /* ── Side Badge (Desktop Only) ── */
         .brutalist-badge {
             display: none;
             position: fixed;
@@ -325,23 +240,25 @@
             bottom: 2rem;
             max-width: 320px;
             background: #ffffff;
-            border: 3px solid #1a1a1a;
-            box-shadow: 6px 6px 0px #1a1a1a;
-            padding: 1.5rem;
+            border: 1px solid #c3c6d6;
+            border-radius: 12px;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.03);
+            padding: 1.25rem;
         }
         .brutalist-badge .bb-title {
-            font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            color: #e63b2e;
-            margin-bottom: 0.5rem;
+            color: #003d9b;
+            margin-bottom: 0.35rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
+            letter-spacing: 0.05em;
         }
         .brutalist-badge p {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            color: #585f6c;
             font-weight: 500;
             line-height: 1.4;
         }
@@ -356,25 +273,19 @@
     <main>
         <!-- Brand -->
         <div class="brand-header">
-            <svg class="brand-logo" width="40" height="40" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border: 2px solid #1a1a1a; box-shadow: 2px 2px 0px #1a1a1a; flex-shrink: 0; display: block;">
-                <!-- Black rounded box -->
-                <rect width="512" height="512" rx="96" fill="#000000"/>
-                <!-- TF Letters -->
-                <!-- Top bar of T -->
-                <rect x="128" y="128" width="224" height="96" rx="48" fill="#0055ff"/>
-                <!-- Vertical stem -->
-                <rect x="176" y="224" width="64" height="160" rx="32" fill="#0055ff"/>
-                <!-- Middle bar of F -->
-                <rect x="240" y="272" width="112" height="80" rx="40" fill="#004acc"/>
-                <!-- Light Blue Dot -->
-                <circle cx="304" cy="176" r="24" fill="#4a8ef7"/>
+            <svg class="brand-logo" width="36" height="36" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border-radius: 6px; flex-shrink: 0; display: block;">
+                <rect width="512" height="512" rx="96" fill="#003d9b"/>
+                <rect x="128" y="128" width="224" height="96" rx="48" fill="#ffffff"/>
+                <rect x="176" y="224" width="64" height="160" rx="32" fill="#ffffff"/>
+                <rect x="240" y="272" width="112" height="80" rx="40" fill="#ededf8"/>
+                <circle cx="304" cy="176" r="24" fill="#0052cc"/>
             </svg>
             <h1 class="brand-name">TripFlow</h1>
             <span class="brand-tag">Enterprise</span>
         </div>
 
         <!-- Card -->
-        <div class="brutalist-card">
+        <div class="card">
             <div class="card-head">
                 <h2>Sign In</h2>
                 <p>Corporate Travel Portal</p>
@@ -385,19 +296,19 @@
                     <label for="email">Corporate Email</label>
                     <div class="input-wrap">
                         <input type="email" id="email" name="email" required
-                               placeholder="john.doe@company.com" autocomplete="email">
+                                placeholder="john.doe@company.com" autocomplete="email">
                     </div>
                 </div>
 
                 <div class="field">
                     <div class="field-row">
                         <label for="password">Password</label>
-                        <a href="#">Forgot?</a>
+                        <a href="#" onclick="alert('Please contact your HR Travel administrator to reset your credentials.'); return false;">Forgot Password?</a>
                     </div>
                     <div class="input-wrap">
                         <input type="password" id="password" name="password" required
-                               placeholder="••••••••" autocomplete="current-password"
-                               style="padding-right: 2.5rem;">
+                                placeholder="••••••••" autocomplete="current-password"
+                                style="padding-right: 2.5rem;">
                         <button type="button" class="toggle-pw" id="toggle-pw" aria-label="Show password">
                             <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
                         </button>
@@ -422,7 +333,7 @@
     <!-- Side Badge -->
     <div class="brutalist-badge">
         <div class="bb-title">
-            <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">security</span>
+            <span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1;">security</span>
             SOC2 COMPLIANT
         </div>
         <p>Your travel bookings and enterprise data are protected under SOC2 Type II standards and full-spectrum encryption.</p>
