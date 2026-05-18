@@ -10,48 +10,49 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-        /* ── Brutalist Flatpickr Override ── */
+        /* ── Flatpickr Modern Override ── */
         .flatpickr-calendar {
             background: #ffffff !important;
-            border: 3px solid #1a1a1a !important;
-            box-shadow: 4px 4px 0px #1a1a1a !important;
-            font-family: 'Space Grotesk', system-ui, sans-serif !important;
-            border-radius: 0px !important;
+            border: 1px solid var(--outline-variant) !important;
+            box-shadow: var(--shadow-level-2) !important;
+            font-family: var(--font-body) !important;
+            border-radius: var(--radius-lg) !important;
         }
         .flatpickr-day {
-            color: #1a1a1a !important;
-            border-radius: 0px !important;
-            font-weight: 600;
+            color: var(--on-surface) !important;
+            border-radius: var(--radius-md) !important;
+            font-weight: 500;
         }
         .flatpickr-day:hover, .flatpickr-day.selected {
-            background: #ffcc00 !important;
-            color: #1a1a1a !important;
-            border-color: #1a1a1a !important;
+            background: var(--primary) !important;
+            color: #ffffff !important;
+            border-color: var(--primary) !important;
         }
         .flatpickr-day.today {
-            border-color: #0055ff !important;
-            background: rgba(0,85,255,0.05);
+            border-color: var(--outline) !important;
+            background: var(--surface-container-low);
         }
         .flatpickr-months .flatpickr-month, .flatpickr-weekday {
-            color: #1a1a1a !important;
-            font-weight: 700;
+            color: var(--secondary) !important;
+            font-weight: 600;
             text-transform: uppercase;
         }
         .flatpickr-current-month .flatpickr-monthDropdown-months,
         .flatpickr-current-month input.cur-year {
-            color: #1a1a1a !important;
+            color: var(--on-surface) !important;
             background: transparent !important;
         }
 
-        /* ── Brutalist City Dropdown ── */
+        /* ── City Dropdown ── */
         .city-dropdown {
             position: absolute;
             top: calc(100% + 4px);
             left: 0;
             min-width: 100%;
             background: #ffffff;
-            border: 2px solid #1a1a1a;
-            box-shadow: 4px 4px 0px #1a1a1a;
+            border: 1px solid var(--outline-variant);
+            box-shadow: var(--shadow-level-2);
+            border-radius: var(--radius-md);
             z-index: 9999;
             max-height: 200px;
             overflow-y: auto;
@@ -66,28 +67,28 @@
             display: flex;
             align-items: center;
             gap: 0.6rem;
-            border-bottom: 2px solid #1a1a1a;
-            color: #1a1a1a;
+            border-bottom: 1px solid var(--surface-container);
+            color: var(--on-surface);
             transition: var(--transition);
         }
         .city-option:last-child { border-bottom: none; }
         .city-option:hover {
-            background: #ffcc00;
+            background: var(--surface-container-low);
+            color: var(--primary);
         }
         .city-code {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-size: 0.7rem;
-            color: #1a1a1a;
             font-weight: 700;
-            background: #0055ff;
-            color: #ffffff;
+            background: var(--info-bg);
+            color: var(--info-text);
             padding: 0.15rem 0.45rem;
-            border: 1px solid #1a1a1a;
+            border-radius: 4px;
             flex-shrink: 0;
         }
         .city-state {
             font-size: 0.75rem;
-            color: rgba(26,26,26,0.6);
+            color: var(--secondary);
             margin-left: auto;
         }
 
@@ -95,9 +96,9 @@
         .sidebar {
             display: flex;
             flex-direction: column;
-            width: 250px;
+            width: 240px;
             background: #ffffff;
-            border-right: var(--border-thick);
+            border-right: var(--border-thin);
             position: fixed;
             left: 0; top: 0; bottom: 0;
             z-index: 100;
@@ -106,41 +107,39 @@
         .sidebar-brand {
             margin-bottom: 2rem;
             padding-bottom: 1.5rem;
-            border-bottom: 2px solid #1a1a1a;
+            border-bottom: 1px solid var(--outline-variant);
         }
         .sidebar-nav-links {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.25rem;
             flex: 1;
         }
         .sidebar-nav-links a {
             text-decoration: none;
-            color: #1a1a1a;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: 0.875rem;
-            text-transform: uppercase;
+            color: var(--secondary);
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.85rem;
             padding: 0.75rem 1rem;
-            border: 2px solid transparent;
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             gap: 0.75rem;
             transition: var(--transition);
         }
         .sidebar-nav-links a:hover {
-            background: #f5f0e8;
-            border-color: #1a1a1a;
+            background: var(--surface-container-low);
+            color: var(--on-surface);
         }
         .sidebar-nav-links a.active {
-            background: #ffcc00;
-            border-color: #1a1a1a;
-            box-shadow: var(--shadow-offset-sm);
+            background: var(--secondary-container, #dce2f3);
+            color: var(--primary);
         }
 
         /* ── Layout Overrides ── */
         .main-wrapper {
-            margin-left: 250px;
+            margin-left: 240px;
             min-height: 100vh;
         }
         .top-appbar {
@@ -150,17 +149,19 @@
             align-items: center;
             justify-content: space-between;
             background: #ffffff;
-            border-bottom: var(--border-thick);
+            border-bottom: var(--border-thin);
             position: sticky;
             top: 0;
             z-index: 99;
+            box-shadow: var(--shadow-level-1);
         }
 
         /* ── Multi Step Progress ── */
         .step-container {
             background: #ffffff;
-            border: var(--border-thick);
-            box-shadow: var(--shadow-offset);
+            border: var(--border-thin);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
             padding: 1.5rem 2rem;
             display: flex;
             align-items: center;
@@ -177,10 +178,11 @@
         .step-circle {
             width: 36px;
             height: 36px;
-            border-radius: 0px;
-            border: 2px solid #1a1a1a;
-            background: #ffffff;
-            font-family: 'Space Grotesk', sans-serif;
+            border-radius: 50%;
+            border: 1px solid var(--outline-variant);
+            background: var(--surface-container-low);
+            color: var(--secondary);
+            font-family: var(--font-display);
             font-weight: 700;
             font-size: 0.95rem;
             display: flex;
@@ -190,28 +192,30 @@
             transition: var(--transition);
         }
         .step-item.active .step-circle {
-            background: #ffcc00;
-            box-shadow: 2px 2px 0px #1a1a1a;
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
         }
         .step-item.completed .step-circle {
-            background: #0055ff;
-            color: #ffffff;
+            background: var(--success-bg);
+            color: var(--success-text);
+            border-color: transparent;
         }
         .step-label {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-size: 0.72rem;
             font-weight: 700;
             text-transform: uppercase;
             margin-top: 0.5rem;
-            color: rgba(26,26,26,0.5);
+            color: var(--secondary);
         }
         .step-item.active .step-label {
-            color: #1a1a1a;
+            color: var(--primary);
         }
         .step-line {
             position: absolute;
-            height: 3px;
-            background: #1a1a1a;
+            height: 2px;
+            background: var(--outline-variant);
             top: 18px;
             left: 50%;
             width: 100%;
@@ -222,22 +226,23 @@
         /* ── Trip Planner Cards ── */
         .trip-section { margin-bottom: 1.5rem; }
         .trip-section-header {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.8rem;
+            font-family: var(--font-display);
+            font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 0.05em;
             text-transform: uppercase;
-            color: #1a1a1a;
+            color: var(--secondary);
             margin-bottom: 0.8rem;
             padding-bottom: 0.4rem;
-            border-bottom: 2px solid #1a1a1a;
+            border-bottom: 1px solid var(--outline-variant);
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         .trip-card {
             padding: 1rem;
-            border: 2px solid #1a1a1a;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
             background: #ffffff;
             margin-bottom: 0.5rem;
             cursor: pointer;
@@ -247,24 +252,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: #1a1a1a;
+            color: var(--on-surface);
         }
         .trip-card:hover {
-            background: #ffcc00;
-            transform: translate(-1px, -1px);
-            box-shadow: 2px 2px 0px #1a1a1a;
+            background: var(--surface-container-low);
+            border-color: var(--outline);
         }
         .trip-card.selected {
-            background: #0055ff;
+            background: var(--primary);
             color: #ffffff;
-            box-shadow: none;
-            transform: none;
+            border-color: var(--primary);
         }
         .trip-card.selected span { color: #ffffff !important; }
         .trip-card .price {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-weight: 700;
-            color: #e63b2e;
+            color: var(--danger-text);
             white-space: nowrap;
             margin-left: 1rem;
             font-size: 0.95rem;
@@ -278,27 +281,27 @@
             gap: 0.35rem;
         }
         .field-group label {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #1a1a1a;
+            font-weight: 600;
+            color: var(--on-surface-variant);
         }
         .brutalist-input {
             width: 100%;
             background: #ffffff;
-            border: 2px solid #1a1a1a;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
             padding: 0.65rem 1rem;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #1a1a1a;
+            font-family: var(--font-body);
+            font-size: 0.92rem;
+            font-weight: 500;
+            color: var(--on-surface);
             outline: none;
             transition: var(--transition);
         }
         .brutalist-input:focus {
-            background: #f5f0e8;
-            box-shadow: 3px 3px 0px #1a1a1a;
+            border-color: var(--primary);
+            box-shadow: 0px 0px 0px 3px rgba(0, 61, 155, 0.12);
         }
 
         /* ── Form Page Layout ── */
@@ -311,28 +314,27 @@
 
         /* ── Sidebar Policy ── */
         .policy-card {
-            background: #0055ff;
+            background: var(--primary);
             color: #ffffff;
-            border: var(--border-thick);
-            box-shadow: var(--shadow-offset);
+            border: 1px solid transparent;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
             padding: 1.5rem;
             position: relative;
             overflow: hidden;
         }
         .policy-card h3 {
-            font-family: 'Space Grotesk', sans-serif;
-            text-transform: uppercase;
-            font-weight: 700;
-            font-size: 1.15rem;
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 1.1rem;
             color: #ffffff;
             margin-bottom: 0.5rem;
         }
         .policy-card p {
             font-size: 0.85rem;
-            font-weight: 500;
+            font-weight: 400;
             line-height: 1.4;
-            color: #ffffff;
-            opacity: 0.95;
+            color: rgba(255,255,255,0.9);
             margin-bottom: 1.25rem;
         }
 
@@ -341,17 +343,20 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.75rem;
-            border: 2px solid #1a1a1a;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
             background: #ffffff;
             margin-top: 0.5rem;
         }
         .approver-avatar {
             width: 32px; height: 32px;
-            background: #ffcc00;
-            border: 1px solid #1a1a1a;
+            background: var(--surface-container-low);
+            border: 1px solid var(--outline-variant);
+            border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-weight: 700; font-size: 0.8rem;
+            color: var(--primary);
         }
 
         /* ── Contextual Help Cards ── */
@@ -363,13 +368,15 @@
         }
         .help-card {
             background: #ffffff;
-            border: 2px solid #1a1a1a;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
             padding: 1.25rem;
             display: flex;
             gap: 0.75rem;
         }
         .help-card .icon {
-            color: #0055ff;
+            color: var(--primary);
             font-size: 1.5rem;
         }
 
@@ -381,22 +388,22 @@
         }
     </style>
 </head>
-<body class="bg-background text-primary">
+<body class="bg-background text-on-surface">
 
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <div class="sidebar-brand">
             <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
-                <svg width="32" height="32" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border: 2px solid #1a1a1a; box-shadow: 2px 2px 0px #1a1a1a; flex-shrink: 0;">
-                    <rect width="512" height="512" rx="96" fill="#000000"/>
-                    <rect x="128" y="128" width="224" height="96" rx="48" fill="#0055ff"/>
-                    <rect x="176" y="224" width="64" height="160" rx="32" fill="#0055ff"/>
-                    <rect x="240" y="272" width="112" height="80" rx="40" fill="#004acc"/>
-                    <circle cx="304" cy="176" r="24" fill="#4a8ef7"/>
+                <svg width="32" height="32" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border-radius: 6px; flex-shrink: 0;">
+                    <rect width="512" height="512" rx="96" fill="#003d9b"/>
+                    <rect x="128" y="128" width="224" height="96" rx="48" fill="#ffffff"/>
+                    <rect x="176" y="224" width="64" height="160" rx="32" fill="#ffffff"/>
+                    <rect x="240" y="272" width="112" height="80" rx="40" fill="#ededf8"/>
+                    <circle cx="304" cy="176" r="24" fill="#0052cc"/>
                 </svg>
-                <span style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;letter-spacing:-0.03em;">TripFlow</span>
+                <span style="font-family:var(--font-display);font-size:1.35rem;font-weight:700;letter-spacing:-0.02em;color:var(--primary);">TripFlow</span>
             </div>
-            <p style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);letter-spacing:0.05em;">Enterprise</p>
+            <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);letter-spacing:0.05em;">Enterprise</p>
         </div>
 
         <nav class="sidebar-nav-links">
@@ -419,10 +426,10 @@
         </nav>
 
         <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.25rem;">
-            <a href="#" style="text-decoration:none;color:#1a1a1a;font-family:var(--font-display);font-weight:700;font-size:0.8rem;text-transform:uppercase;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+            <a href="#" style="text-decoration:none;color:var(--secondary);font-family:var(--font-display);font-weight:600;font-size:0.8rem;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
                 <span class="material-symbols-outlined" style="font-size:18px;">settings</span>Settings
             </a>
-            <a href="#" onclick="logout(); return false;" style="text-decoration:none;color:#e63b2e;font-family:var(--font-display);font-weight:700;font-size:0.8rem;text-transform:uppercase;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+            <a href="#" onclick="logout(); return false;" style="text-decoration:none;color:var(--danger-text);font-family:var(--font-display);font-weight:600;font-size:0.8rem;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
                 <span class="material-symbols-outlined" style="font-size:18px;">logout</span>Logout
             </a>
         </div>
@@ -433,11 +440,11 @@
         <!-- Top App Bar -->
         <header class="top-appbar">
             <div style="display:flex;align-items:center;gap:0.75rem;">
-                <h1 style="font-size:1.5rem;font-weight:700;margin:0;">New Travel Request</h1>
+                <h1 style="font-size:1.25rem;font-weight:600;margin:0;">New Travel Request</h1>
             </div>
             <div style="display:flex;align-items:center;gap:1.5rem;">
                 <div style="display:flex;align-items:center;gap:1rem;">
-                    <span id="user-name" style="font-family:var(--font-display);font-size:0.85rem;font-weight:700;text-transform:uppercase;border:2px solid #1a1a1a;background:#ffcc00;padding:0.25rem 0.75rem;box-shadow:2px 2px 0px #1a1a1a;">Employee</span>
+                    <span id="user-name" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;border:1px solid var(--outline-variant);background:var(--surface-container-low);padding:0.25rem 0.75rem;border-radius:var(--radius-md);">Employee</span>
                 </div>
             </div>
         </header>
@@ -445,10 +452,10 @@
         <!-- Content Body -->
         <div class="container" style="padding-top:2rem;">
             <!-- Breadcrumbs -->
-            <nav style="display:flex;align-items:center;gap:0.25rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);margin-bottom:1.5rem;">
+            <nav style="display:flex;align-items:center;gap:0.25rem;font-size:0.8rem;font-weight:600;text-transform:uppercase;color:var(--secondary);margin-bottom:1.5rem;">
                 <a href="employee.html" style="text-decoration:none;color:inherit;">My Requests</a>
                 <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
-                <span style="color:#1a1a1a;">New Travel Request</span>
+                <span style="color:var(--on-surface);">New Travel Request</span>
             </nav>
 
             <!-- Multi-Step Progress Indicator -->
@@ -476,9 +483,9 @@
                     
                     <!-- STEP 1 CARD -->
                     <div class="card" id="step-1-card" style="padding:2.5rem 2rem;">
-                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;border-bottom:2px solid #1a1a1a;padding-bottom:0.75rem;">
-                            <span class="material-symbols-outlined" style="color:#0055ff;font-size:1.8rem;">info</span>
-                            <h2 style="font-size:1.4rem;text-transform:uppercase;margin:0;">Trip Details</h2>
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--outline-variant);padding-bottom:0.75rem;">
+                            <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.8rem;">info</span>
+                            <h2 style="font-size:1.35rem;margin:0;">Trip Details</h2>
                         </div>
 
                         <div style="display:flex;flex-direction:column;gap:1.5rem;">
@@ -516,36 +523,36 @@
                             <div class="field-group">
                                 <label for="req-justification">Business Justification</label>
                                 <textarea id="req-justification" class="brutalist-input" placeholder="Describe why this travel is necessary..." rows="4" style="resize:none;" oninput="updateCharCount(this)"></textarea>
-                                <span style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:700;align-self:flex-end;" id="char-counter">0 / 500 characters</span>
+                                <span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;align-self:flex-end;color:var(--secondary);" id="char-counter">0 / 500 characters</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- STEP 2 CARD (PREFERENCES / FARES) -->
                     <div class="card" id="step-2-card" style="padding:2.5rem 2rem;display:none;">
-                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;border-bottom:2px solid #1a1a1a;padding-bottom:0.75rem;">
-                            <span class="material-symbols-outlined" style="color:#ffcc00;font-size:1.8rem;">flight_takeoff</span>
-                            <h2 style="font-size:1.4rem;text-transform:uppercase;margin:0;">Fares &amp; Preferences</h2>
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--outline-variant);padding-bottom:0.75rem;">
+                            <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.8rem;">flight_takeoff</span>
+                            <h2 style="font-size:1.35rem;margin:0;">Fares &amp; Preferences</h2>
                         </div>
                         <div id="trip-options-loader" style="display:none;text-align:center;padding:2rem;">
-                            <span class="material-symbols-outlined" style="font-size:2.5rem;animation:bounce 1s infinite;">travel_explore</span>
-                            <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;margin-top:0.5rem;">AI AGENT ANALYZING FARES &amp; ITINERARIES…</p>
+                            <span class="material-symbols-outlined" style="font-size:2.5rem;animation:bounce 1s infinite;color:var(--primary);">travel_explore</span>
+                            <p style="font-family:var(--font-display);font-weight:600;margin-top:0.5rem;">AI AGENT ANALYZING FARES &amp; ITINERARIES…</p>
                         </div>
                         <div id="req-planner-results"></div>
                     </div>
 
                     <!-- STEP 3 CARD (COSTS) -->
                     <div class="card" id="step-3-card" style="padding:2.5rem 2rem;display:none;">
-                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;border-bottom:2px solid #1a1a1a;padding-bottom:0.75rem;">
-                            <span class="material-symbols-outlined" style="color:#e63b2e;font-size:1.8rem;">payments</span>
-                            <h2 style="font-size:1.4rem;text-transform:uppercase;margin:0;">Cost Allocation &amp; Submit</h2>
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--outline-variant);padding-bottom:0.75rem;">
+                            <span class="material-symbols-outlined" style="color:var(--danger-text);font-size:1.8rem;">payments</span>
+                            <h2 style="font-size:1.35rem;margin:0;">Cost Allocation &amp; Submit</h2>
                         </div>
                         <div style="display:flex;flex-direction:column;gap:1.25rem;">
                             <div class="field-group">
                                 <label for="estimated-cost">Allocated Budget (₹)</label>
                                 <input type="number" id="estimated-cost" placeholder="Select a fare above or enter cost" class="brutalist-input">
                             </div>
-                            <div style="background:#ffcc00;padding:1rem;border:2px solid #1a1a1a;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;">
+                            <div style="background:var(--warning-bg);color:var(--warning-text);padding:1rem;font-family:var(--font-display);font-size:0.85rem;font-weight:600;border-radius:var(--radius-md);display:flex;align-items:center;gap:0.5rem;">
                                 <span class="material-symbols-outlined">info</span>
                                 CONFIRM: BY SUBMITTING, YOU AGREE COMPLIANCE WITH CORPORATE POLICY.
                             </div>
@@ -553,12 +560,12 @@
                     </div>
 
                     <!-- Actions -->
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:1.5rem;border-top:2px solid #1a1a1a;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:1.5rem;border-top:1px solid var(--outline-variant);">
                         <button class="secondary" type="button" onclick="window.location.href='employee.html'">
                             <span class="material-symbols-outlined" style="font-size:16px;">close</span>Cancel
                         </button>
                         <div style="display:flex;gap:0.75rem;">
-                            <button type="button" onclick="saveAsDraft()" class="secondary" style="background:#ffffff;color:#1a1a1a;">Save Draft</button>
+                            <button type="button" onclick="saveAsDraft()" class="secondary" style="background:#ffffff;color:var(--secondary);">Save Draft</button>
                             <button type="button" id="next-btn" onclick="goToNextStep()">
                                 Next: Preferences <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
                             </button>
@@ -575,7 +582,7 @@
                     <div class="policy-card">
                         <h3>Policy Check</h3>
                         <p id="policy-text">Your requested destination and timing will align automatically with the standard enterprise booking guidelines.</p>
-                        <div style="display:flex;align-items:center;gap:0.25rem;font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:700;background:#ffffff;color:#1a1a1a;width:fit-content;padding:0.25rem 0.75rem;border:1px solid #1a1a1a;">
+                        <div style="display:flex;align-items:center;gap:0.25rem;font-family:var(--font-display);font-size:0.75rem;font-weight:700;background:#ffffff;color:var(--success-text);width:fit-content;padding:0.25rem 0.75rem;border-radius:4px;">
                             <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">check_circle</span>
                             POLICY COMPLIANT
                         </div>
@@ -583,23 +590,23 @@
 
                     <!-- Required Approvers Checklist -->
                     <div class="card" style="padding:1.25rem;">
-                        <span style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);letter-spacing:0.05em;">Required Approvers</span>
+                        <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);letter-spacing:0.05em;">Required Approvers</span>
                         <div style="display:flex;flex-direction:column;gap:0.25rem;">
                             <div class="approver-item">
                                 <div class="approver-avatar">JD</div>
                                 <div style="flex:1;">
-                                    <p style="font-size:0.8rem;font-weight:700;margin:0;">Jane Doe</p>
-                                    <p style="font-size:0.7rem;font-weight:600;color:rgba(26,26,26,0.5);margin:0;">Direct Manager</p>
+                                    <p style="font-size:0.8rem;font-weight:600;margin:0;">Jane Doe</p>
+                                    <p style="font-size:0.7rem;font-weight:500;color:var(--secondary);margin:0;">Direct Manager</p>
                                 </div>
-                                <span class="material-symbols-outlined" style="font-size:16px;">lock</span>
+                                <span class="material-symbols-outlined" style="font-size:16px;color:var(--secondary);">lock</span>
                             </div>
                             <div class="approver-item">
                                 <div class="approver-avatar">MS</div>
                                 <div style="flex:1;">
-                                    <p style="font-size:0.8rem;font-weight:700;margin:0;">Mark Smith</p>
-                                    <p style="font-size:0.7rem;font-weight:600;color:rgba(26,26,26,0.5);margin:0;">Department Head</p>
+                                    <p style="font-size:0.8rem;font-weight:600;margin:0;">Mark Smith</p>
+                                    <p style="font-size:0.7rem;font-weight:500;color:var(--secondary);margin:0;">Department Head</p>
                                 </div>
-                                <span class="material-symbols-outlined" style="font-size:16px;">lock</span>
+                                <span class="material-symbols-outlined" style="font-size:16px;color:var(--secondary);">lock</span>
                             </div>
                         </div>
                     </div>
@@ -611,22 +618,22 @@
                 <div class="help-card">
                     <span class="material-symbols-outlined icon">lightbulb</span>
                     <div>
-                        <p style="font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;margin:0 0 0.25rem;">Early Booking Tip</p>
-                        <p style="font-size:0.8rem;font-weight:600;color:rgba(26,26,26,0.6);margin:0;">Booking 14 days in advance secures ~20% lower travel rates.</p>
+                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Early Booking Tip</p>
+                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">Booking 14 days in advance secures ~20% lower travel rates.</p>
                     </div>
                 </div>
                 <div class="help-card">
                     <span class="material-symbols-outlined icon">hotel</span>
                     <div>
-                        <p style="font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;margin:0 0 0.25rem;">Preferred Lodgings</p>
-                        <p style="font-size:0.8rem;font-weight:600;color:rgba(26,26,26,0.6);margin:0;">Check partner directories for faster automated approvals.</p>
+                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Preferred Lodgings</p>
+                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">Check partner directories for faster automated approvals.</p>
                     </div>
                 </div>
                 <div class="help-card">
                     <span class="material-symbols-outlined icon">support_agent</span>
                     <div>
-                        <p style="font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;margin:0 0 0.25rem;">Concierge Desk</p>
-                        <p style="font-size:0.8rem;font-weight:600;color:rgba(26,26,26,0.6);margin:0;">Our enterprise support desk is available 24/7 for travelers.</p>
+                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Concierge Desk</p>
+                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">Our enterprise support desk is available 24/7 for travelers.</p>
                     </div>
                 </div>
             </div>

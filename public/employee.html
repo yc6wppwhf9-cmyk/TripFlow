@@ -10,51 +10,49 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-        /* ── Brutalist Flatpickr Override ── */
+        /* ── Flatpickr Modern Override ── */
         .flatpickr-calendar {
             background: #ffffff !important;
-            border: 3px solid #1a1a1a !important;
-            box-shadow: 4px 4px 0px #1a1a1a !important;
-            font-family: 'Space Grotesk', system-ui, sans-serif !important;
-            border-radius: 0px !important;
+            border: 1px solid var(--outline-variant) !important;
+            box-shadow: var(--shadow-level-2) !important;
+            font-family: var(--font-body) !important;
+            border-radius: var(--radius-lg) !important;
         }
         .flatpickr-day {
-            color: #1a1a1a !important;
-            border-radius: 0px !important;
-            font-weight: 600;
+            color: var(--on-surface) !important;
+            border-radius: var(--radius-md) !important;
+            font-weight: 500;
         }
         .flatpickr-day:hover, .flatpickr-day.selected {
-            background: #ffcc00 !important;
-            color: #1a1a1a !important;
-            border-color: #1a1a1a !important;
+            background: var(--primary) !important;
+            color: #ffffff !important;
+            border-color: var(--primary) !important;
         }
         .flatpickr-day.today {
-            border-color: #0055ff !important;
-            background: rgba(0,85,255,0.05);
+            border-color: var(--outline) !important;
+            background: var(--surface-container-low);
         }
         .flatpickr-months .flatpickr-month, .flatpickr-weekday {
-            color: #1a1a1a !important;
-            font-weight: 700;
+            color: var(--secondary) !important;
+            font-weight: 600;
             text-transform: uppercase;
         }
         .flatpickr-current-month .flatpickr-monthDropdown-months,
         .flatpickr-current-month input.cur-year {
-            color: #1a1a1a !important;
+            color: var(--on-surface) !important;
             background: transparent !important;
         }
-        .flatpickr-prev-month svg, .flatpickr-next-month svg {
-            fill: #1a1a1a !important;
-        }
 
-        /* ── Brutalist City Dropdown ── */
+        /* ── City Dropdown ── */
         .city-dropdown {
             position: absolute;
             top: calc(100% + 4px);
             left: 0;
             min-width: 280px;
             background: #ffffff;
-            border: 2px solid #1a1a1a;
-            box-shadow: 4px 4px 0px #1a1a1a;
+            border: 1px solid var(--outline-variant);
+            box-shadow: var(--shadow-level-2);
+            border-radius: var(--radius-md);
             z-index: 9999;
             max-height: 220px;
             overflow-y: auto;
@@ -69,50 +67,51 @@
             display: flex;
             align-items: center;
             gap: 0.6rem;
-            border-bottom: 2px solid #1a1a1a;
-            color: #1a1a1a;
+            border-bottom: 1px solid var(--surface-container);
+            color: var(--on-surface);
             transition: var(--transition);
         }
         .city-option:last-child { border-bottom: none; }
         .city-option:hover {
-            background: #ffcc00;
+            background: var(--surface-container-low);
+            color: var(--primary);
         }
         .city-code {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-size: 0.7rem;
-            color: #1a1a1a;
             font-weight: 700;
-            background: #0055ff;
-            color: #ffffff;
+            background: var(--info-bg);
+            color: var(--info-text);
             padding: 0.15rem 0.45rem;
-            border: 1px solid #1a1a1a;
+            border-radius: 4px;
             flex-shrink: 0;
         }
         .city-state {
             font-size: 0.75rem;
-            color: rgba(26,26,26,0.6);
+            color: var(--secondary);
             margin-left: auto;
         }
 
         /* ── Trip Planner Cards ── */
         .trip-section { margin-bottom: 1.5rem; }
         .trip-section-header {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.8rem;
+            font-family: var(--font-display);
+            font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 0.05em;
             text-transform: uppercase;
-            color: #1a1a1a;
+            color: var(--secondary);
             margin-bottom: 0.8rem;
             padding-bottom: 0.4rem;
-            border-bottom: 2px solid #1a1a1a;
+            border-bottom: 1px solid var(--outline-variant);
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         .trip-card {
             padding: 1rem;
-            border: 2px solid #1a1a1a;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
             background: #ffffff;
             margin-bottom: 0.5rem;
             cursor: pointer;
@@ -122,51 +121,49 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: #1a1a1a;
+            color: var(--on-surface);
         }
         .trip-card:hover {
-            background: #ffcc00;
-            transform: translate(-1px, -1px);
-            box-shadow: 2px 2px 0px #1a1a1a;
+            background: var(--surface-container-low);
+            border-color: var(--outline);
         }
         .trip-card.selected {
-            background: #0055ff;
+            background: var(--primary);
             color: #ffffff;
-            box-shadow: none;
-            transform: none;
+            border-color: var(--primary);
         }
         .trip-card.selected span { color: #ffffff !important; }
         .trip-card .price {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-weight: 700;
-            color: #e63b2e;
+            color: var(--danger-text);
             white-space: nowrap;
             margin-left: 1rem;
             font-size: 0.95rem;
         }
         .trip-card.selected .price { color: #ffffff; }
         .best-tag {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-size: 0.65rem;
-            color: #1a1a1a;
-            background: #ffcc00;
+            color: var(--success-text);
+            background: var(--success-bg);
             padding: 0.15rem 0.45rem;
-            border: 1px solid #1a1a1a;
+            border-radius: var(--radius-sm);
             font-weight: 700;
             letter-spacing: 0.05em;
             margin-right: 0.5rem;
         }
         .via-label {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-size: 0.72rem;
-            color: #1a1a1a;
+            color: var(--secondary);
             font-weight: 700;
             letter-spacing: 0.05em;
             margin-bottom: 0.4rem;
             text-transform: uppercase;
         }
         .no-result {
-            color: rgba(26,26,26,0.6);
+            color: var(--secondary);
             font-size: 0.85rem;
             padding: 0.5rem 0;
             font-style: italic;
@@ -176,9 +173,9 @@
         .sidebar {
             display: flex;
             flex-direction: column;
-            width: 250px;
+            width: 240px;
             background: #ffffff;
-            border-right: var(--border-thick);
+            border-right: var(--border-thin);
             position: fixed;
             left: 0; top: 0; bottom: 0;
             z-index: 100;
@@ -187,41 +184,39 @@
         .sidebar-brand {
             margin-bottom: 2rem;
             padding-bottom: 1.5rem;
-            border-bottom: 2px solid #1a1a1a;
+            border-bottom: 1px solid var(--outline-variant);
         }
         .sidebar-nav-links {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.25rem;
             flex: 1;
         }
         .sidebar-nav-links a {
             text-decoration: none;
-            color: #1a1a1a;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: 0.875rem;
-            text-transform: uppercase;
+            color: var(--secondary);
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.85rem;
             padding: 0.75rem 1rem;
-            border: 2px solid transparent;
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             gap: 0.75rem;
             transition: var(--transition);
         }
         .sidebar-nav-links a:hover {
-            background: #f5f0e8;
-            border-color: #1a1a1a;
+            background: var(--surface-container-low);
+            color: var(--on-surface);
         }
         .sidebar-nav-links a.active {
-            background: #ffcc00;
-            border-color: #1a1a1a;
-            box-shadow: var(--shadow-offset-sm);
+            background: var(--secondary-container, #dce2f3);
+            color: var(--primary);
         }
 
         /* ── Layout Overrides ── */
         .main-wrapper {
-            margin-left: 250px;
+            margin-left: 240px;
             min-height: 100vh;
         }
         .top-appbar {
@@ -231,10 +226,11 @@
             align-items: center;
             justify-content: space-between;
             background: #ffffff;
-            border-bottom: var(--border-thick);
+            border-bottom: var(--border-thin);
             position: sticky;
             top: 0;
             z-index: 99;
+            box-shadow: var(--shadow-level-1);
         }
 
         /* ── Bento Grid ── */
@@ -245,12 +241,12 @@
             margin-bottom: 2rem;
         }
         .bento-card-greeting {
-            grid-span: 8;
             grid-column: span 8;
             background: #ffffff;
-            border: var(--border-thick);
-            box-shadow: var(--shadow-offset);
-            padding: 2.5rem 2rem;
+            border: var(--border-thin);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
+            padding: 2.25rem 2rem;
             position: relative;
             overflow: hidden;
         }
@@ -269,9 +265,9 @@
         }
         .bento-badge {
             border: var(--border-thin);
-            background: #f5f0e8;
+            border-radius: var(--radius-md);
+            background: var(--surface-container-low);
             padding: 1rem;
-            box-shadow: var(--shadow-offset-sm);
             display: flex;
             flex-direction: column;
             gap: 0.25rem;
@@ -279,15 +275,15 @@
             min-width: 160px;
         }
         .bento-badge .bb-label {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-size: 0.65rem;
             font-weight: 700;
             text-transform: uppercase;
-            color: #0055ff;
+            color: var(--primary);
         }
         .bento-badge .bb-value {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.25rem;
+            font-family: var(--font-display);
+            font-size: 1.15rem;
             font-weight: 700;
             display: flex;
             align-items: center;
@@ -296,15 +292,16 @@
         }
         .bento-badge .bb-sub {
             font-size: 0.75rem;
-            font-weight: 600;
-            color: rgba(26,26,26,0.6);
+            font-weight: 500;
+            color: var(--secondary);
         }
 
         /* ── Q4 Budget Card ── */
         .budget-card {
             background: #ffffff;
-            border: var(--border-thick);
-            box-shadow: var(--shadow-offset);
+            border: var(--border-thin);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
@@ -312,28 +309,31 @@
         }
         .budget-progress-container {
             width: 100%;
-            height: 16px;
-            background: #f5f0e8;
-            border: 2px solid #1a1a1a;
+            height: 12px;
+            background: var(--surface-container-low);
+            border: 1px solid var(--outline-variant);
+            border-radius: 9999px;
             margin: 0.5rem 0;
             position: relative;
+            overflow: hidden;
         }
         .budget-progress-bar {
             height: 100%;
-            background: #ffcc00;
-            border-right: 2px solid #1a1a1a;
+            background: var(--primary);
+            border-radius: 9999px;
         }
 
         /* ── Concierge Block ── */
         .concierge-card {
-            background: #1a1a1a;
+            background: var(--primary);
             color: #ffffff;
-            border: var(--border-thick);
-            box-shadow: var(--shadow-offset);
+            border: 1px solid transparent;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
             padding: 1.5rem;
         }
-        .concierge-card h3 { color: #ffcc00; }
-        .concierge-card p { color: #f5f0e8; margin-top: 0.5rem; margin-bottom: 1.25rem; font-size: 0.85rem; font-weight: 500; }
+        .concierge-card h3 { color: #ffffff; }
+        .concierge-card p { color: rgba(255,255,255,0.85); margin-top: 0.5rem; margin-bottom: 1.25rem; font-size: 0.85rem; font-weight: 400; }
 
         /* ── Section Grid ── */
         .dashboard-sections {
@@ -351,37 +351,35 @@
         }
         .trip-item-card {
             background: #ffffff;
-            border: var(--border-thick);
-            box-shadow: var(--shadow-offset);
+            border: var(--border-thin);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             transition: var(--transition);
         }
         .trip-item-card:hover {
-            transform: translate(-3px, -3px);
-            box-shadow: var(--shadow-offset-lg);
+            box-shadow: var(--shadow-level-2);
         }
         .trip-item-card .img-wrap {
             height: 120px;
-            background: #ffcc00;
+            background: var(--surface-container-high);
             border-bottom: var(--border-thin);
             position: relative;
         }
         .trip-item-card .img-wrap img {
-            width: 100%; height: 100%; object-cover: cover; object-fit: cover;
-            filter: grayscale(100%);
+            width: 100%; height: 100%; object-fit: cover;
             transition: all 0.3s;
-        }
-        .trip-item-card:hover .img-wrap img {
-            filter: grayscale(0%);
         }
         .trip-item-card .img-wrap .days-badge {
             position: absolute; top: 0.5rem; right: 0.5rem;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-size: 0.65rem; font-weight: 700;
-            background: #ffffff; border: 2px solid #1a1a1a;
+            background: #ffffff; border: 1px solid var(--outline-variant);
+            border-radius: 4px;
             padding: 0.15rem 0.45rem; text-transform: uppercase;
+            color: var(--on-surface);
         }
         .trip-item-card .content {
             padding: 1rem;
@@ -392,7 +390,8 @@
         }
 
         .plan-new-card {
-            border: 3px dashed #1a1a1a;
+            border: 1px dashed var(--outline);
+            border-radius: var(--radius-lg);
             background: #ffffff;
             display: flex;
             flex-direction: column;
@@ -405,21 +404,20 @@
             min-height: 200px;
         }
         .plan-new-card:hover {
-            background: #ffcc00;
-            box-shadow: var(--shadow-offset);
-            transform: translate(-3px, -3px);
+            background: var(--surface-container-low);
+            box-shadow: var(--shadow-level-1);
         }
         .plan-new-card .icon-box {
             width: 48px; height: 48px;
-            background: #0055ff;
+            background: var(--primary);
             color: #ffffff;
-            border: 2px solid #1a1a1a;
+            border-radius: var(--radius-md);
             display: flex; align-items: center; justify-content: center;
             margin-bottom: 1rem;
             transition: var(--transition);
         }
         .plan-new-card:hover .icon-box {
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         /* ── Recent Activity ── */
@@ -435,10 +433,12 @@
         }
         .activity-icon {
             width: 36px; height: 36px;
-            background: #ffffff;
-            border: 2px solid #1a1a1a;
+            background: var(--surface-container-low);
+            border: 1px solid var(--outline-variant);
+            border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 1rem;
+            color: var(--primary);
             flex-shrink: 0;
             z-index: 2;
         }
@@ -447,13 +447,13 @@
         }
         .activity-details p {
             font-size: 0.875rem;
-            font-weight: 600;
+            font-weight: 500;
         }
         .activity-details .time {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-display);
             font-size: 0.72rem;
             font-weight: 700;
-            color: #0055ff;
+            color: var(--primary);
             text-transform: uppercase;
         }
 
@@ -471,27 +471,30 @@
             width: 360px;
             height: 520px;
             background: #ffffff;
-            border: 3px solid #1a1a1a;
-            box-shadow: var(--shadow-offset);
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-2);
             overflow: hidden;
         }
         .brutalist-chat-bubble {
             max-width: 85%;
             padding: 0.75rem 1rem;
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 500;
             line-height: 1.4;
-            border: 2px solid #1a1a1a;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--outline-variant);
         }
         .chat-bubble-user {
-            background: #ffcc00;
+            background: var(--info-bg);
+            color: var(--info-text);
             align-self: flex-end;
-            box-shadow: 2px 2px 0px #1a1a1a;
+            border-color: transparent;
         }
         .chat-bubble-assistant {
-            background: #ffffff;
+            background: var(--surface-container-low);
+            color: var(--on-surface);
             align-self: flex-start;
-            box-shadow: 2px 2px 0px #1a1a1a;
         }
 
         /* ── Responsive ── */
@@ -510,22 +513,22 @@
         }
     </style>
 </head>
-<body class="bg-background text-primary">
+<body class="bg-background text-on-surface">
 
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <div class="sidebar-brand">
             <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
-                <svg width="32" height="32" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border: 2px solid #1a1a1a; box-shadow: 2px 2px 0px #1a1a1a; flex-shrink: 0;">
-                    <rect width="512" height="512" rx="96" fill="#000000"/>
-                    <rect x="128" y="128" width="224" height="96" rx="48" fill="#0055ff"/>
-                    <rect x="176" y="224" width="64" height="160" rx="32" fill="#0055ff"/>
-                    <rect x="240" y="272" width="112" height="80" rx="40" fill="#004acc"/>
-                    <circle cx="304" cy="176" r="24" fill="#4a8ef7"/>
+                <svg width="32" height="32" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border-radius: 6px; flex-shrink: 0;">
+                    <rect width="512" height="512" rx="96" fill="#003d9b"/>
+                    <rect x="128" y="128" width="224" height="96" rx="48" fill="#ffffff"/>
+                    <rect x="176" y="224" width="64" height="160" rx="32" fill="#ffffff"/>
+                    <rect x="240" y="272" width="112" height="80" rx="40" fill="#ededf8"/>
+                    <circle cx="304" cy="176" r="24" fill="#0052cc"/>
                 </svg>
-                <span style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;letter-spacing:-0.03em;">TripFlow</span>
+                <span style="font-family:var(--font-display);font-size:1.35rem;font-weight:700;letter-spacing:-0.02em;color:var(--primary);">TripFlow</span>
             </div>
-            <p style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);letter-spacing:0.05em;">Enterprise</p>
+            <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);letter-spacing:0.05em;">Enterprise</p>
         </div>
 
         <button onclick="window.location.href='request.html'" style="width:100%;margin-bottom:1.5rem;">
@@ -553,10 +556,10 @@
         </nav>
 
         <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.25rem;">
-            <a href="#" style="text-decoration:none;color:#1a1a1a;font-family:var(--font-display);font-weight:700;font-size:0.8rem;text-transform:uppercase;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+            <a href="#" style="text-decoration:none;color:var(--secondary);font-family:var(--font-display);font-weight:600;font-size:0.8rem;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
                 <span class="material-symbols-outlined" style="font-size:18px;">settings</span>Settings
             </a>
-            <a href="#" onclick="logout(); return false;" style="text-decoration:none;color:#e63b2e;font-family:var(--font-display);font-weight:700;font-size:0.8rem;text-transform:uppercase;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+            <a href="#" onclick="logout(); return false;" style="text-decoration:none;color:var(--danger-text);font-family:var(--font-display);font-weight:600;font-size:0.8rem;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
                 <span class="material-symbols-outlined" style="font-size:18px;">logout</span>Logout
             </a>
         </div>
@@ -567,14 +570,14 @@
         <!-- Top App Bar -->
         <header class="top-appbar">
             <div style="display:flex;align-items:center;gap:0.75rem;">
-                <h1 style="font-size:1.5rem;font-weight:700;margin:0;">Dashboard</h1>
+                <h1 style="font-size:1.25rem;font-weight:600;margin:0;">Dashboard</h1>
             </div>
             <div style="display:flex;align-items:center;gap:1.5rem;">
                 <div class="mobile-hide" style="position:relative;width:240px;">
-                    <input type="text" placeholder="Search trips..." style="border:none;border-bottom:2px solid #1a1a1a;font-size:0.85rem;padding:0.4rem 0.25rem;">
+                    <input type="text" placeholder="Search trips..." style="font-size:0.85rem;padding:0.4rem 0.75rem;">
                 </div>
                 <div style="display:flex;align-items:center;gap:1rem;">
-                    <span id="user-name" style="font-family:var(--font-display);font-size:0.85rem;font-weight:700;text-transform:uppercase;border:2px solid #1a1a1a;background:#ffcc00;padding:0.25rem 0.75rem;box-shadow:2px 2px 0px #1a1a1a;">Employee</span>
+                    <span id="user-name" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;border:1px solid var(--outline-variant);background:var(--surface-container-low);padding:0.25rem 0.75rem;border-radius:var(--radius-md);">Employee</span>
                 </div>
             </div>
         </header>
@@ -586,18 +589,18 @@
                 <!-- Greeting Card -->
                 <div class="bento-card-greeting">
                     <p class="page-label">Welcome back</p>
-                    <h2 style="font-size:2.2rem;margin-bottom:0.5rem;line-height:1;">Ready for your next journey?</h2>
-                    <p style="font-size:0.95rem;font-weight:600;margin-bottom:2rem;max-width:540px;">You have active bookings waiting to be processed, and quarterly budget allocations open.</p>
+                    <h2 style="font-size:1.85rem;margin-bottom:0.5rem;line-height:1.2;">Ready for your next journey?</h2>
+                    <p style="font-size:0.9rem;font-weight:400;color:var(--on-surface-variant);margin-bottom:2rem;max-width:540px;">You have active bookings waiting to be processed, and quarterly budget allocations open.</p>
                     
                     <div class="bento-badge-group">
                         <div class="bento-badge">
                             <span class="bb-label">Next Flight</span>
-                            <div class="bb-value">SFO → LHR <span class="material-symbols-outlined" style="color:#0055ff;">flight</span></div>
+                            <div class="bb-value">SFO → LHR <span class="material-symbols-outlined" style="color:var(--primary);">flight</span></div>
                             <span class="bb-sub">Oct 24 • Confirmed</span>
                         </div>
                         <div class="bento-badge">
                             <span class="bb-label">Lodging</span>
-                            <div class="bb-value">Ritz-Carlton <span class="material-symbols-outlined" style="color:#ffcc00;">hotel</span></div>
+                            <div class="bb-value">Ritz-Carlton <span class="material-symbols-outlined" style="color:var(--primary);">hotel</span></div>
                             <span class="bb-sub">4 Nights • Arranged</span>
                         </div>
                     </div>
@@ -608,16 +611,17 @@
                     <!-- Q4 Budget Progress -->
                     <div class="budget-card">
                         <span class="page-label">Q4 Travel Budget</span>
-                        <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:700;line-height:1.2;">₹3,40,000</div>
+                        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.2;">₹3,40,000</div>
                         <div class="budget-progress-container">
                             <div class="budget-progress-bar" style="width: 65%;"></div>
                         </div>
-                        <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);">65% of quarterly allowance used</span>
+                        <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">65% of quarterly allowance used</span>
                     </div>
 
                     <!-- Active Requests Box -->
                     <div class="budget-card" style="background:#ffffff;">
                         <span class="page-label">Active Requests</span>
+
                         <div style="display:flex;align-items:flex-end;justify-content:space-between;">
                             <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:700;line-height:1;" id="active-req-count">03</div>
                             <button class="secondary" onclick="window.location.href='request.html'" style="padding:0.4rem 0.8rem;font-size:0.75rem;">Plan Trip</button>

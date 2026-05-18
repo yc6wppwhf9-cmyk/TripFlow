@@ -9,6 +9,19 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  console.log('Clearing existing database records...');
+  try {
+    await prisma.notification.deleteMany({});
+    await prisma.booking.deleteMany({});
+    await prisma.employee.deleteMany({});
+    await prisma.vendor.deleteMany({});
+    await prisma.user.deleteMany({});
+    await prisma.policy.deleteMany({});
+    console.log('Database tables cleared successfully.');
+  } catch (error) {
+    console.warn('Error during table clearance, continuing:', error);
+  }
+
   console.log('Seeding database...');
 
   const hashedPassword = await bcrypt.hash('Welcome@123', 12);
@@ -112,29 +125,6 @@ async function main() {
   // Update employees with policy
   await prisma.employee.updateMany({
     data: { policyId: policy.id }
-  });
-
-  // 6. Sample Bookings
-  await prisma.booking.create({
-    data: {
-      employeeId: emp1.employee.id,
-      type: 'FLIGHT',
-      details: { origin: 'SFO', destination: 'JFK', date: '2026-06-15' },
-      stage: 'PENDING_MANAGER',
-      cost: 450,
-    },
-  });
-
-  await prisma.booking.create({
-    data: {
-      employeeId: emp2.employee.id,
-      type: 'HOTEL',
-      details: { origin: 'London', destination: 'Hilton London', date: '2026-07-20' },
-      stage: 'COMPLETED',
-      cost: 600,
-      pnr: 'HILT789',
-      ticketUrl: 'https://example.com/sample-ticket.pdf',
-    },
   });
 
   console.log('Seed completed successfully!');
