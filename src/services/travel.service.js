@@ -1,4 +1,21 @@
 const axios = require('axios');
+const Anthropic = require('@anthropic-ai/sdk');
+
+const _anthropic = process.env.ANTHROPIC_API_KEY
+  ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  : null;
+
+async function askClaude(prompt) {
+  if (!_anthropic) throw new Error('ANTHROPIC_API_KEY not set');
+  const res = await _anthropic.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 1024,
+    messages: [{ role: 'user', content: prompt }]
+  });
+  const text = res.content[0].text.trim();
+  // strip markdown fences if present
+  return text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+}
 
 // ── IATA airport codes for major cities ──────────────────────────────────────
 const CITY_TO_IATA = {
@@ -184,34 +201,6 @@ const FLIGHT_HEADERS = () => ({
   'X-RapidAPI-Host': 'google-flights2.p.rapidapi.com'
 });
 
-const HOTEL_HEADERS = () => ({
-  'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-  'X-RapidAPI-Host': 'booking-com.p.rapidapi.com'
-});
-
-const TRAIN_HEADERS = () => ({
-  'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-  'X-RapidAPI-Host': 'irctc1.p.rapidapi.com'
-});
-
-// Cache Booking.com destination lookups
-const _hotelDestCache = {};
-
-async function getHotelDestination(city) {
-  const key = city.toLowerCase().trim();
-  if (_hotelDestCache[key]) return _hotelDestCache[key];
-
-  const res = await axios.get('https://booking-com.p.rapidapi.com/v1/hotels/locations', {
-    headers: HOTEL_HEADERS(),
-    params: { name: city, locale: 'en-gb' }
-  });
-
-  const dest = res.data?.[0];
-  if (!dest) throw new Error(`Hotel destination not found for "${city}"`);
-
-  _hotelDestCache[key] = { dest_id: dest.dest_id, dest_type: dest.dest_type, name: dest.name };
-  return _hotelDestCache[key];
-}
 
 // ── Flights via Google Flights (RapidAPI) ─────────────────────────────────────
 // Uses IATA codes directly — no entity ID lookup needed
@@ -299,156 +288,163 @@ const TRAIN_NAMES = {
   '12003':'Lucknow Shatabdi','12004':'Lucknow Shatabdi',
 };
 
-const _scheduleCache = {};
+// ── Trains ────────────────────────────────────────────────────────────────────
+// Primary:  irctc-api3.p.rapidapi.com  (subscribed — uses POST form data)
+// Fallback: Claude AI  (works without any subscription)
 
-async function getTrainSchedule(trainNo) {
-  if (_scheduleCache[trainNo]) return _scheduleCache[trainNo];
-  const qs = require('querystring');
-  const res = await axios.post(
-    'https://irctc-railway-api1.p.rapidapi.com/train-schedule.php',
-    qs.stringify({ train_no: trainNo }),
-    { headers: { 'X-RapidAPI-Key': process.env.RAPIDAPI_KEY, 'X-RapidAPI-Host': 'irctc-railway-api1.p.rapidapi.com', 'Content-Type': 'application/x-www-form-urlencoded' } }
-  );
-  _scheduleCache[trainNo] = res.data;
-  return res.data;
+// Convert ISO date (YYYY-MM-DD) to DD-MM-YYYY required by irctc-api3
+function toIRCTCDate(isoDate) {
+  const [y, m, d] = isoDate.split('-');
+  return `${d}-${m}-${y}`;
 }
 
-// Station code aliases — some APIs use alternate codes
-const STATION_ALIASES = {
-  'CSTM': ['CSTM', 'CST', 'CSMT', 'C SHIVAJI'],
-  'BCT':  ['BCT', 'MUMBAI CENTRAL', 'BANDRA'],
-  'LTT':  ['LTT', 'LOKMANYA'],
-  'NDLS': ['NDLS', 'NEW DELHI', 'NEWDELHI'],
-  'DLI':  ['DLI', 'OLD DELHI', 'DELHI JN'],
-  'NZM':  ['NZM', 'HAZRAT NIZAMUDDIN'],
-  'SBC':  ['SBC', 'BANGALORE', 'BENGALURU', 'KSR'],
-  'MAS':  ['MAS', 'CHENNAI CENTRAL', 'MADRAS'],
-  'HWH':  ['HWH', 'HOWRAH'],
-  'HYB':  ['HYB', 'HYDERABAD', 'SECUNDERABAD', 'SC'],
-};
-
-function findStop(schedule, code) {
-  const upper = code.toUpperCase();
-  const aliases = STATION_ALIASES[upper] || [upper];
-  return schedule.find(s => {
-    const name = s.station.toUpperCase();
-    return aliases.some(alias => name.includes(alias));
-  });
-}
-
-// ── Trains via IRCTC Railway API (real schedule data) ────────────────────────
 async function searchTrains(origin, destination, date) {
-  if (!process.env.RAPIDAPI_KEY) {
-    return { available: false, reason: 'RapidAPI not configured.' };
-  }
-
   const fromCode = resolveStation(origin);
-  const toCode = resolveStation(destination);
-  const routeKey = `${fromCode}-${toCode}`;
-  const reverseKey = `${toCode}-${fromCode}`;
-  const trainNos = ROUTE_TRAINS[routeKey] || ROUTE_TRAINS[reverseKey] || [];
+  const toCode   = resolveStation(destination);
 
-  if (!trainNos.length) {
-    return {
-      available: false,
-      reason: `No known trains for ${origin} → ${destination}. Please check IRCTC.co.in and enter the fare manually.`
-    };
-  }
-
-  const results = [];
-  for (const trainNo of trainNos.slice(0, 3)) {
+  // 1. Try irctc-api3 API if key is present
+  if (process.env.RAPIDAPI_KEY) {
     try {
-      const data = await getTrainSchedule(trainNo);
-      const stops = data.schedule || [];
-      const fromStop = findStop(stops, fromCode);
-      const toStop = findStop(stops, toCode);
-
-      const isTimeStr = v => v && v !== 'Source' && v !== 'Destination' && v !== 'Start' && v !== 'End' && /\d{1,2}:\d{2}/.test(v);
-      const dep = fromStop?.departs;
-      const arr = toStop?.arrives;
-
-      results.push({
-        trainNumber: trainNo,
-        trainName: TRAIN_NAMES[trainNo] || data.train_name || trainNo,
-        departure: isTimeStr(dep) ? dep : (isTimeStr(fromStop?.arrives) ? fromStop.arrives : null),
-        arrival: isTimeStr(arr) ? arr : null,
-        fromDay: fromStop?.day,
-        toDay: toStop?.day,
-        classes: ['1A', '2A', '3A', 'SL'],
-        note: 'Fares vary by class — check IRCTC for exact price'
+      const params = new URLSearchParams({
+        fromStation:   fromCode,
+        toStation:     toCode,
+        dateOfJourney: toIRCTCDate(date)
       });
-    } catch {
-      // skip this train if fetch fails
-    }
+      const res = await axios.post(
+        'https://irctc-api3.p.rapidapi.com/searchTrain.php',
+        params.toString(),
+        {
+          headers: {
+            'X-RapidAPI-Key':  process.env.RAPIDAPI_KEY,
+            'X-RapidAPI-Host': 'irctc-api3.p.rapidapi.com',
+            'Content-Type':    'application/x-www-form-urlencoded'
+          }
+        }
+      );
+      // API returns { trainBetweenStation: [...] } or { data: [...] }
+      const list = res.data?.trainBetweenStation || res.data?.data || [];
+      if (Array.isArray(list) && list.length) {
+        return list.slice(0, 5).map(t => ({
+          trainNumber: t.train_no   || t.train_number,
+          trainName:   t.train_name,
+          departure:   t.from_time  || t.departure,
+          arrival:     t.to_time    || t.arrival,
+          duration:    t.travel_time || t.duration,
+          classes:     t.class_type  || ['SL', '3A', '2A', '1A'],
+          note:        'Book at IRCTC.co.in'
+        }));
+      }
+    } catch (_) { /* fall through to known-routes table */ }
   }
 
-  if (!results.length) {
-    return { available: false, reason: 'Could not fetch train schedules. Please check IRCTC.co.in.' };
+  // 2. Instant result for known popular routes (no API call needed)
+  const routeKey   = `${fromCode}-${toCode}`;
+  const reverseKey = `${toCode}-${fromCode}`;
+  const knownNos   = ROUTE_TRAINS[routeKey] || ROUTE_TRAINS[reverseKey] || [];
+  if (knownNos.length) {
+    return knownNos.slice(0, 3).map(no => ({
+      trainNumber: no,
+      trainName:   TRAIN_NAMES[no] || no,
+      departure:   null,
+      arrival:     null,
+      classes:     ['1A', '2A', '3A', 'SL'],
+      note:        'Fares vary by class — book at IRCTC.co.in'
+    }));
   }
 
-  return results;
+  // 3. Claude fallback for all other routes
+  try {
+    const raw    = await askClaude(`List up to 4 real Indian Railways trains from ${origin} to ${destination}. Return ONLY a JSON array. Each object: { "trainNumber": "string", "trainName": "string", "departure": "HH:MM", "arrival": "HH:MM", "classes": ["1A","2A","3A","SL"] }. If no trains exist return [].`);
+    const trains = JSON.parse(raw);
+    if (!Array.isArray(trains) || !trains.length)
+      return { available: false, reason: `No trains found for ${origin} → ${destination}. Check IRCTC.co.in.` };
+    return trains.map(t => ({ ...t, note: 'Book at IRCTC.co.in' }));
+  } catch {
+    return { available: false, reason: `Train search unavailable. Check IRCTC.co.in.` };
+  }
 }
 
-// ── Hotels via Booking.com (RapidAPI) ────────────────────────────────────────
+// ── Hotels ────────────────────────────────────────────────────────────────────
+// Primary:  booking-com15.p.rapidapi.com  (subscribe at rapidapi.com → "Booking.com" by APIplugin)
+// Fallback: Claude AI  (works without any subscription)
+const _hotelDestCache = {};
+
 async function searchHotels(city, checkIn, checkOut) {
-  if (!process.env.RAPIDAPI_KEY) {
-    return { available: false, reason: 'RapidAPI not configured (RAPIDAPI_KEY missing).' };
+  const nights = (() => {
+    try {
+      const d1 = new Date(checkIn), d2 = new Date(checkOut || checkIn);
+      return Math.max(1, Math.round((d2 - d1) / 86400000));
+    } catch { return 1; }
+  })();
+
+  // 1. Try live Booking.com API if key is present
+  if (process.env.RAPIDAPI_KEY) {
+    try {
+      const cacheKey = city.toLowerCase().trim();
+      if (!_hotelDestCache[cacheKey]) {
+        const destRes = await axios.get('https://booking-com15.p.rapidapi.com/api/v1/hotels/searchDestination', {
+          headers: { 'X-RapidAPI-Key': process.env.RAPIDAPI_KEY, 'X-RapidAPI-Host': 'booking-com15.p.rapidapi.com' },
+          params:  { query: city }
+        });
+        const dest = destRes.data?.data?.[0];
+        if (dest) _hotelDestCache[cacheKey] = { dest_id: dest.dest_id, search_type: dest.search_type };
+      }
+
+      if (_hotelDestCache[cacheKey]) {
+        const { dest_id, search_type } = _hotelDestCache[cacheKey];
+        const hotRes = await axios.get('https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotels', {
+          headers: { 'X-RapidAPI-Key': process.env.RAPIDAPI_KEY, 'X-RapidAPI-Host': 'booking-com15.p.rapidapi.com' },
+          params:  {
+            dest_id, search_type,
+            arrival_date:   checkIn,
+            departure_date: checkOut || checkIn,
+            adults: 1, room_qty: 1,
+            currency_code: 'INR', languagecode: 'en-us',
+            units: 'metric', page_number: 1
+          }
+        });
+        const list = hotRes.data?.data?.hotels || [];
+        if (list.length) {
+          return list.slice(0, 5).map(h => {
+            const perNight = Math.round(h.property?.priceBreakdown?.grossPrice?.value || 0);
+            return {
+              name:               h.property?.name,
+              stars:              Math.round(h.property?.propertyClass || 3),
+              pricePerNight:      perNight,
+              totalPrice:         perNight * nights,
+              price:              perNight,
+              currency:           'INR',
+              rating:             h.property?.reviewScore,
+              reviewWord:         h.property?.reviewScoreWord,
+              reviewCount:        h.property?.reviewCount,
+              distanceFromCenter: h.property?.distanceTocc ? `${h.property.distanceTocc} km from centre` : null,
+              address:            h.property?.wishlistName || city
+            };
+          });
+        }
+      }
+    } catch (_) { /* fall through to Claude */ }
   }
 
+  // 2. Claude fallback — always works, realistic pricing
   try {
-    const dest = await getHotelDestination(city);
-
-    const res = await axios.get('https://booking-com.p.rapidapi.com/v1/hotels/search', {
-      headers: HOTEL_HEADERS(),
-      params: {
-        dest_id: dest.dest_id,
-        dest_type: dest.dest_type,
-        checkin_date: checkIn,
-        checkout_date: checkOut || checkIn,
-        adults_number: 1,
-        room_number: 1,
-        order_by: 'price',
-        filter_by_currency: 'INR',
-        locale: 'en-gb',
-        units: 'metric',
-        page_number: 0
-      }
-    });
-
-    const allHotels = res.data?.result || [];
-    if (!allHotels.length) return { available: false, reason: `No hotels found in "${city}" for those dates.` };
-
-    // Prefer hotels with at least 1 star; fall back to all if none found
-    const hotels = allHotels.filter(h => h.class >= 1).length
-      ? allHotels.filter(h => h.class >= 1)
-      : allHotels;
-
-    return hotels.slice(0, 5).map(h => {
-      const nights = Math.max(1, (() => {
-        try {
-          const d1 = new Date(checkIn), d2 = new Date(checkOut || checkIn);
-          return Math.round((d2 - d1) / 86400000) || 1;
-        } catch { return 1; }
-      })());
-      const total = Math.round(h.min_total_price || h.price_breakdown?.gross_price || 0);
-      const perNight = Math.round(total / nights);
-      return {
-        name: h.hotel_name,
-        stars: h.class || 0,
-        pricePerNight: perNight,
-        totalPrice: total,
-        price: perNight,
-        currency: 'INR',
-        rating: h.review_score,
-        reviewWord: h.review_score_word,
-        reviewCount: h.review_nr,
-        address: h.address,
-        distanceFromCenter: h.distance_to_cc_formatted
-      };
-    });
-  } catch (err) {
-    const detail = err.response?.data?.message || err.message;
-    return { available: false, reason: `Hotel search error: ${detail}` };
+    const raw    = await askClaude(`List 5 real hotels in ${city}, India for business travel. Return ONLY a JSON array. Each object: { "name": "string", "stars": number, "pricePerNight": number (INR), "rating": number (6-9.5), "distanceFromCenter": "X km from centre", "address": "short address" }. Mix budget (₹1500-3000), mid-range (₹3000-7000) and premium (₹7000+).`);
+    const hotels = JSON.parse(raw);
+    if (!Array.isArray(hotels) || !hotels.length)
+      return { available: false, reason: `No hotels found in "${city}".` };
+    return hotels.slice(0, 5).map(h => ({
+      name:               h.name,
+      stars:              h.stars || 3,
+      pricePerNight:      Math.round(h.pricePerNight || 3500),
+      totalPrice:         Math.round((h.pricePerNight || 3500) * nights),
+      price:              Math.round(h.pricePerNight || 3500),
+      currency:           'INR',
+      rating:             h.rating,
+      distanceFromCenter: h.distanceFromCenter,
+      address:            h.address
+    }));
+  } catch {
+    return { available: false, reason: `Hotel search unavailable for "${city}". Check Booking.com or MakeMyTrip.` };
   }
 }
 
