@@ -17,6 +17,9 @@
             <span id="user-name" style="font-size:0.875rem;font-weight:600;color:#9aa3b5;"></span>
             <button onclick="logout()" class="secondary" style="padding:0.45rem 0.9rem;font-size:0.8rem;">Logout</button>
         </div>
+        <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        </button>
     </nav>
 
     <div class="container">
@@ -196,13 +199,13 @@
                 }
                 list.innerHTML = emps.map(e => `
                     <tr>
-                        <td style="font-weight:600;">${e.user.name}</td>
-                        <td style="color:#9aa3b5;font-size:0.82rem;">${e.user.email}</td>
-                        <td style="color:#9aa3b5;">${e.department}</td>
-                        <td style="color:#9aa3b5;">${e.manager?.name || '—'}</td>
-                        <td>${allPolicies.find(p => p.id === e.policyId)?.name || '<span style="color:#e74c3c;font-size:0.78rem;">No policy</span>'}</td>
-                        <td>
-                            <select onchange="assignPolicy('${e.id}', this.value)" style="padding:0.3rem 0.5rem;font-size:0.8rem;width:auto;">
+                        <td data-label="Name" style="font-weight:600;">${e.user.name}</td>
+                        <td data-label="Email" style="color:#9aa3b5;font-size:0.82rem;">${e.user.email}</td>
+                        <td data-label="Department" style="color:#9aa3b5;">${e.department}</td>
+                        <td data-label="Manager" style="color:#9aa3b5;">${e.manager?.name || '—'}</td>
+                        <td data-label="Policy">${allPolicies.find(p => p.id === e.policyId)?.name || '<span style="color:#e74c3c;font-size:0.78rem;">No policy</span>'}</td>
+                        <td data-label="Assign">
+                            <select onchange="assignPolicy('${e.id}', this.value)" style="font-size:0.8rem;width:100%;">
                                 <option value="">Assign…</option>
                                 ${allPolicies.map(p => `<option value="${p.id}" ${p.id === e.policyId?'selected':''}>${p.name}</option>`).join('')}
                             </select>
@@ -234,12 +237,12 @@
             }
             document.getElementById('bookings-list').innerHTML = list.map(b => `
                 <tr>
-                    <td style="font-weight:600;">${b.employee?.user?.name || '—'}</td>
-                    <td style="color:#9aa3b5;font-size:0.82rem;">${b.type}</td>
-                    <td>${b.details?.origin || '—'} → ${b.details?.destination || '—'}</td>
-                    <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
-                    <td style="font-weight:600;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
-                    <td style="color:#5a6478;font-size:0.78rem;">${new Date(b.createdAt).toLocaleDateString('en-IN')}</td>
+                    <td data-label="Employee" style="font-weight:600;">${b.employee?.user?.name || '—'}</td>
+                    <td data-label="Type" style="color:#9aa3b5;font-size:0.82rem;">${b.type}</td>
+                    <td data-label="Route">${b.details?.origin || '—'} → ${b.details?.destination || '—'}</td>
+                    <td data-label="Stage"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
+                    <td data-label="Cost" style="font-weight:600;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                    <td data-label="Date" style="color:#5a6478;font-size:0.78rem;">${new Date(b.createdAt).toLocaleDateString('en-IN')}</td>
                 </tr>`).join('');
         }
 
@@ -257,12 +260,12 @@
                 }
                 list.innerHTML = allPolicies.map(p => `
                     <tr>
-                        <td style="font-weight:600;">${p.name}</td>
-                        <td style="color:#d4a853;">₹${p.rules.flightLimit || '—'}</td>
-                        <td style="color:#d4a853;">₹${p.rules.hotelLimit  || '—'}</td>
-                        <td style="color:#d4a853;">₹${p.rules.trainLimit  || '—'}</td>
-                        <td style="color:#d4a853;">₹${p.rules.cabLimit    || '—'}</td>
-                        <td style="color:#d4a853;">₹${p.rules.globalMonthlyBudget || '—'}</td>
+                        <td data-label="Name" style="font-weight:600;">${p.name}</td>
+                        <td data-label="Flight" style="color:#d4a853;">₹${p.rules.flightLimit || '—'}</td>
+                        <td data-label="Hotel/Night" style="color:#d4a853;">₹${p.rules.hotelLimit  || '—'}</td>
+                        <td data-label="Train" style="color:#d4a853;">₹${p.rules.trainLimit  || '—'}</td>
+                        <td data-label="Cab" style="color:#d4a853;">₹${p.rules.cabLimit    || '—'}</td>
+                        <td data-label="Monthly Budget" style="color:#d4a853;">₹${p.rules.globalMonthlyBudget || '—'}</td>
                     </tr>`).join('');
             } catch(e) { console.error(e); }
         }

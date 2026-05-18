@@ -8,9 +8,9 @@ const validate = require('../middleware/validate.middleware');
 
 router.use(auth);
 
-router.get('/mine', role('EMPLOYEE'), bookingController.getMyBookings);
-router.get('/trip-plan', role('EMPLOYEE'), bookingController.getTripPlan);
-router.get('/suggestions', role('EMPLOYEE'), bookingController.getSuggestions);
+router.get('/mine',      bookingController.getMyBookings);
+router.get('/trip-plan', bookingController.getTripPlan);
+router.get('/suggestions', bookingController.getSuggestions);
 
 router.post('/', role('EMPLOYEE'), [
   body('type').isIn(['FLIGHT', 'HOTEL', 'TRAIN', 'CAB']).withMessage('type must be FLIGHT, HOTEL, TRAIN, or CAB'),

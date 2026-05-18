@@ -8,6 +8,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         .field-group { display: none; }
+        @media (max-width: 640px) {
+            /* Stack the 2-col form grid on small phones */
+            #user-form > div[style*="grid-template-columns"],
+            #employee-fields,
+            #vendor-fields { grid-template-columns: 1fr !important; }
+            #user-form [style*="grid-column:span 2"],
+            #user-form [style*="grid-column: span 2"] { grid-column: span 1 !important; }
+        }
     </style>
 </head>
 <body>
@@ -21,6 +29,9 @@
             <span id="user-name" style="font-size:0.875rem;font-weight:600;color:#9aa3b5;"></span>
             <button onclick="logout()" class="secondary" style="padding:0.45rem 0.9rem;font-size:0.8rem;">Logout</button>
         </div>
+        <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        </button>
     </nav>
 
     <div class="container">
@@ -263,12 +274,12 @@
                 }
                 list.innerHTML = allUsers.map(u => `
                     <tr>
-                        <td style="font-weight:600;">${u.name}</td>
-                        <td style="color:#9aa3b5;font-size:0.82rem;">${u.email}</td>
-                        <td><span class="role-badge role-${u.role}">${u.role}</span></td>
-                        <td style="color:#9aa3b5;">${u.employee?.department || u.vendor?.companyName || '—'}</td>
-                        <td style="color:#5a6478;font-size:0.82rem;">${u.phone || '—'}</td>
-                        <td style="color:#5a6478;font-size:0.78rem;">${new Date(u.createdAt).toLocaleDateString('en-IN')}</td>
+                        <td data-label="Name" style="font-weight:600;">${u.name}</td>
+                        <td data-label="Email" style="color:#9aa3b5;font-size:0.82rem;">${u.email}</td>
+                        <td data-label="Role"><span class="role-badge role-${u.role}">${u.role}</span></td>
+                        <td data-label="Department" style="color:#9aa3b5;">${u.employee?.department || u.vendor?.companyName || '—'}</td>
+                        <td data-label="Phone" style="color:#5a6478;font-size:0.82rem;">${u.phone || '—'}</td>
+                        <td data-label="Joined" style="color:#5a6478;font-size:0.78rem;">${new Date(u.createdAt).toLocaleDateString('en-IN')}</td>
                     </tr>`).join('');
             } catch(e) { console.error(e); }
         }
@@ -282,10 +293,10 @@
                 }
                 list.innerHTML = vendors.map(v => `
                     <tr>
-                        <td style="font-weight:600;">${v.companyName}</td>
-                        <td><span class="badge badge-pending-vendor">${v.serviceType}</span></td>
-                        <td>${v.user.name}</td>
-                        <td style="color:#9aa3b5;font-size:0.82rem;">${v.user.email}</td>
+                        <td data-label="Company" style="font-weight:600;">${v.companyName}</td>
+                        <td data-label="Service"><span class="badge badge-pending-vendor">${v.serviceType}</span></td>
+                        <td data-label="Contact">${v.user.name}</td>
+                        <td data-label="Email" style="color:#9aa3b5;font-size:0.82rem;">${v.user.email}</td>
                     </tr>`).join('');
             } catch(e) { console.error(e); }
         }
@@ -304,12 +315,12 @@
             }
             document.getElementById('bookings-list').innerHTML = list.map(b => `
                 <tr>
-                    <td style="font-weight:600;">${b.employee?.user?.name || '—'}</td>
-                    <td style="color:#9aa3b5;font-size:0.82rem;">${b.type}</td>
-                    <td>${b.details?.origin || '—'} → ${b.details?.destination || '—'}</td>
-                    <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
-                    <td style="font-weight:600;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
-                    <td style="color:#5a6478;font-size:0.78rem;">${new Date(b.createdAt).toLocaleDateString('en-IN')}</td>
+                    <td data-label="Employee" style="font-weight:600;">${b.employee?.user?.name || '—'}</td>
+                    <td data-label="Type" style="color:#9aa3b5;font-size:0.82rem;">${b.type}</td>
+                    <td data-label="Route">${b.details?.origin || '—'} → ${b.details?.destination || '—'}</td>
+                    <td data-label="Stage"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
+                    <td data-label="Cost" style="font-weight:600;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                    <td data-label="Date" style="color:#5a6478;font-size:0.78rem;">${new Date(b.createdAt).toLocaleDateString('en-IN')}</td>
                 </tr>`).join('');
         }
 

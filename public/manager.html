@@ -16,6 +16,9 @@
             <span id="user-name" style="font-size:0.875rem;font-weight:600;color:#9aa3b5;"></span>
             <button onclick="logout()" class="secondary" style="padding:0.45rem 0.9rem;font-size:0.8rem;">Logout</button>
         </div>
+        <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        </button>
     </nav>
 
     <div class="container">
@@ -138,20 +141,20 @@
                 }
                 list.innerHTML = approvals.map(b => `
                     <tr>
-                        <td>
+                        <td data-label="Employee">
                             <div style="font-weight:600;">${b.employee.user.name}</div>
                             <div style="font-size:0.78rem;color:#5a6478;">${b.employee.department}</div>
                         </td>
-                        <td><span class="badge badge-pending-manager">${b.type}</span></td>
-                        <td>
+                        <td data-label="Type"><span class="badge badge-pending-manager">${b.type}</span></td>
+                        <td data-label="Route &amp; Date">
                             <div style="font-weight:500;">${b.details.origin} → ${b.details.destination}</div>
                             <div style="font-size:0.78rem;color:#5a6478;">${b.details.date}</div>
                         </td>
-                        <td style="font-weight:700;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
-                        <td>
+                        <td data-label="Est. Cost" style="font-weight:700;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                        <td data-label="Actions">
                             <div style="display:flex;gap:0.5rem;">
-                                <button onclick="showApproveModal('${b.id}')" style="padding:0.35rem 0.75rem;font-size:0.78rem;background:#2ecc71;color:#0e1117;">Approve</button>
-                                <button onclick="showRejectModal('${b.id}')" class="danger" style="padding:0.35rem 0.75rem;font-size:0.78rem;">Reject</button>
+                                <button onclick="showApproveModal('${b.id}')" style="font-size:0.82rem;background:#2ecc71;color:#0e1117;flex:1;">Approve</button>
+                                <button onclick="showRejectModal('${b.id}')" class="danger" style="font-size:0.82rem;flex:1;">Reject</button>
                             </div>
                         </td>
                     </tr>`).join('');
@@ -183,15 +186,15 @@
             }
             tbody.innerHTML = filtered.map(b => `
                 <tr>
-                    <td>
+                    <td data-label="Employee">
                         <div style="font-weight:600;">${b.employee?.user?.name || '—'}</div>
                         <div style="font-size:0.78rem;color:#5a6478;">${b.employee?.department || ''}</div>
                     </td>
-                    <td style="color:#9aa3b5;font-size:0.82rem;">${b.type}</td>
-                    <td>${b.details?.origin || '—'} → ${b.details?.destination || '—'}</td>
-                    <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
-                    <td style="font-weight:600;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
-                    <td style="font-family:monospace;font-size:0.82rem;color:#9aa3b5;">${b.pnr || '—'}</td>
+                    <td data-label="Type" style="color:#9aa3b5;font-size:0.82rem;">${b.type}</td>
+                    <td data-label="Route">${b.details?.origin || '—'} → ${b.details?.destination || '—'}</td>
+                    <td data-label="Stage"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
+                    <td data-label="Cost" style="font-weight:600;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                    <td data-label="PNR" style="font-family:monospace;font-size:0.82rem;color:#9aa3b5;">${b.pnr || '—'}</td>
                 </tr>`).join('');
         }
 

@@ -1,5 +1,17 @@
 const API_URL = '/api';
 
+/* ── Mobile nav hamburger ────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.querySelector('.nav-toggle');
+  const links  = document.querySelector('.nav-links');
+  if (!toggle || !links) return;
+  const close = () => { links.classList.remove('open'); toggle.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); };
+  const open  = () => { links.classList.add('open');    toggle.classList.add('open');    toggle.setAttribute('aria-expanded', 'true'); };
+  toggle.addEventListener('click', () => links.classList.contains('open') ? close() : open());
+  links.addEventListener('click', e => { if (e.target.closest('a')) close(); });
+  document.addEventListener('click', e => { if (!toggle.contains(e.target) && !links.contains(e.target)) close(); });
+});
+
 /* ── Toast notification ──────────────────────────────────── */
 function showToast(message, type = 'info', duration = 3500) {
   let container = document.getElementById('toast-container');

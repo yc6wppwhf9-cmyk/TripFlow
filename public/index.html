@@ -332,6 +332,14 @@
             .panel-right { width: 100%; border-left: none; padding: 2.5rem 2rem; }
             .panel-right-foot { position: static; margin-top: 2rem; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
         }
+
+        @media (max-width: 480px) {
+            body { overflow: auto; }
+            .panel-right { padding: 2rem 1.25rem; justify-content: flex-start; padding-top: 3rem; }
+            .sign-in-header { margin-bottom: 2rem; }
+            .field-wrap input { min-height: 48px; font-size: 1rem; }
+            .submit-btn { min-height: 52px; font-size: 1rem; padding: 1rem 1.5rem; }
+        }
     </style>
 </head>
 <body>
