@@ -1043,7 +1043,21 @@
                 ${apInfo?`<br><span style="color:rgba(26,26,26,0.6);margin-top:0.3rem;display:block;font-size:0.75rem;">NEAREST AIRPORTS: ${apInfo}</span>`:''}
             </div>`;
 
-            if (plan.outboundFlights?.length) {
+            if (plan.distanceKm !== undefined && plan.distanceKm < 500) {
+                html += `
+                    <div style="background:#fffbeb;color:#b45309;border:2px solid #fef3c7;padding:1rem;margin-bottom:1.5rem;font-size:0.8rem;font-weight:700;display:flex;flex-direction:column;gap:0.4rem;box-shadow:0 2px 4px rgba(0,0,0,0.05);border-radius:4px;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <span class="material-symbols-outlined" style="font-size:20px;color:#b45309;">warning</span>
+                            <span style="font-size:0.85rem;font-weight:800;letter-spacing:-0.01em;">AIR TRAVEL POLICY RESTRICTION</span>
+                        </div>
+                        <p style="margin:0;line-height:1.4;font-weight:600;color:rgba(180,83,9,0.9);">
+                            Flights are only permitted for routes over <strong>500 km</strong>. 
+                            Calculated distance: <strong>${plan.distanceKm} km</strong>. 
+                            Air selection is disabled. Please select from the compliant Train options below.
+                        </p>
+                    </div>
+                `;
+            } else if (plan.outboundFlights?.length) {
                 html += `<div class="trip-section"><div class="trip-section-header">✈ Outbound Flights to ${to} <span style="margin-left:auto;">${fromDate}</span></div>`;
                 plan.outboundFlights.forEach(group => {
                     const flights = Array.isArray(group.results) ? group.results : [];

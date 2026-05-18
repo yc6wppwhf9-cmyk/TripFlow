@@ -706,11 +706,14 @@ async function planTrip(from, to, fromDate, toDate) {
     searchHotels(to, fromDate, toDate || fromDate).catch(() => ({ available: false, reason: 'Hotel search failed.' }))
   ]);
 
+  const distanceKm = getDistanceKm(from, to);
+
   return {
     destination: to,
     from,
     fromDate,
     toDate: toDate || null,
+    distanceKm,
     nearestAirports: airports.map(ap => ({
       city: ap.city,
       code: ap.code,

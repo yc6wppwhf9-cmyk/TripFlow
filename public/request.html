@@ -1121,8 +1121,23 @@
             let hasAny = false;
             _flightGroups = [];
 
-            // ── Flights ──────────────────────────────────────────────────────────
-            if (plan.outboundFlights?.length) {
+            // ── Flights (Permitted only for routes >= 500 km) ─────────────────────
+            if (plan.distanceKm !== undefined && plan.distanceKm < 500) {
+                html += `
+                    <div style="background:#fffbeb;color:#b45309;border:2px solid #fef3c7;padding:1.25rem;border-radius:12px;margin-bottom:1.5rem;font-family:var(--font-display);font-size:0.85rem;font-weight:600;display:flex;flex-direction:column;gap:0.5rem;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <span class="material-symbols-outlined" style="font-size:22px;color:#b45309;">warning</span>
+                            <span style="font-size:0.95rem;font-weight:800;letter-spacing:-0.01em;">AIR TRAVEL POLICY ENFORCEMENT</span>
+                        </div>
+                        <p style="margin:0;line-height:1.45;">
+                            Corporate guidelines restrict air travel for flights under <strong>500 km</strong>. 
+                            The route distance from <strong>${plan.from} to ${dest}</strong> is <strong>${plan.distanceKm} km</strong>. 
+                            Flight selection is restricted. Please request a compliant Train option from the list below.
+                        </p>
+                    </div>
+                `;
+                hasAny = true;
+            } else if (plan.outboundFlights?.length) {
                 _flightGroups = plan.outboundFlights;
                 plan.outboundFlights.forEach(group => {
                     const part = renderFlightGroup(group, dest, 'all', 'price');
