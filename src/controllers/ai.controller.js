@@ -26,7 +26,7 @@ const SEARCH_TRAVEL_TOOL = {
 
 const BOOKING_TOOL = {
   name: 'create_booking',
-  description: 'Create a corporate travel booking request once the employee has confirmed their choice from the real search results.',
+  description: 'Create a corporate travel booking request once the employee has confirmed their choice from the real search results. Make sure to capture and pass the selectedFare details matching the option the user selected.',
   input_schema: {
     type: 'object',
     properties: {
@@ -34,7 +34,25 @@ const BOOKING_TOOL = {
       origin: { type: 'string', description: 'Departure city or current location' },
       destination: { type: 'string', description: 'Destination city or hotel name' },
       date: { type: 'string', description: 'Travel date in YYYY-MM-DD format' },
-      cost: { type: 'number', description: 'Exact price from search results in INR' }
+      cost: { type: 'number', description: 'Exact price from search results in INR' },
+      selectedFare: {
+        type: 'object',
+        description: 'Detailed properties of the selected option from travel search results',
+        properties: {
+          airline: { type: 'string', description: 'For flights, e.g., "IndiGo", "Air India"' },
+          flightNumber: { type: 'string', description: 'For flights, e.g., "6E-234"' },
+          departure: { type: 'string', description: 'Departure time, e.g., "06:15"' },
+          arrival: { type: 'string', description: 'Arrival time, e.g., "08:30"' },
+          duration: { type: 'string', description: 'Trip duration, e.g., "2h 15m"' },
+          stops: { type: 'number', description: 'Number of stops, e.g., 0' },
+          trainNumber: { type: 'string', description: 'For trains, e.g., "12951"' },
+          trainName: { type: 'string', description: 'For trains, e.g., "Rajdhani Express"' },
+          class: { type: 'string', description: 'For trains, preferred train class, e.g., "2A"' },
+          name: { type: 'string', description: 'For hotels, the hotel name' },
+          rating: { type: 'number', description: 'For hotels, e.g., 4.5' },
+          pricePerNight: { type: 'number', description: 'For hotels, price per night' }
+        }
+      }
     },
     required: ['type', 'origin', 'destination', 'date', 'cost']
   }
@@ -138,7 +156,7 @@ Today: ${new Date().toISOString().split('T')[0]}`;
 
         // create_booking — validate policy then write to DB
         if (toolBlock?.name === 'create_booking') {
-          const { type, origin, destination, date, cost } = toolBlock.input;
+          const { type, origin, destination, date, cost, selectedFare } = toolBlock.input;
 
           if (!user.employee) {
             return res.json({ reply: "I can only create bookings for employees. Your account type doesn't support this.", booking: null });
@@ -157,7 +175,12 @@ Today: ${new Date().toISOString().split('T')[0]}`;
             data: {
               employeeId: user.employee.id,
               type,
-              details: { origin, destination, date },
+              details: { 
+                origin, 
+                destination, 
+                date,
+                ...(selectedFare ? { selectedFare } : {})
+              },
               cost: parseFloat(cost),
               stage: 'PENDING_MANAGER'
             }

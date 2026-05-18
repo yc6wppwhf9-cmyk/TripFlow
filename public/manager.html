@@ -351,6 +351,20 @@
         let allTeamBookings = [];
         let typeChart, stageChart;
 
+        function fareLabel(f) {
+            if (!f) return '';
+            if (f.type === 'FLIGHT') {
+                return `✈ ${f.airline || ''} ${f.flightNumber || ''}${f.departure && f.arrival ? ` (${f.departure} → ${f.arrival})` : f.departure ? ` (dep ${f.departure})` : ''}`.trim();
+            }
+            if (f.type === 'TRAIN') {
+                return `🚂 Train: ${f.trainNumber || ''} ${f.trainName || ''}${f.class ? ` [Class ${f.class}]` : ''}${f.departure && f.arrival ? ` (${f.departure} → ${f.arrival})` : ''}`.trim();
+            }
+            if (f.type === 'HOTEL') {
+                return `🏨 ${f.name || ''}${f.rating ? ` · ★${f.rating}` : ''}${f.pricePerNight ? ` (₹${f.pricePerNight}/night)` : ''}`.trim();
+            }
+            return '';
+        }
+
         function toggleSidebar() {
             document.getElementById('main-sidebar').classList.toggle('open');
             document.getElementById('sidebar-backdrop').classList.toggle('open');
@@ -465,6 +479,7 @@
                                 <div style="font-weight:700;color:var(--on-surface);text-decoration:underline;text-underline-offset:2px;">${b.details.origin} → ${b.details.destination}</div>
                             </a>
                             <div style="font-size:0.78rem;color:var(--secondary);font-weight:600;margin-top:0.15rem;">${b.details.date}</div>
+                            ${b.details.selectedFare ? `<div style="font-size:0.72rem;color:var(--primary);font-weight:600;margin-top:0.15rem;">${fareLabel(b.details.selectedFare)}</div>` : ''}
                         </td>
                         <td data-label="Est. Cost" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
                         <td data-label="Actions">
@@ -539,6 +554,7 @@
                     <td data-label="Route">
                         <a href="detail.html?id=${b.id}" style="text-decoration:none;color:inherit;display:block;">
                             <div style="font-weight:700;color:var(--on-surface);text-decoration:underline;text-underline-offset:2px;">${b.details?.origin || '—'} → ${b.details?.destination || '—'}</div>
+                            ${b.details?.selectedFare ? `<div style="font-size:0.72rem;color:var(--primary);font-weight:600;margin-top:0.15rem;">${fareLabel(b.details.selectedFare)}</div>` : ''}
                         </a>
                     </td>
                     <td data-label="Stage"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>

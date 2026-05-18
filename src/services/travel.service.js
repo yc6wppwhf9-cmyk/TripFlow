@@ -348,16 +348,69 @@ const TRAIN_NAMES = {
   '12555':'Gorakhdham Express','12556':'Gorakhdham Express',
   '12541':'Gorakhpur Shatabdi','12542':'Gorakhpur Shatabdi',
   // Mumbai ↔ South
-  '11041':'Mumbai Chennai Express','11042':'Chennai Mumbai Express',
-  '12163':'Dadar Chennai Express','12164':'Chennai Dadar Express',
-  // Delhi ↔ Punjab
-  '12014':'Amritsar Shatabdi','12013':'Amritsar Shatabdi',
-  '12030':'Swarna Shatabdi','12029':'Swarna Shatabdi',
-};
-
 // ── Trains ────────────────────────────────────────────────────────────────────
 // Primary:  irctc1.p.rapidapi.com  (REST GET — most reliable IRCTC wrapper on RapidAPI)
 // Fallback: known-routes table, then Claude AI
+
+const CITY_COORDS = {
+  // India — Metro
+  'delhi': [28.6139, 77.2090], 'new delhi': [28.6139, 77.2090],
+  'mumbai': [19.0760, 72.8777], 'bombay': [19.0760, 72.8777],
+  'bangalore': [12.9716, 77.5946], 'bengaluru': [12.9716, 77.5946],
+  'hyderabad': [17.3850, 78.4867],
+  'chennai': [13.0827, 80.2707], 'madras': [13.0827, 80.2707],
+  'kolkata': [22.5726, 88.3639], 'calcutta': [22.5726, 88.3639],
+  // Tier 2
+  'pune': [18.5204, 73.8567],
+  'ahmedabad': [23.0225, 72.5714],
+  'goa': [15.2993, 74.1240], 'madgaon': [15.2993, 74.1240],
+  'jaipur': [26.9124, 75.7873],
+  'lucknow': [26.8467, 80.9462],
+  'patna': [25.5941, 85.1376],
+  'varanasi': [25.3176, 82.9739],
+  'amritsar': [31.6340, 74.8723],
+  'gorakhpur': [26.7606, 83.3732]
+};
+
+function getDistanceKm(c1, c2) {
+  const coord1 = CITY_COORDS[c1.toLowerCase().trim()];
+  const coord2 = CITY_COORDS[c2.toLowerCase().trim()];
+  if (!coord1 || !coord2) return 800; // sensible average travel distance for Indian rail journeys
+  
+  // Haversine formula
+  const R = 6371;
+  const dLat = (coord2[0] - coord1[0]) * Math.PI / 180;
+  const dLon = (coord2[1] - coord1[1]) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(coord1[0] * Math.PI / 180) * Math.cos(coord2[0] * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  // Add a 30% winding factor since rail lines aren't straight
+  return Math.round(R * c * 1.3);
+}
+
+function getTrainFares(origin, destination, classesList = ['SL', '3A', '2A', '1A']) {
+  const distance = getDistanceKm(origin, destination);
+  
+  // Standard IRCTC grade rate multipliers
+  const baseFares = {
+    'SL': Math.max(175, Math.round(distance * 0.65 + 30)),
+    '3A': Math.max(520, Math.round(distance * 1.65 + 60)),
+    '2A': Math.max(760, Math.round(distance * 2.35 + 80)),
+    '1A': Math.max(1250, Math.round(distance * 4.10 + 120))
+  };
+
+  const res = {};
+  classesList.forEach(c => {
+    const cls = c.toUpperCase();
+    if (baseFares[cls]) {
+      res[cls] = baseFares[cls];
+    } else {
+      res[cls] = Math.max(150, Math.round(distance * 0.5));
+    }
+  });
+  return res;
+}
 
 async function searchTrains(origin, destination, date) {
   const fromCode = resolveStation(origin);
@@ -385,16 +438,20 @@ async function searchTrains(origin, destination, date) {
 
       const list = res.data?.data;
       if (Array.isArray(list) && list.length) {
-        return list.slice(0, 5).map(t => ({
-          trainNumber: t.train_number,
-          trainName:   t.train_name,
-          departure:   t.from_sta,
-          arrival:     t.to_sta,
-          duration:    t.travel_time,
-          classes:     Array.isArray(t.classes) && t.classes.length ? t.classes : ['SL', '3A', '2A', '1A'],
-          runDays:     Array.isArray(t.run_days) ? t.run_days.join(', ') : null,
-          note:        'Live IRCTC data — book at IRCTC.co.in'
-        }));
+        return list.slice(0, 5).map(t => {
+          const availClasses = Array.isArray(t.classes) && t.classes.length ? t.classes : ['SL', '3A', '2A', '1A'];
+          return {
+            trainNumber: t.train_number,
+            trainName:   t.train_name,
+            departure:   t.from_sta,
+            arrival:     t.to_sta,
+            duration:    t.travel_time,
+            classes:     availClasses,
+            classFares:  getTrainFares(origin, destination, availClasses),
+            runDays:     Array.isArray(t.run_days) ? t.run_days.join(', ') : null,
+            note:        'Live IRCTC data — book at IRCTC.co.in'
+          };
+        });
       }
     } catch (err) {
       const status = err.response?.status;
@@ -418,6 +475,7 @@ async function searchTrains(origin, destination, date) {
       departure:   null,
       arrival:     null,
       classes:     ['1A', '2A', '3A', 'SL'],
+      classFares:  getTrainFares(origin, destination, ['1A', '2A', '3A', 'SL']),
       note:        'Fares vary by class — book at IRCTC.co.in'
     }));
   }
@@ -428,9 +486,14 @@ async function searchTrains(origin, destination, date) {
     const trains = JSON.parse(raw);
     if (!Array.isArray(trains) || !trains.length)
       return { available: false, reason: `No trains found for ${origin} → ${destination}. Check IRCTC.co.in for live availability.` };
-    return trains.map(t => ({ ...t, note: 'Estimated — verify schedule and availability at IRCTC.co.in before booking' }));
+    return trains.map(t => ({ 
+      ...t, 
+      classFares: getTrainFares(origin, destination, t.classes || ['SL', '3A', '2A', '1A']),
+      note: 'Estimated — verify schedule and availability at IRCTC.co.in before booking' 
+    }));
   } catch {
     return { available: false, reason: `Train search unavailable for this route. Check IRCTC.co.in directly.` };
+  }
   }
 }
 

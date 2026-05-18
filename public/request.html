@@ -652,6 +652,7 @@
                             <h2 style="font-size:1.35rem;margin:0;">Cost Allocation &amp; Submit</h2>
                         </div>
                         <div style="display:flex;flex-direction:column;gap:1.25rem;">
+                            <div id="step3-summary"></div>
                             <div class="field-group">
                                 <label for="estimated-cost">Allocated Budget (₹)</label>
                                 <input type="number" id="estimated-cost" placeholder="Select a fare above or enter cost" class="brutalist-input">
@@ -787,6 +788,17 @@
             if (!currentUser) return;
             document.getElementById('user-name').innerText = currentUser.name.toUpperCase();
             loadApprovers();
+
+            document.getElementById('estimated-cost')?.addEventListener('input', (e) => {
+                const val = Number(e.target.value);
+                if (_selectedFare) {
+                    _selectedFare.price = val;
+                    const priceTag = document.getElementById('summary-price-tag');
+                    if (priceTag) {
+                        priceTag.innerText = val > 0 ? `₹${val.toLocaleString('en-IN')}` : 'Enter fare below';
+                    }
+                }
+            });
         }
         init();
 
@@ -983,6 +995,7 @@
                 activeStep = 3;
                 document.getElementById('next-btn').style.display = 'none';
                 document.getElementById('submit-btn').style.display = 'flex';
+                updateStep3Summary();
             }
         }
 
@@ -1070,7 +1083,8 @@
                     const cheapest = i === 0 && sortBy === 'price';
                     const stops = f.stops === 0 ? 'Non-stop' : `${f.stops} stop${f.stops > 1 ? 's' : ''}`;
                     const isExtra = !expanded && i >= FLIGHT_LIMIT;
-                    html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectFare(${f.price}, 'FLIGHT')">
+                    const _ffd = encodeURIComponent(JSON.stringify({airline:f.airline,flightNumber:f.flightNumber,departure:f.departure,arrival:f.arrival,duration:f.duration,stops:f.stops}));
+                    html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectFare(${f.price},'FLIGHT',JSON.parse(decodeURIComponent('${_ffd}')))">
                         <div style="display:flex;flex-direction:column;gap:0.2rem;flex:1;min-width:0;">
                             <span>${cheapest ? '<span class="best-tag">CHEAPEST</span>' : ''}<strong>${f.airline}</strong> <span style="color:var(--secondary)">${f.flightNumber}</span></span>
                             <span style="font-size:0.78rem;color:var(--on-surface);font-weight:600;">${f.departure || '?'} → ${f.arrival || '?'}${f.duration ? ' · ' + f.duration : ''} · ${stops}</span>
@@ -1132,7 +1146,8 @@
                     const trainBadge = entitledAvail.length
                         ? `<span class="policy-badge ok">${entitledAvail.join(' · ')} ENTITLED</span>`
                         : (t.classes?.length ? `<span class="policy-badge warn">CHECK ${POLICY.trainLabel[tBand]}</span>` : '');
-                    html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectTrainFare(this)" style="flex-direction:column;align-items:flex-start;gap:0.35rem;">
+                    const _tfd = encodeURIComponent(JSON.stringify({trainNumber:t.trainNumber,trainName:t.trainName,departure:t.departure,arrival:t.arrival,duration:t.duration,classes:t.classes||[]}));
+                    html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectTrainFare(this,JSON.parse(decodeURIComponent('${_tfd}')))" style="flex-direction:column;align-items:flex-start;gap:0.35rem;">
                         <div style="display:flex;justify-content:space-between;width:100%;align-items:center;gap:0.5rem;">
                             <span><strong>${t.trainNumber}</strong> · ${t.trainName}</span>
                             ${isLive ? `<span style="font-size:0.65rem;font-weight:700;background:var(--success-bg);color:var(--success-text);padding:0.15rem 0.5rem;border-radius:4px;white-space:nowrap;">LIVE</span>` : ''}
@@ -1172,7 +1187,8 @@
                     const hotelBadge = overCap
                         ? `<span class="policy-badge over">₹${(h.pricePerNight - hCap).toLocaleString('en-IN')} OVER CAP</span>`
                         : `<span class="policy-badge ok">WITHIN POLICY</span>`;
-                    html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectFare(${h.pricePerNight}, 'HOTEL')">
+                    const _hfd = encodeURIComponent(JSON.stringify({name:h.name,rating:h.rating,pricePerNight:h.pricePerNight}));
+                    html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectFare(${h.pricePerNight},'HOTEL',JSON.parse(decodeURIComponent('${_hfd}')))">
                         <div style="display:flex;flex-direction:column;flex:1;min-width:0;gap:0.25rem;">
                             <span><strong>${h.name}</strong> · ★${h.rating || '—'}</span>
                             ${hotelBadge}
@@ -1192,19 +1208,153 @@
         }
 
         let selectedType = 'FLIGHT';
-        function selectFare(price, type) {
-            document.getElementById('estimated-cost').value = price;
-            selectedType = type;
-            document.querySelectorAll('.trip-card').forEach(c => c.classList.remove('selected'));
-            event.currentTarget?.classList?.add('selected');
-            showToast(`Fare option selected: ₹${price.toLocaleString('en-IN')}`, 'success');
+        let _selectedFare = null;
+
+        function updateStep3Summary() {
+            const el = document.getElementById('step3-summary');
+            if (!el) return;
+            if (!_selectedFare) {
+                el.innerHTML = '<div style="padding:1rem;background:var(--surface-container-low);border-radius:var(--radius-md);color:var(--secondary);font-size:0.85rem;font-weight:500;">No fare selected — enter the budget manually, or go back and pick a fare.</div>';
+                return;
+            }
+            const f = _selectedFare;
+            let icon = 'flight_takeoff', title = '', sub = '', extraDetails = '';
+            
+            const origin = document.getElementById('req-origin').value.trim();
+            const dest = document.getElementById('req-destination').value.trim();
+            const travelDate = document.getElementById('req-from-date').value;
+
+            if (f.type === 'FLIGHT') {
+                icon = 'flight_takeoff';
+                title = `${f.airline || ''} ${f.flightNumber || ''}`.trim() || 'Flight Option';
+                const stopsLabel = f.stops === 0 ? 'Non-stop' : `${f.stops} stop${f.stops > 1 ? 's' : ''}`;
+                sub = `${origin} → ${dest} • ${travelDate}`;
+                extraDetails = `
+                    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--outline-variant);display:flex;flex-wrap:wrap;gap:1rem;font-size:0.75rem;color:var(--secondary);font-weight:600;">
+                        <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">schedule</span> ${f.departure || '—'} to ${f.arrival || '—'} (${f.duration || '—'})</span>
+                        <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">flight</span> ${stopsLabel}</span>
+                    </div>`;
+            } else if (f.type === 'TRAIN') {
+                icon = 'train';
+                title = [f.trainNumber, f.trainName].filter(Boolean).join(' · ') || 'Train Option';
+                sub = `${origin} → ${dest} • ${travelDate}`;
+                
+                // Create dropdown options for all classes in f.classes, highlighting entitled classes based on employee band
+                const tBand = _userMe?.band || 3;
+                const entitledList = POLICY.trainEntitled[tBand] || [];
+                const availableClasses = f.classes || [];
+                
+                let classOptions = '';
+                availableClasses.forEach(c => {
+                    const isEntitled = entitledList.includes(c.toUpperCase());
+                    classOptions += `<option value="${c}" ${isEntitled ? '' : 'style="color:var(--danger-text)"'}>Class ${c} ${isEntitled ? '(Entitled)' : '(Approval Needed)'}</option>`;
+                });
+                
+                if (!f.class && availableClasses.length > 0) {
+                    const firstEntitled = availableClasses.find(c => entitledList.includes(c.toUpperCase()));
+                    f.class = firstEntitled || availableClasses[0];
+                }
+
+                extraDetails = `
+                    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--outline-variant);display:flex;flex-direction:column;gap:0.75rem;">
+                        <div style="display:flex;flex-wrap:wrap;gap:1rem;font-size:0.75rem;color:var(--secondary);font-weight:600;">
+                            <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">schedule</span> ${f.departure || '—'} to ${f.arrival || '—'} (${f.duration || '—'})</span>
+                        </div>
+                        <div class="field-group" style="margin-top:0.25rem;">
+                            <label for="preferred-train-class" style="font-size:0.75rem;font-weight:700;color:var(--primary);margin-bottom:0.25rem;display:block;">Preferred Train Class</label>
+                            <select id="preferred-train-class" class="brutalist-input" style="height:38px;padding:0.4rem 0.75rem;background:#ffffff;font-size:0.85rem;font-weight:600;width:100%;border:2px solid var(--primary);" onchange="updateTrainClass(this.value)">
+                                ${classOptions}
+                            </select>
+                        </div>
+                    </div>`;
+            } else {
+                icon = 'hotel';
+                title = f.name || 'Hotel Selection';
+                sub = `${dest} Accommodation • ${travelDate}`;
+                
+                const tBand = _userMe?.band || 3;
+                const hCap = POLICY.hotelCap(tBand, dest);
+                const overCap = f.pricePerNight > hCap;
+                const capLabel = overCap 
+                    ? `<span style="color:var(--danger-text);font-weight:700;">⚠️ ₹${(f.pricePerNight - hCap).toLocaleString('en-IN')} Over Cap</span>`
+                    : `<span style="color:var(--success-text);font-weight:700;">✓ Compliant</span>`;
+
+                extraDetails = `
+                    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--outline-variant);display:flex;flex-wrap:wrap;gap:1.5rem;font-size:0.75rem;color:var(--secondary);font-weight:600;">
+                        <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">grade</span> Rating: ★${f.rating || '—'}</span>
+                        <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">payments</span> ₹${(f.pricePerNight || 0).toLocaleString('en-IN')}/night</span>
+                        <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">verified</span> ${capLabel}</span>
+                    </div>`;
+            }
+            
+            const costVal = Number(document.getElementById('estimated-cost').value || f.price || 0);
+            const priceStr = costVal > 0 ? `₹${costVal.toLocaleString('en-IN')}` : 'Enter fare below';
+
+            el.innerHTML = `
+                <div style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">You're requesting:</div>
+                <div style="display:flex;flex-direction:column;padding:1.25rem;background:var(--primary-bg);border:2px solid var(--primary);border-radius:var(--radius-lg);box-shadow:var(--shadow-level-1);">
+                    <div style="display:flex;align-items:center;gap:0.75rem;">
+                        <span class="material-symbols-outlined" style="color:var(--primary);font-size:2rem;background:#ffffff;border:2px solid var(--primary);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon}</span>
+                        <div style="flex:1;min-width:0;">
+                            <p style="font-family:var(--font-display);font-weight:800;font-size:1rem;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--on-surface);">${title}</p>
+                            <p style="font-size:0.75rem;color:var(--secondary);margin:0.2rem 0 0;font-weight:600;">${sub}</p>
+                        </div>
+                        <span id="summary-price-tag" style="flex-shrink:0;font-family:var(--font-display);font-weight:800;font-size:1.15rem;color:var(--primary);">${priceStr}</span>
+                    </div>
+                    ${extraDetails}
+                </div>`;
         }
 
-        function selectTrainFare(el) {
+        function updateTrainClass(value) {
+            if (_selectedFare && _selectedFare.type === 'TRAIN') {
+                _selectedFare.class = value;
+                if (_selectedFare.classFares && _selectedFare.classFares[value]) {
+                    const price = _selectedFare.classFares[value];
+                    _selectedFare.price = price;
+                    document.getElementById('estimated-cost').value = price;
+                    
+                    const priceTag = document.getElementById('summary-price-tag');
+                    if (priceTag) {
+                        priceTag.innerText = `₹${price.toLocaleString('en-IN')}`;
+                    }
+                }
+            }
+        }
+
+        function selectFare(price, type, fareDetails) {
+            document.getElementById('estimated-cost').value = price > 0 ? price : '';
+            selectedType = type;
+            _selectedFare = Object.assign({ type, price: Number(price) }, fareDetails || {});
+            document.querySelectorAll('.trip-card').forEach(c => c.classList.remove('selected'));
+            event.currentTarget?.classList?.add('selected');
+            if (type === 'TRAIN') {
+                showToast('Train selected — enter the fare for your preferred class below.', 'info');
+            } else {
+                const label = type === 'FLIGHT'
+                    ? (`${fareDetails?.airline || ''} ${fareDetails?.flightNumber || ''}`.trim() || 'Flight')
+                    : (fareDetails?.name || 'Hotel');
+                showToast(`Selected: ${label} · ₹${Number(price).toLocaleString('en-IN')}`, 'success');
+            }
+        }
+
+        function selectTrainFare(el, fareDetails) {
+            selectedType = 'TRAIN';
+            _selectedFare = Object.assign({ type: 'TRAIN', price: 0 }, fareDetails || {});
+            
+            // Auto-populate price if classFares are available!
+            const defaultClass = _selectedFare.class || (_selectedFare.classes && _selectedFare.classes[0]) || '3A';
+            _selectedFare.class = defaultClass;
+            if (_selectedFare.classFares && _selectedFare.classFares[defaultClass]) {
+                const fareVal = _selectedFare.classFares[defaultClass];
+                _selectedFare.price = fareVal;
+                document.getElementById('estimated-cost').value = fareVal;
+            } else {
+                document.getElementById('estimated-cost').value = '';
+            }
+
             document.querySelectorAll('.trip-card').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
-            selectedType = 'TRAIN';
-            showToast('Train selected. Enter the fare for your preferred class in the cost field below.', 'info');
+            showToast('Train selected! Budget auto-calculated based on class.', 'success');
         }
 
         async function submitRequest() {
@@ -1229,13 +1379,14 @@
                     body: {
                         type: selectedType,
                         details: {
-                            origin: origin,
+                            origin,
                             destination: dest,
-                            date: date,
-                            purpose: purpose,
-                            justification: justification
+                            date,
+                            purpose,
+                            justification,
+                            ...(_selectedFare ? { selectedFare: _selectedFare } : {})
                         },
-                        cost: cost
+                        cost
                     }
                 });
                 showToast('Travel request submitted successfully!', 'success');

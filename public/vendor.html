@@ -469,6 +469,20 @@
             document.getElementById('tab-' + name).classList.add('active');
         }
 
+        function fareLabel(f) {
+            if (!f) return '';
+            if (f.type === 'FLIGHT') {
+                return `✈ ${f.airline || ''} ${f.flightNumber || ''}${f.departure && f.arrival ? ` (${f.departure} → ${f.arrival})` : f.departure ? ` (dep ${f.departure})` : ''}`.trim();
+            }
+            if (f.type === 'TRAIN') {
+                return `🚂 Train: ${f.trainNumber || ''} ${f.trainName || ''}${f.class ? ` [Class ${f.class}]` : ''}${f.departure && f.arrival ? ` (${f.departure} → ${f.arrival})` : ''}`.trim();
+            }
+            if (f.type === 'HOTEL') {
+                return `🏨 ${f.name || ''}${f.rating ? ` · ★${f.rating}` : ''}${f.pricePerNight ? ` (₹${f.pricePerNight}/night)` : ''}`.trim();
+            }
+            return '';
+        }
+
         async function loadRequests() {
             try {
                 const requests = await apiRequest('/vendor/requests');
@@ -491,7 +505,10 @@
                             <div style="font-size:0.75rem;color:var(--secondary);">${b.employee.department}</div>
                         </td>
                         <td data-label="Type"><span class="badge badge-pending-vendor" style="font-size:0.7rem;">${b.type}</span></td>
-                        <td data-label="Route" style="font-weight:600;">${b.details.origin} → ${b.details.destination}</td>
+                        <td data-label="Route">
+                            <div style="font-weight:700;">${b.details.origin} → ${b.details.destination}</div>
+                            ${b.details.selectedFare ? `<div style="font-size:0.72rem;color:var(--primary);font-weight:600;margin-top:0.15rem;">${fareLabel(b.details.selectedFare)}</div>` : ''}
+                        </td>
                         <td data-label="Date" style="color:var(--secondary);font-size:0.82rem;">${b.details.date}</td>
                         <td data-label="Est. Cost Share" class="numeric" style="color:var(--primary);font-weight:600;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
                         <td data-label="Action"><button onclick="showUploadModal('${b.id}')" style="font-size:0.78rem;padding:0.4rem 0.8rem;width:100%;">Process &amp; Issue</button></td>

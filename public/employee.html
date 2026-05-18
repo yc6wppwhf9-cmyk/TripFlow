@@ -786,6 +786,7 @@
     <script>
         let currentUser = null;
         let chatMessages = [];
+        let _selectedFare = null;
 
         function toggleSidebar() {
             document.getElementById('main-sidebar').classList.toggle('open');
@@ -850,6 +851,20 @@
             }
         }
 
+        function fareLabel(f) {
+            if (!f) return '';
+            if (f.type === 'FLIGHT') {
+                return `✈ ${f.airline || ''} ${f.flightNumber || ''}${f.departure && f.arrival ? ` (${f.departure} → ${f.arrival})` : f.departure ? ` (dep ${f.departure})` : ''}`.trim();
+            }
+            if (f.type === 'TRAIN') {
+                return `🚂 Train: ${f.trainNumber || ''} ${f.trainName || ''}${f.class ? ` [Class ${f.class}]` : ''}${f.departure && f.arrival ? ` (${f.departure} → ${f.arrival})` : ''}`.trim();
+            }
+            if (f.type === 'HOTEL') {
+                return `🏨 ${f.name || ''}${f.rating ? ` · ★${f.rating}` : ''}${f.pricePerNight ? ` (₹${f.pricePerNight}/night)` : ''}`.trim();
+            }
+            return '';
+        }
+
         async function loadBookings() {
             try {
                 const bookings = await apiRequest('/bookings/mine');
@@ -894,7 +909,8 @@
                             <td data-label="Route">
                                 <a href="detail.html?id=${b.id}" style="text-decoration:none;color:inherit;display:block;">
                                     <div style="font-weight:700;color:var(--on-surface);text-decoration:underline;text-underline-offset:2px;">${b.details.origin || '—'} → ${b.details.destination || '—'}</div>
-                                    <div style="font-size:0.75rem;font-weight:500;color:var(--secondary);margin-top:0.15rem;">${b.details.date || ''}</div>
+                                    ${b.details.selectedFare ? `<div style="font-size:0.72rem;font-weight:600;color:var(--primary);margin-top:0.1rem;">${fareLabel(b.details.selectedFare)}</div>` : ''}
+                                    <div style="font-size:0.75rem;font-weight:500;color:var(--secondary);margin-top:0.1rem;">${b.details.date || ''}</div>
                                 </a>
                             </td>
                             <td data-label="Status"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
@@ -1036,7 +1052,8 @@
                     else flights.slice(0,3).forEach((f,i) => {
                         const dep = f.departure?.slice(11,16)||f.departure||'—';
                         const arr = f.arrival?.slice(11,16)||f.arrival||'—';
-                        html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT')">
+                        const _ffd = encodeURIComponent(JSON.stringify({airline:f.airline,flightNumber:f.flightNumber,departure:dep,arrival:arr,duration:f.duration,stops:f.stops}));
+                        html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT',JSON.parse(decodeURIComponent('${_ffd}')))">
                             <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} &nbsp;·&nbsp; ${dep} → ${arr} &nbsp;·&nbsp; <span style="color:rgba(26,26,26,0.6);">${f.duration||''} · ${f.stops===0?'Non-stop':f.stops+' stop'}</span></span>
                             <span class="price">₹${f.price?.toLocaleString('en-IN')}</span>
                         </div>`;
@@ -1050,7 +1067,8 @@
             if (!trains.length) { html += `<p class="no-result">${plan.trainNote||'No trains found.'}</p>`; }
             else trains.forEach((t,i) => {
                 const timing = (t.departure&&t.arrival)?`${t.departure} → ${t.arrival}`:t.departure?`Dep ${t.departure}`:'';
-                html += `<div class="trip-card" onclick="pickPrice(0,'TRAIN')">
+                const _tfd = encodeURIComponent(JSON.stringify({trainNumber:t.trainNumber,trainName:t.trainName,departure:t.departure,arrival:t.arrival,duration:t.duration,classes:t.classes||[]}));
+                html += `<div class="trip-card" onclick="pickPrice(0,'TRAIN',JSON.parse(decodeURIComponent('${_tfd}')))">
                     <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${t.trainName}</strong> <span style="color:rgba(26,26,26,0.6);">${t.trainNumber}</span>${timing?' · '+timing:''} ${t.classes?.length?'· <span style="color:rgba(26,26,26,0.6);font-size:0.78rem;">'+t.classes.join(', ')+'</span>':''}</span>
                     <span class="price" style="color:rgba(26,26,26,0.6);font-size:0.75rem;font-weight:700;">IRCTC</span>
                 </div>`;
@@ -1063,7 +1081,8 @@
             else hotels.forEach((h,i) => {
                 const rating = h.rating?` · ★${h.rating}`:'';
                 const dist   = h.distanceFromCenter?` · ${h.distanceFromCenter} from center`:'';
-                html += `<div class="trip-card" onclick="pickPrice(${h.price||h.pricePerNight||0},'HOTEL')">
+                const _hfd = encodeURIComponent(JSON.stringify({name:h.name,rating:h.rating,pricePerNight:h.pricePerNight||h.price||0}));
+                html += `<div class="trip-card" onclick="pickPrice(${h.price||h.pricePerNight||0},'HOTEL',JSON.parse(decodeURIComponent('${_hfd}')))">
                     <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${h.name}</strong>${dist}${rating}</span>
                     <span class="price">₹${(h.pricePerNight||0).toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:400;color:inherit;">/night</span></span>
                 </div>`;
@@ -1074,12 +1093,13 @@
                 html += `<div class="trip-section"><div class="trip-section-header">✈ Return Flights <span style="margin-left:auto;">${toDate}</span></div>`;
                 plan.returnFlights.forEach(group => {
                     const flights = Array.isArray(group.results)?group.results:[];
-                    html += `<div class="via-label">from ${group.via} (${group.code})</div>`;
+                    html += `<div class="via-label">from ${group.via}</div>`;
                     if (!flights.length) { html += `<p class="no-result">No return flights found</p>`; }
                     else flights.slice(0,2).forEach((f,i) => {
                         const dep = f.departure?.slice(11,16)||f.departure||'—';
                         const arr = f.arrival?.slice(11,16)||f.arrival||'—';
-                        html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT')">
+                        const _ffd = encodeURIComponent(JSON.stringify({airline:f.airline,flightNumber:f.flightNumber,departure:dep,arrival:arr,duration:f.duration,stops:f.stops}));
+                        html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT',JSON.parse(decodeURIComponent('${_ffd}')))">
                             <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} · ${dep} → ${arr} · <span style="color:rgba(26,26,26,0.6);">${f.duration||''}</span></span>
                             <span class="price">₹${f.price?.toLocaleString('en-IN')}</span>
                         </div>`;
@@ -1091,11 +1111,55 @@
             res.innerHTML = html;
         }
 
-        function pickPrice(price, type) {
+        function pickPrice(price, type, fareDetails) {
             if (price > 0) document.getElementById('estimated-cost').value = price;
             document.getElementById('travel-type').value = type;
+            _selectedFare = Object.assign({ type, price: Number(price) }, fareDetails || {});
             document.querySelectorAll('.trip-card').forEach(c => c.classList.remove('selected'));
             event.currentTarget?.classList?.add('selected');
+
+            // Render train class selector if it is a train
+            const classSelWrap = document.getElementById('modal-train-class-wrap');
+            if (type === 'TRAIN') {
+                if (!classSelWrap) {
+                    const wrap = document.createElement('div');
+                    wrap.id = 'modal-train-class-wrap';
+                    wrap.style.cssText = 'margin-top:1rem;display:flex;flex-direction:column;gap:0.25rem;flex:1;';
+                    wrap.innerHTML = `
+                        <label class="plan-label">Preferred Train Class</label>
+                        <select id="modal-train-class" class="plan-input" style="border:2px solid #1a1a1a;border-radius:0px;background:#ffffff;height:40px;font-weight:600;" onchange="updateModalTrainClass(this.value)">
+                        </select>
+                    `;
+                    const costWrap = document.getElementById('estimated-cost').parentElement;
+                    costWrap.parentElement.insertBefore(wrap, costWrap.nextSibling);
+                }
+                const select = document.getElementById('modal-train-class');
+                const classes = fareDetails?.classes || ['3A', '2A', 'SL'];
+                select.innerHTML = classes.map(c => `<option value="${c}">Class ${c}</option>`).join('');
+                
+                const defaultClass = classes[0];
+                _selectedFare.class = defaultClass;
+                if (_selectedFare.classFares && _selectedFare.classFares[defaultClass]) {
+                    const defaultPrice = _selectedFare.classFares[defaultClass];
+                    _selectedFare.price = defaultPrice;
+                    document.getElementById('estimated-cost').value = defaultPrice;
+                } else {
+                    document.getElementById('estimated-cost').value = '';
+                }
+            } else {
+                if (classSelWrap) classSelWrap.remove();
+            }
+        }
+
+        function updateModalTrainClass(value) {
+            if (_selectedFare && _selectedFare.type === 'TRAIN') {
+                _selectedFare.class = value;
+                if (_selectedFare.classFares && _selectedFare.classFares[value]) {
+                    const price = _selectedFare.classFares[value];
+                    _selectedFare.price = price;
+                    document.getElementById('estimated-cost').value = price;
+                }
+            }
         }
 
         async function submitTripBooking() {
@@ -1108,7 +1172,19 @@
             const btn = event.currentTarget;
             btn.disabled = true; btn.textContent = 'Submitting…';
             try {
-                await apiRequest('/bookings', { method: 'POST', body: { type, details: { origin, destination, date }, cost } });
+                await apiRequest('/bookings', {
+                    method: 'POST',
+                    body: {
+                        type,
+                        details: {
+                            origin,
+                            destination,
+                            date,
+                            ...(_selectedFare ? { selectedFare: _selectedFare } : {})
+                        },
+                        cost
+                    }
+                });
                 hideBookingModal();
                 showToast('Trip request submitted! Your manager will review it shortly.', 'success', 5000);
                 await loadBookings();

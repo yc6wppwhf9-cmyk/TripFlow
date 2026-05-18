@@ -600,30 +600,53 @@
                 const cost = b.cost || 0;
                 document.getElementById('budget-total').innerText = `₹${cost.toLocaleString('en-IN')}`;
                 
+                const sf = b.details?.selectedFare;
                 if (b.type === 'FLIGHT') {
                     document.getElementById('travel-type-label').innerText = 'Outbound Flight';
                     document.getElementById('travel-icon').innerText = 'flight_takeoff';
                     document.getElementById('travel-mid-icon').innerText = 'flight';
-                    document.getElementById('travel-provider').innerText = 'IndiGo (6E-454)';
-                    document.getElementById('route-duration').innerText = '2h 15m';
+                    
+                    if (sf) {
+                        document.getElementById('travel-provider').innerText = `${sf.airline || 'Flight'} (${sf.flightNumber || '—'})${sf.departure ? ' · ' + sf.departure : ''}`;
+                        document.getElementById('route-duration').innerText = sf.duration || '—';
+                    } else {
+                        document.getElementById('travel-provider').innerText = 'Standard Flight Option';
+                        document.getElementById('route-duration').innerText = '—';
+                    }
 
-                    document.getElementById('budget-airfare').innerText = `₹${Math.round(cost * 0.65).toLocaleString('en-IN')}`;
-                    document.getElementById('budget-hotel').innerText = `₹${Math.round(cost * 0.35).toLocaleString('en-IN')}`;
+                    document.getElementById('budget-airfare').innerText = `₹${cost.toLocaleString('en-IN')}`;
+                    document.getElementById('budget-hotel').innerText = `₹0`;
                 } else if (b.type === 'TRAIN') {
                     document.getElementById('travel-type-label').innerText = 'Outbound Train';
                     document.getElementById('travel-icon').innerText = 'train';
                     document.getElementById('travel-mid-icon').innerText = 'train';
-                    document.getElementById('travel-provider').innerText = 'IRCTC Rajdhani (12951)';
-                    document.getElementById('route-duration').innerText = '15h 30m';
+                    
+                    if (sf) {
+                        document.getElementById('travel-provider').innerText = `${sf.trainName || 'Train'} (${sf.trainNumber || '—'})${sf.class ? ' · Class ' + sf.class : ''}`;
+                        document.getElementById('route-duration').innerText = sf.duration || '—';
+                    } else {
+                        document.getElementById('travel-provider').innerText = 'Standard Train Option';
+                        document.getElementById('route-duration').innerText = '—';
+                    }
 
-                    document.getElementById('budget-airfare').innerText = `₹${Math.round(cost * 0.25).toLocaleString('en-IN')} (Train)`;
-                    document.getElementById('budget-hotel').innerText = `₹${Math.round(cost * 0.75).toLocaleString('en-IN')}`;
+                    document.getElementById('budget-airfare').innerText = `₹${cost.toLocaleString('en-IN')} (Train)`;
+                    document.getElementById('budget-hotel').innerText = `₹0`;
                 } else {
                     document.getElementById('travel-type-label').innerText = 'Hotel Lodging';
                     document.getElementById('travel-icon').innerText = 'hotel';
                     document.getElementById('travel-mid-icon').innerText = 'hotel';
-                    document.getElementById('travel-provider').innerText = 'Standard Lodging';
-                    document.getElementById('route-duration').innerText = 'Duration Stay';
+                    
+                    if (sf) {
+                        document.getElementById('travel-provider').innerText = sf.name || 'Hotel Selection';
+                        document.getElementById('route-duration').innerText = sf.rating ? `★${sf.rating} Rating` : 'Hotel Lodging';
+                        const hotelNameEl = document.getElementById('hotel-name');
+                        if (hotelNameEl) hotelNameEl.innerText = sf.name || 'Hotel Selection';
+                        const hotelAddrEl = document.getElementById('hotel-address');
+                        if (hotelAddrEl) hotelAddrEl.innerText = sf.pricePerNight ? `₹${sf.pricePerNight.toLocaleString('en-IN')}/night` : 'Arranged Hotel Selection';
+                    } else {
+                        document.getElementById('travel-provider').innerText = 'Standard Lodging';
+                        document.getElementById('route-duration').innerText = 'Duration Stay';
+                    }
 
                     document.getElementById('budget-airfare').innerText = `₹0`;
                     document.getElementById('budget-hotel').innerText = `₹${cost.toLocaleString('en-IN')}`;
