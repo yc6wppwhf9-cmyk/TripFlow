@@ -347,7 +347,8 @@ const TRAIN_NAMES = {
   '12310':'Rajdhani Express (Patna)','12309':'Rajdhani Express (Patna)',
   '12555':'Gorakhdham Express','12556':'Gorakhdham Express',
   '12541':'Gorakhpur Shatabdi','12542':'Gorakhpur Shatabdi',
-  // Mumbai ↔ South
+};
+
 // ── Trains ────────────────────────────────────────────────────────────────────
 // Primary:  irctc1.p.rapidapi.com  (REST GET — most reliable IRCTC wrapper on RapidAPI)
 // Fallback: known-routes table, then Claude AI
