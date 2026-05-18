@@ -3,175 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TripFlow | Employee Dashboard</title>
+    <title>TripFlow | My Trips</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-        .flatpickr-calendar { font-family: inherit; }
-        /* Style the visible altInput to match other trip-planner inputs */
-        #tp-from-date + input.flatpickr-input,
-        #tp-to-date + input.flatpickr-input {
-            width: 100%;
-            padding: 0.7rem 0.9rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-family: inherit;
-            outline: none;
-            cursor: pointer;
-            background: white;
-            box-sizing: border-box;
+        /* Override flatpickr for dark theme */
+        .flatpickr-calendar {
+            background: #1c2333 !important;
+            border: 1px solid rgba(255,255,255,0.07) !important;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+            border-radius: 12px !important;
         }
-        #tp-from-date + input.flatpickr-input:focus,
-        #tp-to-date + input.flatpickr-input:focus {
-            border-color: #6366f1;
-        }
-    </style>
-    <style>
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .chat-bubble { animation: fadeIn 0.2s ease; }
-        #chat-panel { display: none; flex-direction: column; }
-        #chat-panel.open { display: flex; }
-        #chat-messages::-webkit-scrollbar { width: 4px; }
-        #chat-messages::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
-    </style>
-</head>
-<body>
-    <nav class="dashboard-nav glass">
-        <div class="logo">TripFlow</div>
-        <div class="nav-links">
-            <a href="#" class="active">My Trips</a>
-            <a href="#" onclick="showBookingModal()">New Request</a>
-        </div>
-        <div class="user-info">
-            <span id="user-name" style="font-weight: 600; color: var(--text-main);"></span>
-            <button onclick="logout()" class="secondary" style="width: auto; padding: 0.6rem 1.2rem;">Logout</button>
-        </div>
-    </nav>
+        .flatpickr-day { color: #e8eaf0 !important; border-radius: 8px !important; }
+        .flatpickr-day:hover, .flatpickr-day.selected { background: #d4a853 !important; color: #0e1117 !important; border-color: transparent !important; }
+        .flatpickr-day.today { border-color: #d4a853 !important; }
+        .flatpickr-months .flatpickr-month, .flatpickr-weekday { color: #9aa3b5 !important; }
+        .flatpickr-current-month .flatpickr-monthDropdown-months,
+        .flatpickr-current-month input.cur-year { color: #e8eaf0 !important; background: transparent !important; }
+        .flatpickr-prev-month svg, .flatpickr-next-month svg { fill: #9aa3b5 !important; }
+        .flatpickr-prev-month:hover svg, .flatpickr-next-month:hover svg { fill: #d4a853 !important; }
 
-    <div class="container">
-        <div class="header-actions" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
-            <div>
-                <p style="color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem; margin-bottom: 0.5rem;">Dashboard</p>
-                <h1>My Travel Requests</h1>
-            </div>
-            <button onclick="showBookingModal()" style="padding: 1rem 2rem;">+ New Trip Request</button>
-        </div>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>Details</th>
-                        <th>Stage</th>
-                        <th>Cost</th>
-                        <th>PNR</th>
-                        <th>Ticket</th>
-                    </tr>
-                </thead>
-                <tbody id="bookings-list">
-                    <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Trip Planner Modal -->
-    <div id="booking-modal" class="modal">
-        <div class="modal-content" style="max-width:680px; padding:0; overflow:hidden; max-height:90vh; display:flex; flex-direction:column;">
-
-            <!-- Header -->
-            <div style="padding:1.5rem 2rem 1.25rem; border-bottom:1px solid #e2e8f0; flex-shrink:0;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <h2 style="margin:0; font-size:1.35rem; letter-spacing:-0.5px;">Plan Your Trip</h2>
-                        <p style="margin:0.2rem 0 0; color:#64748b; font-size:0.82rem;">Enter your destination — we'll find flights, trains &amp; hotels automatically.</p>
-                    </div>
-                    <button type="button" onclick="hideBookingModal()" style="background:none;border:none;box-shadow:none;color:#94a3b8;font-size:1.6rem;padding:0;cursor:pointer;line-height:1;">×</button>
-                </div>
-
-                <!-- Search Form -->
-                <div style="display:grid; grid-template-columns:1fr auto 1fr 1fr 1fr auto; gap:0.6rem; align-items:end; margin-top:1.25rem;">
-                    <div>
-                        <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:0.3rem;">FROM</label>
-                        <div style="position:relative;">
-                            <input id="tp-from" type="text" placeholder="Mumbai" autocomplete="off"
-                                style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none;"
-                                oninput="showCitySuggestions(this,'tp-from-list')" onfocus="showCitySuggestions(this,'tp-from-list')" onblur="setTimeout(()=>hideCityList('tp-from-list'),200)">
-                            <div id="tp-from-list" class="city-dropdown"></div>
-                        </div>
-                    </div>
-                    <div style="padding-bottom:0.5rem; color:#94a3b8; font-size:1.1rem; text-align:center;">→</div>
-                    <div>
-                        <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:0.3rem;">TO (DESTINATION)</label>
-                        <div style="position:relative;">
-                            <input id="tp-to" type="text" placeholder="Muzaffarpur" autocomplete="off"
-                                style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none;"
-                                oninput="showCitySuggestions(this,'tp-to-list')" onfocus="showCitySuggestions(this,'tp-to-list')" onblur="setTimeout(()=>hideCityList('tp-to-list'),200)">
-                            <div id="tp-to-list" class="city-dropdown"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:0.3rem;">DEPARTURE</label>
-                        <input id="tp-from-date" type="text" readonly placeholder="DD/MM/YYYY" style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none; cursor:pointer;">
-                    </div>
-                    <div>
-                        <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:0.3rem;">RETURN (OPT)</label>
-                        <input id="tp-to-date" type="text" readonly placeholder="DD/MM/YYYY" style="width:100%; padding:0.7rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none; cursor:pointer;">
-                    </div>
-                    <button type="button" onclick="runTripPlan()" id="tp-search-btn"
-                        style="padding:0.7rem 1.2rem; border-radius:10px; font-size:0.85rem; white-space:nowrap; height:fit-content;">
-                        Search
-                    </button>
-                </div>
-            </div>
-
-            <!-- Results area -->
-            <div id="trip-plan-results" style="flex:1; overflow-y:auto; padding:1.5rem 2rem;">
-                <p style="color:#94a3b8; font-size:0.85rem; text-align:center; margin-top:2rem;">
-                    Enter your trip details above and click <strong>Search</strong>.
-                </p>
-            </div>
-
-            <!-- Submit bar (shown after plan loads) -->
-            <div id="submit-bar" style="display:none; padding:1rem 2rem; border-top:1px solid #e2e8f0; background:#fafafa; flex-shrink:0;">
-                <div style="display:flex; gap:0.75rem; align-items:center;">
-                    <div style="flex:1;">
-                        <label style="font-size:0.75rem; color:#64748b; font-weight:600;">ESTIMATED COST (₹)</label>
-                        <input type="number" id="estimated-cost" min="1" placeholder="Enter total trip cost"
-                            style="width:100%; padding:0.6rem 0.9rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; margin-top:0.25rem; font-family:inherit; outline:none;">
-                    </div>
-                    <div style="flex:1; display:flex; gap:0.5rem; padding-top:1.25rem;">
-                        <input type="hidden" id="travel-type" value="FLIGHT">
-                        <input type="hidden" id="origin" value="">
-                        <input type="hidden" id="destination" value="">
-                        <input type="hidden" id="travel-date" value="">
-                        <button type="button" onclick="submitTripBooking()" style="flex:2; padding:0.85rem; font-size:0.9rem;">Submit Request</button>
-                        <button type="button" onclick="hideBookingModal()" class="secondary" style="flex:1; padding:0.85rem; font-size:0.9rem;">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <style>
+        /* City dropdown */
         .city-dropdown {
             position: absolute;
-            top: 100%;
+            top: calc(100% + 4px);
             left: 0;
-            min-width: 240px;
-            background: white;
-            border: 1px solid #e2e8f0;
+            min-width: 260px;
+            background: #1c2333;
+            border: 1px solid rgba(255,255,255,0.07);
             border-radius: 10px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.5);
             z-index: 9999;
             max-height: 220px;
             overflow-y: auto;
@@ -181,75 +43,254 @@
         .city-option {
             padding: 0.6rem 1rem;
             cursor: pointer;
-            font-size: 0.875rem;
+            font-size: 0.83rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: #e8eaf0;
+            transition: background 0.12s;
+        }
+        .city-option:last-child { border-bottom: none; }
+        .city-option:hover { background: rgba(212,168,83,0.08); }
+        .city-code {
+            font-size: 0.67rem;
+            color: #d4a853;
+            font-weight: 700;
+            background: rgba(212,168,83,0.12);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .city-state { font-size: 0.72rem; color: #5a6478; margin-left: auto; }
+
+        /* Trip plan cards */
+        .trip-section { margin-bottom: 1.5rem; }
+        .trip-section-header {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #5a6478;
+            margin-bottom: 0.6rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .city-option:last-child { border-bottom: none; }
-        .city-option:hover { background: #f0f4ff; }
-        .city-option .city-code { font-size: 0.72rem; color: #6366f1; font-weight: 700; background: #e0e7ff; padding: 0.15rem 0.4rem; border-radius: 4px; }
-        .trip-section { margin-bottom: 1.5rem; }
-        .trip-section-header {
-            display: flex; align-items: center; gap: 0.5rem;
-            font-size: 0.8rem; font-weight: 700; color: #3730a3;
-            text-transform: uppercase; letter-spacing: 0.05em;
-            margin-bottom: 0.6rem; padding-bottom: 0.4rem;
-            border-bottom: 2px solid #e0e7ff;
         }
         .trip-card {
-            padding: 0.65rem 0.9rem;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
             margin-bottom: 0.4rem;
             cursor: pointer;
-            font-size: 0.83rem;
-            line-height: 1.5;
-            background: white;
+            font-size: 0.835rem;
+            background: #1c2333;
             transition: all 0.15s;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: #e8eaf0;
         }
-        .trip-card:hover { border-color: #a5b4fc; background: #f5f3ff; }
-        .trip-card.selected { border-color: #6366f1; background: #e0e7ff; }
-        .trip-card .price { font-weight: 700; color: #4338ca; white-space: nowrap; margin-left: 1rem; }
-        .trip-card .best-tag { font-size: 0.68rem; color: #4338ca; background: #c7d2fe; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700; margin-right: 0.4rem; }
-        .via-label { font-size: 0.75rem; color: #6366f1; font-weight: 600; background: #e0e7ff; padding: 0.15rem 0.5rem; border-radius: 20px; margin-bottom: 0.4rem; display: inline-block; }
-        .no-result { color: #94a3b8; font-size: 0.82rem; padding: 0.5rem 0; }
+        .trip-card:hover { border-color: rgba(212,168,83,0.25); background: #202736; }
+        .trip-card.selected { border-color: #d4a853; background: rgba(212,168,83,0.06); }
+        .trip-card .price { font-weight: 700; color: #d4a853; white-space: nowrap; margin-left: 1rem; font-size: 0.9rem; }
+        .best-tag { font-size: 0.6rem; color: #0e1117; background: #d4a853; padding: 0.1rem 0.45rem; border-radius: 4px; font-weight: 800; letter-spacing: 0.05em; margin-right: 0.4rem; }
+        .via-label { font-size: 0.7rem; color: #5a6478; font-weight: 600; letter-spacing: 0.06em; margin-bottom: 0.4rem; text-transform: uppercase; }
+        .no-result { color: #3a4152; font-size: 0.82rem; padding: 0.5rem 0; }
+
+        /* Plan modal custom inputs */
+        .plan-input {
+            background: #1c2333;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 8px;
+            padding: 0.65rem 0.9rem;
+            font-size: 0.875rem;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            color: #e8eaf0;
+            outline: none;
+            transition: all 0.18s;
+            width: 100%;
+        }
+        .plan-input:focus { border-color: rgba(212,168,83,0.4); background: #202736; }
+        .plan-input::placeholder { color: #3a4152; }
+        .plan-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #5a6478;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        /* AI Chat */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-4px); }
+        }
+        @keyframes bubbleIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .chat-bubble { animation: bubbleIn 0.2s ease; }
+        #chat-panel { display: none; flex-direction: column; }
+        #chat-panel.open { display: flex; }
+        #chat-messages::-webkit-scrollbar { width: 3px; }
+        #chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
+
+        /* Booking table extras */
+        .booking-type-chip {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em;
+            text-transform: uppercase; color: #5a6478;
+        }
     </style>
+</head>
+<body>
+    <nav class="dashboard-nav glass">
+        <div class="logo">TripFlow</div>
+        <div class="nav-links">
+            <a href="#" class="active">My Trips</a>
+            <a href="#" onclick="showBookingModal(); return false;">+ New Request</a>
+        </div>
+        <div class="user-info">
+            <span id="user-name" style="font-size:0.875rem;font-weight:600;color:#9aa3b5;"></span>
+            <button onclick="logout()" class="secondary" style="padding:0.45rem 0.9rem;font-size:0.8rem;">Logout</button>
+        </div>
+    </nav>
 
-    <!-- AI Chat Widget -->
-    <div id="ai-chat" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 1000;">
+    <div class="container">
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.5rem;">
+            <div>
+                <p class="page-label">Dashboard</p>
+                <h1>My Travel Requests</h1>
+            </div>
+            <button onclick="showBookingModal()" style="padding:0.7rem 1.4rem;">Plan a Trip</button>
+        </div>
 
-        <!-- Chat Panel -->
-        <div id="chat-panel" style="position: absolute; bottom: 70px; right: 0; width: 360px; height: 520px; background: white; border-radius: 20px; box-shadow: 0 8px 40px rgba(0,0,0,0.18); overflow: hidden;">
-            <!-- Header -->
-            <div style="padding: 1.1rem 1.4rem; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; display: flex; align-items: center; gap: 0.75rem;">
-                <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">✈️</div>
-                <div style="flex: 1;">
-                    <div style="font-weight: 700; font-size: 0.95rem;">TripFlow Assistant</div>
-                    <div style="font-size: 0.72rem; opacity: 0.85;">AI-powered travel booking</div>
+        <!-- Bookings table -->
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Route</th>
+                        <th>Status</th>
+                        <th>Cost</th>
+                        <th>PNR</th>
+                        <th>Ticket</th>
+                    </tr>
+                </thead>
+                <tbody id="bookings-list">
+                    <tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✈</div><p>Loading your trips…</p></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Trip Planner Modal -->
+    <div id="booking-modal" class="modal">
+        <div class="modal-content" style="max-width:700px;padding:0;overflow:hidden;max-height:92vh;display:flex;flex-direction:column;background:#161b27;border-radius:16px;">
+
+            <!-- Modal header -->
+            <div style="padding:1.5rem 2rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <div>
+                        <p style="font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#d4a853;margin-bottom:0.35rem;">Trip Planner</p>
+                        <h2 style="font-size:1.25rem;margin:0;">Plan Your Journey</h2>
+                        <p style="color:#5a6478;font-size:0.8rem;margin-top:0.2rem;">Enter destination — AI finds flights, trains &amp; hotels.</p>
+                    </div>
+                    <button type="button" onclick="hideBookingModal()" style="background:none;border:none;box-shadow:none;color:#5a6478;font-size:1.4rem;padding:0;cursor:pointer;line-height:1;margin-top:-4px;" aria-label="Close">×</button>
                 </div>
-                <button onclick="toggleChat()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; padding: 0;">×</button>
+
+                <!-- Search grid -->
+                <div style="display:grid;grid-template-columns:1fr auto 1fr 1fr 1fr auto;gap:0.6rem;align-items:end;margin-top:1.25rem;">
+                    <div>
+                        <label class="plan-label">From</label>
+                        <div style="position:relative;">
+                            <input id="tp-from" type="text" placeholder="Mumbai" autocomplete="off" class="plan-input"
+                                oninput="showCitySuggestions(this,'tp-from-list')"
+                                onfocus="showCitySuggestions(this,'tp-from-list')"
+                                onblur="setTimeout(()=>hideCityList('tp-from-list'),200)">
+                            <div id="tp-from-list" class="city-dropdown"></div>
+                        </div>
+                    </div>
+                    <div style="padding-bottom:0.4rem;color:#3a4152;font-size:1rem;text-align:center;">→</div>
+                    <div>
+                        <label class="plan-label">To</label>
+                        <div style="position:relative;">
+                            <input id="tp-to" type="text" placeholder="Delhi" autocomplete="off" class="plan-input"
+                                oninput="showCitySuggestions(this,'tp-to-list')"
+                                onfocus="showCitySuggestions(this,'tp-to-list')"
+                                onblur="setTimeout(()=>hideCityList('tp-to-list'),200)">
+                            <div id="tp-to-list" class="city-dropdown"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="plan-label">Departure</label>
+                        <input id="tp-from-date" type="text" readonly placeholder="DD/MM/YYYY" class="plan-input" style="cursor:pointer;">
+                    </div>
+                    <div>
+                        <label class="plan-label">Return (opt)</label>
+                        <input id="tp-to-date" type="text" readonly placeholder="DD/MM/YYYY" class="plan-input" style="cursor:pointer;">
+                    </div>
+                    <button type="button" onclick="runTripPlan()" id="tp-search-btn" style="padding:0.65rem 1.1rem;font-size:0.82rem;white-space:nowrap;height:fit-content;">Search</button>
+                </div>
             </div>
 
-            <!-- Messages -->
-            <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.65rem; height: 370px; background: #f8fafc;"></div>
+            <!-- Results -->
+            <div id="trip-plan-results" style="flex:1;overflow-y:auto;padding:1.5rem 2rem;">
+                <p style="color:#3a4152;font-size:0.85rem;text-align:center;margin-top:2rem;">Enter trip details above and click <strong style="color:#5a6478;">Search</strong>.</p>
+            </div>
 
+            <!-- Submit bar -->
+            <div id="submit-bar" style="display:none;padding:1rem 2rem;border-top:1px solid rgba(255,255,255,0.06);background:#0e1117;flex-shrink:0;">
+                <div style="display:flex;gap:0.75rem;align-items:center;">
+                    <div style="flex:1;">
+                        <label class="plan-label">Estimated Cost (₹)</label>
+                        <input type="number" id="estimated-cost" min="1" placeholder="Enter or select from results above" class="plan-input" style="margin-top:0.25rem;">
+                    </div>
+                    <div style="flex:1;display:flex;gap:0.5rem;padding-top:1.35rem;">
+                        <input type="hidden" id="travel-type" value="FLIGHT">
+                        <input type="hidden" id="origin" value="">
+                        <input type="hidden" id="destination" value="">
+                        <input type="hidden" id="travel-date" value="">
+                        <button type="button" onclick="submitTripBooking()" style="flex:2;padding:0.75rem;">Submit Request</button>
+                        <button type="button" onclick="hideBookingModal()" class="secondary" style="flex:1;padding:0.75rem;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chat Widget -->
+    <div id="ai-chat" style="position:fixed;bottom:2rem;right:2rem;z-index:1000;">
+        <!-- Chat Panel -->
+        <div id="chat-panel" style="position:absolute;bottom:70px;right:0;width:360px;height:520px;background:#161b27;border:1px solid rgba(255,255,255,0.07);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.6);overflow:hidden;">
+            <!-- Header -->
+            <div style="padding:1rem 1.25rem;background:#1c2333;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:0.75rem;">
+                <div style="width:34px;height:34px;background:rgba(212,168,83,0.12);border:1px solid rgba(212,168,83,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;">✈</div>
+                <div style="flex:1;">
+                    <div style="font-weight:700;font-size:0.875rem;color:#e8eaf0;">TripFlow Assistant</div>
+                    <div style="font-size:0.7rem;color:#5a6478;">AI-powered booking</div>
+                </div>
+                <button onclick="toggleChat()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.07);color:#9aa3b5;width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:none;">×</button>
+            </div>
+            <!-- Messages -->
+            <div id="chat-messages" style="flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.6rem;height:380px;background:#0e1117;"></div>
             <!-- Input -->
-            <div style="padding: 0.9rem 1rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.5rem; background: white; align-items: center;">
-                <input id="chat-input" placeholder="Describe your travel need..." style="flex: 1; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.65rem 0.9rem; font-size: 0.875rem; outline: none; font-family: inherit;" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); sendChat(); }">
-                <button id="voice-btn" onclick="toggleVoice()" title="Voice input" style="width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid #e2e8f0; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; transition: background 0.2s;">🎤</button>
-                <button onclick="sendChat()" id="chat-send" style="width: auto; padding: 0.65rem 1rem; border-radius: 10px; font-size: 0.875rem; background: linear-gradient(135deg, #6366f1, #8b5cf6); min-width: 60px;">Send</button>
+            <div style="padding:0.75rem 1rem;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:0.5rem;background:#161b27;align-items:center;">
+                <input id="chat-input" placeholder="Describe your travel need…" style="flex:1;background:#1c2333;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:0.6rem 0.875rem;font-size:0.835rem;outline:none;font-family:inherit;color:#e8eaf0;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
+                <button id="voice-btn" onclick="toggleVoice()" title="Voice input" style="width:34px;height:34px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);background:#1c2333;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;transition:background 0.2s;box-shadow:none;padding:0;color:#5a6478;">🎤</button>
+                <button onclick="sendChat()" id="chat-send" style="padding:0.6rem 0.9rem;border-radius:8px;font-size:0.8rem;min-width:52px;">Send</button>
             </div>
         </div>
 
-        <!-- Toggle Button -->
-        <button id="chat-btn" onclick="toggleChat()" style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(99,102,241,0.45); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: transform 0.2s; color: white; position: relative; z-index: 1;">
-            ✈️
-        </button>
+        <!-- Toggle -->
+        <button id="chat-btn" onclick="toggleChat()" style="width:52px;height:52px;border-radius:12px;background:#d4a853;border:none;cursor:pointer;box-shadow:0 6px 24px rgba(212,168,83,0.35);display:flex;align-items:center;justify-content:center;font-size:1.25rem;transition:all 0.2s;color:#0e1117;position:relative;z-index:1;">✈</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -264,24 +305,18 @@
             currentUser = checkAuth();
             if (!currentUser) return;
             document.getElementById('user-name').innerText = currentUser.name;
+            showTableSkeleton('bookings-list', 6);
             await loadBookings();
         }
         init();
 
-        // Date pickers with DD/MM/YYYY display, ISO value stored in hidden input
         const _fpFrom = flatpickr('#tp-from-date', {
-            dateFormat: 'Y-m-d',
-            altInput: true,
-            altFormat: 'd/m/Y',
-            minDate: 'today',
-            disableMobile: true
+            dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+            minDate: 'today', disableMobile: true
         });
         const _fpTo = flatpickr('#tp-to-date', {
-            dateFormat: 'Y-m-d',
-            altInput: true,
-            altFormat: 'd/m/Y',
-            minDate: 'today',
-            disableMobile: true,
+            dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+            minDate: 'today', disableMobile: true,
             onReady(_, __, fp) {
                 _fpFrom.config.onChange.push(() => { fp.set('minDate', _fpFrom.selectedDates[0]); });
             }
@@ -292,33 +327,30 @@
                 const bookings = await apiRequest('/bookings/mine');
                 const list = document.getElementById('bookings-list');
                 if (!bookings.length) {
-                    list.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding: 2rem;">No travel requests yet. Use the AI assistant or click + New Trip Request.</td></tr>';
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✈</div><p>No travel requests yet. Click <strong>Plan a Trip</strong> to get started.</p></div></td></tr>';
                     return;
                 }
                 list.innerHTML = bookings.map(b => `
                     <tr>
-                        <td style="font-weight: 700; color: var(--text-main);">${b.type}</td>
+                        <td><span class="booking-type-chip">${b.type}</span></td>
                         <td>
-                            <div style="font-weight: 500;">${b.details.origin || '—'} → ${b.details.destination || '—'}</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted);">${b.details.date || ''}</div>
+                            <div style="font-weight:600;color:#e8eaf0;">${b.details.origin || '—'} → ${b.details.destination || '—'}</div>
+                            <div style="font-size:0.78rem;color:#5a6478;margin-top:0.15rem;">${b.details.date || ''}</div>
                         </td>
-                        <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g, '-')}">${b.stage.replace(/_/g, ' ')}</span></td>
-                        <td style="font-weight: 600;">${b.cost ? '₹' + Number(b.cost).toLocaleString('en-IN') : '—'}</td>
-                        <td style="font-family: monospace; color: var(--accent);">${b.pnr || '—'}</td>
-                        <td>${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: none;">View</a>` : '—'}</td>
-                    </tr>
-                `).join('');
+                        <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
+                        <td style="font-weight:600;color:#d4a853;">${b.cost ? '₹' + Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                        <td style="font-family:monospace;font-size:0.82rem;color:#9aa3b5;">${b.pnr || '—'}</td>
+                        <td>${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color:#d4a853;font-weight:600;text-decoration:none;font-size:0.82rem;">View ↗</a>` : '<span style="color:#3a4152;">—</span>'}</td>
+                    </tr>`).join('');
             } catch (err) {
                 console.error(err.message);
             }
         }
 
-        // ── City list for autocomplete (all Indian cities + major international) ──
+        // City list
         const CITY_LIST = [
-          // Metro
           {n:'Mumbai',c:'BOM',s:'Maharashtra'},{n:'Delhi',c:'DEL',s:'Delhi'},{n:'Bangalore',c:'BLR',s:'Karnataka'},
           {n:'Hyderabad',c:'HYD',s:'Telangana'},{n:'Chennai',c:'MAA',s:'Tamil Nadu'},{n:'Kolkata',c:'CCU',s:'West Bengal'},
-          // Tier 2 with airports
           {n:'Pune',c:'PNQ',s:'Maharashtra'},{n:'Ahmedabad',c:'AMD',s:'Gujarat'},{n:'Goa',c:'GOI',s:'Goa'},
           {n:'Jaipur',c:'JAI',s:'Rajasthan'},{n:'Lucknow',c:'LKO',s:'Uttar Pradesh'},{n:'Kochi',c:'COK',s:'Kerala'},
           {n:'Chandigarh',c:'IXC',s:'Punjab'},{n:'Bhubaneswar',c:'BBI',s:'Odisha'},{n:'Indore',c:'IDR',s:'Madhya Pradesh'},
@@ -329,28 +361,12 @@
           {n:'Agra',c:'AGR',s:'Uttar Pradesh'},{n:'Leh',c:'IXL',s:'Ladakh'},{n:'Srinagar',c:'SXR',s:'J&K'},
           {n:'Darbhanga',c:'DBR',s:'Bihar'},{n:'Vadodara',c:'BDQ',s:'Gujarat'},{n:'Rajkot',c:'RAJ',s:'Gujarat'},
           {n:'Jodhpur',c:'JDH',s:'Rajasthan'},{n:'Udaipur',c:'UDR',s:'Rajasthan'},{n:'Dehradun',c:'DED',s:'Uttarakhand'},
-          {n:'Gorakhpur',c:'GOP',s:'Uttar Pradesh'},{n:'Prayagraj',c:'IXD',s:'Uttar Pradesh'},{n:'Gwalior',c:'GWL',s:'Madhya Pradesh'},
-          {n:'Jammu',c:'IXJ',s:'J&K'},{n:'Guwahati',c:'GAU',s:'Assam'},{n:'Imphal',c:'IMF',s:'Manipur'},
-          {n:'Port Blair',c:'IXZ',s:'Andaman'},{n:'Aurangabad',c:'IXU',s:'Maharashtra'},{n:'Jabalpur',c:'JLR',s:'Madhya Pradesh'},
-          {n:'Dibrugarh',c:'DIB',s:'Assam'},{n:'Bagdogra',c:'IXB',s:'West Bengal'},{n:'Hubli',c:'HBX',s:'Karnataka'},
-          {n:'Kolhapur',c:'KLH',s:'Maharashtra'},{n:'Kannur',c:'CNN',s:'Kerala'},{n:'Kozhikode',c:'CCJ',s:'Kerala'},
-          {n:'Trivandrum',c:'TRV',s:'Kerala'},{n:'Gaya',c:'GAY',s:'Bihar'},{n:'Shirdi',c:'SAG',s:'Maharashtra'},
-          // Cities near airports (no direct flights but valid destinations)
-          {n:'Muzaffarpur',c:'→DBR/PAT',s:'Bihar'},{n:'Haridwar',c:'→DED',s:'Uttarakhand'},
-          {n:'Rishikesh',c:'→DED',s:'Uttarakhand'},{n:'Mathura',c:'→DEL/AGR',s:'Uttar Pradesh'},
-          {n:'Jamshedpur',c:'→IXR',s:'Jharkhand'},{n:'Manali',c:'→KUU',s:'Himachal Pradesh'},
-          {n:'Dharamshala',c:'→DHM',s:'Himachal Pradesh'},{n:'Ooty',c:'→CJB',s:'Tamil Nadu'},
-          {n:'Siliguri',c:'→IXB',s:'West Bengal'},{n:'Darjeeling',c:'→IXB',s:'West Bengal'},
-          {n:'Mysore',c:'→BLR',s:'Karnataka'},{n:'Ajmer',c:'→JAI',s:'Rajasthan'},
-          {n:'Kanpur',c:'→LKO',s:'Uttar Pradesh'},{n:'Meerut',c:'→DEL',s:'Uttar Pradesh'},
-          {n:'Bhagalpur',c:'→PAT',s:'Bihar'},{n:'Nashik',c:'→BOM',s:'Maharashtra'},
-          {n:'Munnar',c:'→COK',s:'Kerala'},{n:'Hajipur',c:'→PAT',s:'Bihar'},
-          {n:'Sitamarhi',c:'→DBR',s:'Bihar'},{n:'Samastipur',c:'→DBR',s:'Bihar'},
-          // International
+          {n:'Gorakhpur',c:'GOP',s:'Uttar Pradesh'},{n:'Prayagraj',c:'IXD',s:'Uttar Pradesh'},{n:'Guwahati',c:'GAU',s:'Assam'},
+          {n:'Muzaffarpur',c:'→DBR/PAT',s:'Bihar'},{n:'Haridwar',c:'→DED',s:'Uttarakhand'},{n:'Mysore',c:'→BLR',s:'Karnataka'},
+          {n:'Kanpur',c:'→LKO',s:'Uttar Pradesh'},{n:'Nashik',c:'→BOM',s:'Maharashtra'},
           {n:'Dubai',c:'DXB',s:'UAE'},{n:'Singapore',c:'SIN',s:'Singapore'},{n:'London',c:'LHR',s:'UK'},
           {n:'Bangkok',c:'BKK',s:'Thailand'},{n:'New York',c:'JFK',s:'USA'},{n:'Tokyo',c:'NRT',s:'Japan'},
-          {n:'Paris',c:'CDG',s:'France'},{n:'Doha',c:'DOH',s:'Qatar'},{n:'Abu Dhabi',c:'AUH',s:'UAE'},
-          {n:'Kuala Lumpur',c:'KUL',s:'Malaysia'},{n:'Sydney',c:'SYD',s:'Australia'},{n:'Toronto',c:'YYZ',s:'Canada'},
+          {n:'Paris',c:'CDG',s:'France'},{n:'Doha',c:'DOH',s:'Qatar'},{n:'Sydney',c:'SYD',s:'Australia'},
         ];
 
         function showCitySuggestions(input, listId) {
@@ -363,51 +379,37 @@
                 <div class="city-option" onmousedown="selectCity('${c.n}','${listId}','${input.id}')">
                     <span>${c.n}</span>
                     <span class="city-code">${c.c}</span>
-                    <span style="color:#94a3b8; font-size:0.75rem; margin-left:auto;">${c.s}</span>
+                    <span class="city-state">${c.s}</span>
                 </div>`).join('');
             list.classList.add('open');
         }
-        function selectCity(name, listId, inputId) {
-            document.getElementById(inputId).value = name;
-            hideCityList(listId);
-        }
-        function hideCityList(listId) {
-            document.getElementById(listId)?.classList.remove('open');
-        }
+        function selectCity(name, listId, inputId) { document.getElementById(inputId).value = name; hideCityList(listId); }
+        function hideCityList(id) { document.getElementById(id)?.classList.remove('open'); }
 
-        // ── Trip Planner Modal ────────────────────────────────────
         function showBookingModal() {
             document.getElementById('booking-modal').style.display = 'flex';
-            document.getElementById('trip-plan-results').innerHTML = '<p style="color:#94a3b8; font-size:0.85rem; text-align:center; margin-top:2rem;">Enter your trip details above and click <strong>Search</strong>.</p>';
+            document.getElementById('trip-plan-results').innerHTML = '<p style="color:#3a4152;font-size:0.85rem;text-align:center;margin-top:2rem;">Enter your trip details above and click <strong style="color:#5a6478;">Search</strong>.</p>';
             document.getElementById('submit-bar').style.display = 'none';
             document.getElementById('estimated-cost').value = '';
         }
-        function hideBookingModal() {
-            document.getElementById('booking-modal').style.display = 'none';
-        }
+        function hideBookingModal() { document.getElementById('booking-modal').style.display = 'none'; }
 
         async function runTripPlan() {
             const from = document.getElementById('tp-from').value.trim();
-            const to = document.getElementById('tp-to').value.trim();
+            const to   = document.getElementById('tp-to').value.trim();
             const fromDate = document.getElementById('tp-from-date').value;
-            const toDate = document.getElementById('tp-to-date').value;
-            if (!from || !to || !fromDate) {
-                alert('Please fill in From, To and Departure Date.');
-                return;
-            }
+            const toDate   = document.getElementById('tp-to-date').value;
+            if (!from || !to || !fromDate) { showToast('Fill in From, To and Departure Date.', 'warning'); return; }
             const btn = document.getElementById('tp-search-btn');
             btn.disabled = true; btn.textContent = 'Searching…';
-            const results = document.getElementById('trip-plan-results');
-            results.innerHTML = `<div style="text-align:center; padding:2rem; color:#6366f1;">
-                <div style="font-size:1.5rem; margin-bottom:0.5rem;">⏳</div>
-                Searching flights, trains &amp; hotels for <strong>${to}</strong>…
-            </div>`;
-
-            // Store for submission
-            document.getElementById('origin').value = from;
+            document.getElementById('trip-plan-results').innerHTML = `
+                <div style="text-align:center;padding:2.5rem;color:#5a6478;">
+                    <div style="font-size:1.5rem;margin-bottom:0.75rem;opacity:0.5;">⏳</div>
+                    Searching flights, trains &amp; hotels for <strong style="color:#9aa3b5;">${to}</strong>…
+                </div>`;
+            document.getElementById('origin').value      = from;
             document.getElementById('destination').value = to;
             document.getElementById('travel-date').value = fromDate;
-
             try {
                 const params = new URLSearchParams({ from, to, fromDate });
                 if (toDate) params.set('toDate', toDate);
@@ -415,7 +417,7 @@
                 renderTripPlan(plan, from, to, fromDate, toDate);
                 document.getElementById('submit-bar').style.display = 'block';
             } catch (err) {
-                results.innerHTML = `<p style="color:#e63946; padding:1rem;">Error: ${err.message}</p>`;
+                document.getElementById('trip-plan-results').innerHTML = `<p style="color:#e74c3c;padding:1rem;font-size:0.85rem;">Error: ${err.message}</p>`;
             } finally {
                 btn.disabled = false; btn.textContent = 'Search';
             }
@@ -425,96 +427,72 @@
             const res = document.getElementById('trip-plan-results');
             const nights = toDate ? Math.max(1, Math.round((new Date(toDate)-new Date(fromDate))/86400000)) : 1;
             const apInfo = plan.nearestAirports?.length
-                ? plan.nearestAirports.map(a => `${a.city} (${a.code}${a.distanceKm > 0 ? `, ~${a.distanceKm}km` : ''})`).join(' · ')
+                ? plan.nearestAirports.map(a => `${a.city} (${a.code}${a.distanceKm>0?`, ~${a.distanceKm}km`:''})`).join(' · ')
                 : null;
 
-            let html = '';
-
-            // Banner
-            html += `<div style="background:#f0f4ff; border-radius:12px; padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.83rem; color:#3730a3;">
-                <strong>${from}</strong> → <strong>${to}</strong> &nbsp;·&nbsp; ${fromDate}${toDate ? ' → ' + toDate : ''} &nbsp;·&nbsp; ${nights} night${nights>1?'s':''}
-                ${apInfo ? `<br><span style="color:#6366f1;">Nearest airports to ${to}: ${apInfo}</span>` : ''}
+            let html = `<div style="background:rgba(212,168,83,0.06);border:1px solid rgba(212,168,83,0.12);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1.25rem;font-size:0.82rem;color:#9aa3b5;">
+                <strong style="color:#e8eaf0;">${from}</strong> → <strong style="color:#e8eaf0;">${to}</strong>
+                &nbsp;·&nbsp; ${fromDate}${toDate?' → '+toDate:''} &nbsp;·&nbsp; ${nights} night${nights>1?'s':''}
+                ${apInfo?`<br><span style="color:#5a6478;margin-top:0.2rem;display:block;">Nearest airports: ${apInfo}</span>`:''}
             </div>`;
 
-            // ── Outbound Flights ──
             if (plan.outboundFlights?.length) {
-                html += `<div class="trip-section">
-                    <div class="trip-section-header">✈️ Flights to reach ${to} &nbsp;<span style="color:#94a3b8; font-weight:400; font-size:0.75rem;">(${fromDate})</span></div>`;
+                html += `<div class="trip-section"><div class="trip-section-header">✈ Flights to ${to} <span style="margin-left:auto;">${fromDate}</span></div>`;
                 plan.outboundFlights.forEach(group => {
                     const flights = Array.isArray(group.results) ? group.results : [];
-                    html += `<div class="via-label">via ${group.via} (${group.code})${group.km > 0 ? ' ~' + group.km + 'km from ' + to : ''}</div>`;
-                    if (!flights.length) {
-                        html += `<p class="no-result">No flights found ${from} → ${group.via}</p>`;
-                    } else {
-                        flights.slice(0,3).forEach((f,i) => {
-                            const dep = f.departure?.slice(11,16) || f.departure || '—';
-                            const arr = f.arrival?.slice(11,16) || f.arrival || '—';
-                            html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT')">
-                                <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} &nbsp;·&nbsp; ${dep} → ${arr} &nbsp;·&nbsp; ${f.duration||''} &nbsp;·&nbsp; ${f.stops===0?'Non-stop':f.stops+' stop'}</span>
-                                <span class="price">₹${f.price?.toLocaleString()}</span>
-                            </div>`;
-                        });
-                    }
+                    html += `<div class="via-label">via ${group.via} (${group.code})${group.km>0?' · ~'+group.km+'km':''}</div>`;
+                    if (!flights.length) { html += `<p class="no-result">No flights found ${from} → ${group.via}</p>`; }
+                    else flights.slice(0,3).forEach((f,i) => {
+                        const dep = f.departure?.slice(11,16)||f.departure||'—';
+                        const arr = f.arrival?.slice(11,16)||f.arrival||'—';
+                        html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT')">
+                            <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} &nbsp;·&nbsp; ${dep} → ${arr} &nbsp;·&nbsp; <span style="color:#5a6478;">${f.duration||''} · ${f.stops===0?'Non-stop':f.stops+' stop'}</span></span>
+                            <span class="price">₹${f.price?.toLocaleString('en-IN')}</span>
+                        </div>`;
+                    });
                 });
                 html += `</div>`;
             }
 
-            // ── Trains ──
-            html += `<div class="trip-section">
-                <div class="trip-section-header">🚂 Trains to ${to} &nbsp;<span style="color:#94a3b8; font-weight:400; font-size:0.75rem;">(${fromDate})</span></div>`;
+            html += `<div class="trip-section"><div class="trip-section-header">🚂 Trains to ${to} <span style="margin-left:auto;">${fromDate}</span></div>`;
             const trains = Array.isArray(plan.trains) ? plan.trains : [];
-            if (!trains.length) {
-                html += `<p class="no-result">${plan.trainNote || 'No trains found for this route.'}</p>`;
-            } else {
-                trains.forEach((t,i) => {
-                    const timing = (t.departure && t.arrival) ? `${t.departure} → ${t.arrival}` : t.departure ? `Dep ${t.departure}` : '';
-                    const dayNote = (t.toDay && t.fromDay && t.toDay !== t.fromDay) ? ` · Day ${t.toDay}` : '';
-                    html += `<div class="trip-card" onclick="pickPrice(0,'TRAIN')">
-                        <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${t.trainName}</strong> <span style="color:#94a3b8;">${t.trainNumber}</span>${timing?' &nbsp;·&nbsp; '+timing+dayNote:''} &nbsp;·&nbsp; <span style="color:#64748b; font-size:0.78rem;">${t.classes?.join(', ')}</span></span>
-                        <span class="price" style="color:#64748b; font-size:0.75rem;">Check IRCTC</span>
-                    </div>`;
-                });
-            }
+            if (!trains.length) { html += `<p class="no-result">${plan.trainNote||'No trains found.'}</p>`; }
+            else trains.forEach((t,i) => {
+                const timing = (t.departure&&t.arrival)?`${t.departure} → ${t.arrival}`:t.departure?`Dep ${t.departure}`:'';
+                html += `<div class="trip-card" onclick="pickPrice(0,'TRAIN')">
+                    <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${t.trainName}</strong> <span style="color:#5a6478;">${t.trainNumber}</span>${timing?' · '+timing:''} ${t.classes?.length?'· <span style="color:#5a6478;font-size:0.78rem;">'+t.classes.join(', ')+'</span>':''}</span>
+                    <span class="price" style="color:#5a6478;font-size:0.75rem;font-weight:600;">IRCTC</span>
+                </div>`;
+            });
             html += `</div>`;
 
-            // ── Hotels ──
-            html += `<div class="trip-section">
-                <div class="trip-section-header">🏨 Hotels in ${to} &nbsp;<span style="color:#94a3b8; font-weight:400; font-size:0.75rem;">(${nights} night${nights>1?'s':''})</span></div>`;
+            html += `<div class="trip-section"><div class="trip-section-header">🏨 Hotels in ${to} <span style="margin-left:auto;">${nights} night${nights>1?'s':''}</span></div>`;
             const hotels = Array.isArray(plan.hotels) ? plan.hotels : [];
-            if (!hotels.length) {
-                html += `<p class="no-result">${plan.hotelNote || 'No hotels found.'}</p>`;
-            } else {
-                hotels.forEach((h,i) => {
-                    const stars = h.stars ? '⭐'.repeat(Math.min(Math.round(h.stars),5)) : '';
-                    const rating = h.rating ? ` · ${h.rating} ${h.reviewWord||''}` : '';
-                    const dist = h.distanceFromCenter ? ` · ${h.distanceFromCenter} from centre` : '';
-                    html += `<div class="trip-card" onclick="pickPrice(${h.price||h.pricePerNight||0},'HOTEL')">
-                        <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${h.name}</strong> ${stars}${dist}${rating}</span>
-                        <span class="price">₹${(h.pricePerNight||0).toLocaleString()}<span style="font-size:0.72rem; font-weight:400;">/night</span></span>
-                    </div>`;
-                });
-            }
+            if (!hotels.length) { html += `<p class="no-result">${plan.hotelNote||'No hotels found.'}</p>`; }
+            else hotels.forEach((h,i) => {
+                const rating = h.rating?` · ${h.rating}`:'';
+                const dist   = h.distanceFromCenter?` · ${h.distanceFromCenter} from centre`:'';
+                html += `<div class="trip-card" onclick="pickPrice(${h.price||h.pricePerNight||0},'HOTEL')">
+                    <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${h.name}</strong>${dist}${rating}</span>
+                    <span class="price">₹${(h.pricePerNight||0).toLocaleString('en-IN')}<span style="font-size:0.7rem;font-weight:400;color:#9aa3b5;">/night</span></span>
+                </div>`;
+            });
             html += `</div>`;
 
-            // ── Return Flights ──
             if (toDate && plan.returnFlights?.length) {
-                html += `<div class="trip-section">
-                    <div class="trip-section-header">✈️ Return Flights &nbsp;<span style="color:#94a3b8; font-weight:400; font-size:0.75rem;">(${toDate})</span></div>`;
+                html += `<div class="trip-section"><div class="trip-section-header">✈ Return Flights <span style="margin-left:auto;">${toDate}</span></div>`;
                 plan.returnFlights.forEach(group => {
-                    const flights = Array.isArray(group.results) ? group.results : [];
+                    const flights = Array.isArray(group.results)?group.results:[];
                     html += `<div class="via-label">from ${group.via} (${group.code})</div>`;
-                    if (!flights.length) {
-                        html += `<p class="no-result">No return flights found</p>`;
-                    } else {
-                        flights.slice(0,2).forEach((f,i) => {
-                            const dep = f.departure?.slice(11,16) || f.departure || '—';
-                            const arr = f.arrival?.slice(11,16) || f.arrival || '—';
-                            html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT')">
-                                <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} &nbsp;·&nbsp; ${dep} → ${arr} &nbsp;·&nbsp; ${f.duration||''}</span>
-                                <span class="price">₹${f.price?.toLocaleString()}</span>
-                            </div>`;
-                        });
-                    }
+                    if (!flights.length) { html += `<p class="no-result">No return flights found</p>`; }
+                    else flights.slice(0,2).forEach((f,i) => {
+                        const dep = f.departure?.slice(11,16)||f.departure||'—';
+                        const arr = f.arrival?.slice(11,16)||f.arrival||'—';
+                        html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT')">
+                            <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} · ${dep} → ${arr} · <span style="color:#5a6478;">${f.duration||''}</span></span>
+                            <span class="price">₹${f.price?.toLocaleString('en-IN')}</span>
+                        </div>`;
+                    });
                 });
                 html += `</div>`;
             }
@@ -525,42 +503,37 @@
         function pickPrice(price, type) {
             if (price > 0) document.getElementById('estimated-cost').value = price;
             document.getElementById('travel-type').value = type;
-            // Highlight selected card
             document.querySelectorAll('.trip-card').forEach(c => c.classList.remove('selected'));
             event.currentTarget?.classList?.add('selected');
         }
 
         async function submitTripBooking() {
-            const cost = document.getElementById('estimated-cost').value;
-            const type = document.getElementById('travel-type').value || 'FLIGHT';
+            const cost   = document.getElementById('estimated-cost').value;
+            const type   = document.getElementById('travel-type').value || 'FLIGHT';
             const origin = document.getElementById('origin').value;
             const destination = document.getElementById('destination').value;
-            const date = document.getElementById('travel-date').value;
-            if (!cost || cost <= 0) { alert('Please select an option or enter a cost.'); return; }
+            const date   = document.getElementById('travel-date').value;
+            if (!cost || cost <= 0) { showToast('Please select an option or enter a cost.', 'warning'); return; }
             const btn = event.currentTarget;
             btn.disabled = true; btn.textContent = 'Submitting…';
             try {
-                await apiRequest('/bookings', {
-                    method: 'POST',
-                    body: { type, details: { origin, destination, date }, cost }
-                });
+                await apiRequest('/bookings', { method: 'POST', body: { type, details: { origin, destination, date }, cost } });
                 hideBookingModal();
+                showToast('Trip request submitted! Your manager will review it shortly.', 'success', 5000);
                 await loadBookings();
             } catch (err) {
-                alert(err.message);
+                showToast(err.message, 'error');
                 btn.disabled = false; btn.textContent = 'Submit Request';
             }
         }
 
-        // ── AI Chat Widget ────────────────────────────────────────
+        // AI Chat
         function toggleChat() {
             chatOpen = !chatOpen;
-            const panel = document.getElementById('chat-panel');
-            panel.classList.toggle('open', chatOpen);
-
+            document.getElementById('chat-panel').classList.toggle('open', chatOpen);
             if (chatOpen && chatMessages.length === 0) {
                 const name = currentUser?.name?.split(' ')[0] || 'there';
-                addBubble('assistant', `Hi ${name}! ✈️ I'm your TripFlow travel assistant.\n\nTell me where you need to go and I'll handle the booking. For example:\n*"I need to fly from Mumbai to Delhi on June 20"*`);
+                addBubble('assistant', `Hi ${name}! I'm your TripFlow travel assistant.\n\nTell me where you need to go and I'll handle the booking.\n\n_Example: "I need to fly from Mumbai to Delhi on June 20"_`);
             }
             if (chatOpen) setTimeout(() => document.getElementById('chat-input').focus(), 100);
         }
@@ -569,25 +542,20 @@
             const isUser = role === 'user';
             const wrap = document.createElement('div');
             wrap.className = 'chat-bubble';
-            wrap.style.cssText = `display:flex; justify-content:${isUser ? 'flex-end' : 'flex-start'};`;
-
+            wrap.style.cssText = `display:flex;justify-content:${isUser?'flex-end':'flex-start'};`;
             const bubble = document.createElement('div');
             bubble.style.cssText = `
-                max-width: 82%;
-                padding: 0.65rem 0.95rem;
-                border-radius: ${isUser ? '16px 16px 4px 16px' : '4px 16px 16px 16px'};
-                background: ${isUser ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'white'};
-                color: ${isUser ? 'white' : '#1e293b'};
-                font-size: 0.855rem;
-                line-height: 1.55;
-                border: ${isUser ? 'none' : '1px solid #e2e8f0'};
-                box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-                white-space: pre-wrap;
-            `;
+                max-width:82%;padding:0.6rem 0.875rem;
+                border-radius:${isUser?'12px 12px 4px 12px':'4px 12px 12px 12px'};
+                background:${isUser?'#d4a853':'#1c2333'};
+                color:${isUser?'#0e1117':'#e8eaf0'};
+                font-size:0.835rem;line-height:1.55;
+                border:${isUser?'none':'1px solid rgba(255,255,255,0.06)'};
+                white-space:pre-wrap;`;
             bubble.innerHTML = text
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>');
-
+                .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g,'<em>$1</em>')
+                .replace(/_(.*?)_/g,'<em>$1</em>');
             wrap.appendChild(bubble);
             const msgs = document.getElementById('chat-messages');
             msgs.appendChild(wrap);
@@ -596,110 +564,71 @@
 
         function showTyping() {
             const el = document.createElement('div');
-            el.id = 'typing-dot';
-            el.className = 'chat-bubble';
-            el.style.cssText = 'display:flex; justify-content:flex-start;';
-            el.innerHTML = `
-                <div style="padding:0.65rem 1rem; border-radius:4px 16px 16px 16px; background:white; border:1px solid #e2e8f0; display:flex; gap:4px; align-items:center;">
-                    <span style="width:7px;height:7px;background:#8b5cf6;border-radius:50%;animation:bounce 0.9s infinite;display:block;"></span>
-                    <span style="width:7px;height:7px;background:#8b5cf6;border-radius:50%;animation:bounce 0.9s 0.18s infinite;display:block;"></span>
-                    <span style="width:7px;height:7px;background:#8b5cf6;border-radius:50%;animation:bounce 0.9s 0.36s infinite;display:block;"></span>
-                </div>`;
+            el.id = 'typing-dot'; el.className = 'chat-bubble';
+            el.style.cssText = 'display:flex;justify-content:flex-start;';
+            el.innerHTML = `<div style="padding:0.6rem 0.875rem;border-radius:4px 12px 12px 12px;background:#1c2333;border:1px solid rgba(255,255,255,0.06);display:flex;gap:4px;align-items:center;">
+                <span style="width:6px;height:6px;background:#d4a853;border-radius:50%;animation:bounce 0.9s infinite;display:block;opacity:0.7;"></span>
+                <span style="width:6px;height:6px;background:#d4a853;border-radius:50%;animation:bounce 0.9s 0.18s infinite;display:block;opacity:0.7;"></span>
+                <span style="width:6px;height:6px;background:#d4a853;border-radius:50%;animation:bounce 0.9s 0.36s infinite;display:block;opacity:0.7;"></span>
+            </div>`;
             const msgs = document.getElementById('chat-messages');
-            msgs.appendChild(el);
-            msgs.scrollTop = msgs.scrollHeight;
+            msgs.appendChild(el); msgs.scrollTop = msgs.scrollHeight;
         }
 
-        // ── Voice input ──────────────────────────────────────────────────────────
-        let voiceRecognition = null;
-        let voiceActive = false;
-
+        let voiceRecognition = null, voiceActive = false;
         function toggleVoice() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert('Voice input is not supported in this browser. Try Chrome or Edge.');
-                return;
-            }
-
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) { showToast('Voice input not supported. Try Chrome or Edge.', 'warning'); return; }
             const btn = document.getElementById('voice-btn');
-
-            if (voiceActive) {
-                voiceRecognition?.stop();
-                return;
-            }
-
-            voiceRecognition = new SpeechRecognition();
+            if (voiceActive) { voiceRecognition?.stop(); return; }
+            voiceRecognition = new SR();
             voiceRecognition.lang = 'en-IN';
             voiceRecognition.interimResults = true;
-            voiceRecognition.maxAlternatives = 1;
-
             voiceRecognition.onstart = () => {
                 voiceActive = true;
-                btn.style.background = '#fee2e2';
-                btn.style.borderColor = '#ef4444';
-                btn.title = 'Listening… click to stop';
+                btn.style.background = 'rgba(231,76,60,0.15)';
+                btn.style.color = '#e74c3c';
                 document.getElementById('chat-input').placeholder = 'Listening…';
             };
-
             voiceRecognition.onresult = (e) => {
-                const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
-                document.getElementById('chat-input').value = transcript;
+                document.getElementById('chat-input').value = Array.from(e.results).map(r=>r[0].transcript).join('');
             };
-
             voiceRecognition.onend = () => {
                 voiceActive = false;
-                btn.style.background = 'white';
-                btn.style.borderColor = '#e2e8f0';
-                btn.title = 'Voice input';
+                btn.style.background = '#1c2333';
+                btn.style.color = '#5a6478';
                 const input = document.getElementById('chat-input');
                 input.placeholder = 'Describe your travel need…';
                 if (input.value.trim()) sendChat();
             };
-
             voiceRecognition.onerror = (e) => {
                 voiceActive = false;
-                btn.style.background = 'white';
-                btn.style.borderColor = '#e2e8f0';
-                if (e.error !== 'no-speech') {
-                    addBubble('assistant', `🎤 Mic error: ${e.error}. Make sure mic permission is allowed.`);
-                }
+                btn.style.background = '#1c2333'; btn.style.color = '#5a6478';
+                if (e.error !== 'no-speech') showToast(`Mic error: ${e.error}`, 'error');
             };
-
             voiceRecognition.start();
         }
 
         async function sendChat() {
             const input = document.getElementById('chat-input');
-            const text = input.value.trim();
+            const text  = input.value.trim();
             if (!text) return;
-
             const sendBtn = document.getElementById('chat-send');
-            input.value = '';
-            input.disabled = true;
-            sendBtn.disabled = true;
-
+            input.value = ''; input.disabled = true; sendBtn.disabled = true;
             chatMessages.push({ role: 'user', content: text });
             addBubble('user', text);
             showTyping();
-
             try {
-                const data = await apiRequest('/ai/chat', {
-                    method: 'POST',
-                    body: { messages: chatMessages }
-                });
-
+                const data = await apiRequest('/ai/chat', { method: 'POST', body: { messages: chatMessages } });
                 document.getElementById('typing-dot')?.remove();
                 chatMessages.push({ role: 'assistant', content: data.reply });
                 addBubble('assistant', data.reply);
-
                 if (data.booking) await loadBookings();
             } catch (err) {
                 document.getElementById('typing-dot')?.remove();
-                addBubble('assistant', '❌ Something went wrong. Please try again.');
+                addBubble('assistant', 'Something went wrong. Please try again.');
             } finally {
-                input.disabled = false;
-                sendBtn.disabled = false;
-                input.focus();
+                input.disabled = false; sendBtn.disabled = false; input.focus();
             }
         }
     </script>

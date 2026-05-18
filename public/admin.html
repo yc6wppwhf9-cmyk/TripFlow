@@ -5,18 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TripFlow | Admin</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        .tab-nav { display: flex; gap: 0.5rem; margin-bottom: 2.5rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 0; }
-        .tab-btn { padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
-        .tab-btn.active { color: #6366f1; border-bottom-color: #6366f1; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .role-badge { padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .role-ADMIN { background: #fef3c7; color: #92400e; }
-        .role-HR { background: #e0e7ff; color: #3730a3; }
-        .role-MANAGER { background: #d1fae5; color: #065f46; }
-        .role-EMPLOYEE { background: #f0f9ff; color: #0c4a6e; }
-        .role-VENDOR { background: #fdf4ff; color: #6b21a8; }
         .field-group { display: none; }
     </style>
 </head>
@@ -28,77 +18,89 @@
             <a href="hr.html">HR Portal</a>
         </div>
         <div class="user-info">
-            <span id="user-name" style="font-weight:600;"></span>
-            <button onclick="logout()" class="secondary" style="width:auto;padding:0.6rem 1.2rem;">Logout</button>
+            <span id="user-name" style="font-size:0.875rem;font-weight:600;color:#9aa3b5;"></span>
+            <button onclick="logout()" class="secondary" style="padding:0.45rem 0.9rem;font-size:0.8rem;">Logout</button>
         </div>
     </nav>
 
     <div class="container">
-        <div style="margin-bottom:2.5rem;">
-            <p style="color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.1em;font-size:0.8rem;margin-bottom:0.4rem;">System Administration</p>
+        <div style="margin-bottom:2rem;">
+            <p class="page-label">System Administration</p>
             <h1>Admin Dashboard</h1>
         </div>
 
         <!-- Stats -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2.5rem;">
-            <div class="stat-card glass">
-                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Total Users</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem;margin-bottom:2rem;">
+            <div class="stat-card">
+                <p class="stat-label">Total Users</p>
                 <div class="stat-value" id="stat-users">—</div>
             </div>
-            <div class="stat-card glass">
-                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Total Bookings</p>
+            <div class="stat-card">
+                <p class="stat-label">Total Bookings</p>
                 <div class="stat-value" id="stat-bookings">—</div>
             </div>
-            <div class="stat-card glass">
-                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Pending Approvals</p>
+            <div class="stat-card">
+                <p class="stat-label">Pending Approvals</p>
                 <div class="stat-value" id="stat-pending">—</div>
             </div>
-            <div class="stat-card glass">
-                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Total Spend</p>
+            <div class="stat-card">
+                <p class="stat-label">Total Spend</p>
                 <div class="stat-value" id="stat-spend">—</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="analytics-grid">
+            <div class="card" style="padding:1.5rem;">
+                <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5a6478;margin-bottom:1rem;">Bookings by Type</p>
+                <div class="chart-wrap"><canvas id="chart-type"></canvas></div>
+            </div>
+            <div class="card" style="padding:1.5rem;">
+                <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5a6478;margin-bottom:1rem;">Bookings by Stage</p>
+                <div class="chart-wrap"><canvas id="chart-stage"></canvas></div>
             </div>
         </div>
 
         <!-- Tabs -->
         <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('users')">Users</button>
-            <button class="tab-btn" onclick="switchTab('vendors')">Vendors</button>
-            <button class="tab-btn" onclick="switchTab('bookings')">All Bookings</button>
+            <button class="tab-btn active" onclick="switchTab('users',this)">Users</button>
+            <button class="tab-btn" onclick="switchTab('vendors',this)">Vendors</button>
+            <button class="tab-btn" onclick="switchTab('bookings',this)">All Bookings</button>
         </div>
 
         <!-- Users Tab -->
         <div id="tab-users" class="tab-content active">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <div class="section-header">
                 <h3>All Users</h3>
-                <button onclick="showUserModal()" style="padding:0.75rem 1.5rem;">+ Add User</button>
+                <button onclick="showUserModal()" style="padding:0.6rem 1.2rem;font-size:0.82rem;">+ Add User</button>
             </div>
-            <div class="table-container">
+            <div class="table-card">
                 <table>
                     <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department / Company</th><th>Phone</th><th>Joined</th></tr></thead>
-                    <tbody id="users-list"><tr><td colspan="6" style="text-align:center;">Loading...</td></tr></tbody>
+                    <tbody id="users-list"></tbody>
                 </table>
             </div>
         </div>
 
         <!-- Vendors Tab -->
         <div id="tab-vendors" class="tab-content">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <div class="section-header">
                 <h3>Vendors</h3>
-                <button onclick="showUserModal('VENDOR')" style="padding:0.75rem 1.5rem;">+ Add Vendor</button>
+                <button onclick="showUserModal('VENDOR')" style="padding:0.6rem 1.2rem;font-size:0.82rem;">+ Add Vendor</button>
             </div>
-            <div class="table-container">
+            <div class="table-card">
                 <table>
                     <thead><tr><th>Company</th><th>Service Type</th><th>Contact</th><th>Email</th></tr></thead>
-                    <tbody id="vendors-list"><tr><td colspan="4" style="text-align:center;">Loading...</td></tr></tbody>
+                    <tbody id="vendors-list"></tbody>
                 </table>
             </div>
         </div>
 
         <!-- Bookings Tab -->
         <div id="tab-bookings" class="tab-content">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <div class="section-header">
                 <h3>All Bookings</h3>
-                <select id="stage-filter" onchange="filterBookings()" style="padding:0.5rem 1rem;border:1px solid #e2e8f0;border-radius:8px;">
+                <select id="stage-filter" onchange="filterBookings()" style="padding:0.5rem 0.9rem;font-size:0.82rem;width:auto;">
                     <option value="">All Stages</option>
                     <option value="PENDING_MANAGER">Pending Manager</option>
                     <option value="PENDING_VENDOR">Pending Vendor</option>
@@ -106,10 +108,10 @@
                     <option value="REJECTED">Rejected</option>
                 </select>
             </div>
-            <div class="table-container">
+            <div class="table-card">
                 <table>
                     <thead><tr><th>Employee</th><th>Type</th><th>Route</th><th>Stage</th><th>Cost</th><th>Date</th></tr></thead>
-                    <tbody id="bookings-list"><tr><td colspan="6" style="text-align:center;">Loading...</td></tr></tbody>
+                    <tbody id="bookings-list"></tbody>
                 </table>
             </div>
         </div>
@@ -117,9 +119,9 @@
 
     <!-- Add User Modal -->
     <div id="user-modal" class="modal">
-        <div class="modal-content" style="max-width:520px;">
-            <h2>Add New User</h2>
-            <form id="user-form" style="margin-top:1.5rem;">
+        <div class="modal-content" style="max-width:540px;">
+            <h2 style="margin-bottom:1.5rem;">Add New User</h2>
+            <form id="user-form">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                     <div class="form-group">
                         <label>Full Name</label>
@@ -143,13 +145,12 @@
                         <label>Phone</label>
                         <input type="text" id="u-phone" placeholder="+91 98765 43210">
                     </div>
-                    <div class="form-group">
-                        <label>Password <span style="color:var(--text-muted);font-weight:400;">(default: Welcome@123)</span></label>
+                    <div class="form-group" style="grid-column:span 2;">
+                        <label>Password <span style="color:#3a4152;font-weight:400;text-transform:none;letter-spacing:0;">(default: Welcome@123)</span></label>
                         <input type="password" id="u-password" placeholder="Leave blank for default">
                     </div>
                 </div>
 
-                <!-- Employee fields -->
                 <div id="employee-fields" class="field-group" style="margin-top:0.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                     <div class="form-group">
                         <label>Department</label>
@@ -161,7 +162,6 @@
                     </div>
                 </div>
 
-                <!-- Vendor fields -->
                 <div id="vendor-fields" class="field-group" style="margin-top:0.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                     <div class="form-group">
                         <label>Company Name</label>
@@ -178,7 +178,7 @@
                     </div>
                 </div>
 
-                <div style="display:flex;gap:1rem;margin-top:2rem;">
+                <div style="display:flex;gap:0.75rem;margin-top:2rem;">
                     <button type="submit" style="flex:1;">Create User</button>
                     <button type="button" onclick="hideModal('user-modal')" class="secondary" style="flex:0.4;">Cancel</button>
                 </div>
@@ -189,13 +189,16 @@
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
-        let allBookings = [];
-        let allUsers = [];
+        let allBookings = [], allUsers = [];
+        let typeChart, stageChart;
 
         async function init() {
             const user = checkAuth();
             if (!user) return;
             document.getElementById('user-name').innerText = user.name;
+            showTableSkeleton('users-list', 6);
+            showTableSkeleton('vendors-list', 4);
+            showTableSkeleton('bookings-list', 6);
             loadStats();
             loadUsers();
             loadVendors();
@@ -204,20 +207,50 @@
         }
         init();
 
-        function switchTab(name) {
-            document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.remove('active'));
+        function switchTab(name, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            btn.classList.add('active');
             document.getElementById('tab-' + name).classList.add('active');
+        }
+
+        function renderCharts(bookings) {
+            const typeCounts  = { FLIGHT: 0, HOTEL: 0, TRAIN: 0, CAB: 0 };
+            const stageCounts = { PENDING_MANAGER: 0, PENDING_VENDOR: 0, COMPLETED: 0, REJECTED: 0 };
+            bookings.forEach(b => {
+                if (typeCounts[b.type]   !== undefined) typeCounts[b.type]++;
+                if (stageCounts[b.stage] !== undefined) stageCounts[b.stage]++;
+            });
+            const base = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { padding: 16, font: { size: 11, family: 'Plus Jakarta Sans' }, color: '#9aa3b5' } } }
+            };
+            if (typeChart)  typeChart.destroy();
+            if (stageChart) stageChart.destroy();
+            typeChart = new Chart(document.getElementById('chart-type'), {
+                type: 'doughnut',
+                data: { labels: ['Flight','Hotel','Train','Cab'],
+                    datasets: [{ data: Object.values(typeCounts), backgroundColor: ['#d4a853','#2ecc71','#5dade2','#a569bd'], borderWidth: 0, hoverOffset: 6 }] },
+                options: { ...base, cutout: '68%' }
+            });
+            stageChart = new Chart(document.getElementById('chart-stage'), {
+                type: 'bar',
+                data: { labels: ['Pending Manager','With Vendor','Completed','Rejected'],
+                    datasets: [{ data: Object.values(stageCounts), backgroundColor: ['rgba(243,156,18,0.7)','rgba(93,173,226,0.7)','rgba(46,204,113,0.7)','rgba(231,76,60,0.7)'], borderRadius: 6, borderSkipped: false }] },
+                options: { ...base,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a6478', font: { family: 'Plus Jakarta Sans', size: 11 } } },
+                              x: { grid: { display: false }, ticks: { color: '#5a6478', font: { family: 'Plus Jakarta Sans', size: 11 } } } } }
+            });
         }
 
         async function loadStats() {
             try {
                 const s = await apiRequest('/admin/stats');
-                document.getElementById('stat-users').innerText = s.totalUsers || '—';
+                document.getElementById('stat-users').innerText    = s.totalUsers || '—';
                 document.getElementById('stat-bookings').innerText = s.totalBookings;
-                document.getElementById('stat-pending').innerText = s.pendingApprovals;
-                document.getElementById('stat-spend').innerText = '$' + (s.totalCost || 0).toLocaleString();
+                document.getElementById('stat-pending').innerText  = s.pendingApprovals;
+                document.getElementById('stat-spend').innerText    = '₹' + (s.totalCost || 0).toLocaleString('en-IN');
             } catch(e) { console.error(e); }
         }
 
@@ -225,15 +258,18 @@
             try {
                 allUsers = await apiRequest('/admin/users');
                 const list = document.getElementById('users-list');
+                if (!allUsers.length) {
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👥</div><p>No users yet</p></div></td></tr>'; return;
+                }
                 list.innerHTML = allUsers.map(u => `
                     <tr>
                         <td style="font-weight:600;">${u.name}</td>
-                        <td style="color:var(--text-muted);">${u.email}</td>
+                        <td style="color:#9aa3b5;font-size:0.82rem;">${u.email}</td>
                         <td><span class="role-badge role-${u.role}">${u.role}</span></td>
-                        <td>${u.employee?.department || u.vendor?.companyName || '—'}</td>
-                        <td>${u.phone || '—'}</td>
-                        <td style="color:var(--text-muted);font-size:0.85rem;">${new Date(u.createdAt).toLocaleDateString()}</td>
-                    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No users found</td></tr>';
+                        <td style="color:#9aa3b5;">${u.employee?.department || u.vendor?.companyName || '—'}</td>
+                        <td style="color:#5a6478;font-size:0.82rem;">${u.phone || '—'}</td>
+                        <td style="color:#5a6478;font-size:0.78rem;">${new Date(u.createdAt).toLocaleDateString('en-IN')}</td>
+                    </tr>`).join('');
             } catch(e) { console.error(e); }
         }
 
@@ -241,13 +277,16 @@
             try {
                 const vendors = await apiRequest('/admin/vendors');
                 const list = document.getElementById('vendors-list');
+                if (!vendors.length) {
+                    list.innerHTML = '<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">🏢</div><p>No vendors yet</p></div></td></tr>'; return;
+                }
                 list.innerHTML = vendors.map(v => `
                     <tr>
                         <td style="font-weight:600;">${v.companyName}</td>
-                        <td>${v.serviceType}</td>
+                        <td><span class="badge badge-pending-vendor">${v.serviceType}</span></td>
                         <td>${v.user.name}</td>
-                        <td style="color:var(--text-muted);">${v.user.email}</td>
-                    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;">No vendors yet</td></tr>';
+                        <td style="color:#9aa3b5;font-size:0.82rem;">${v.user.email}</td>
+                    </tr>`).join('');
             } catch(e) { console.error(e); }
         }
 
@@ -255,19 +294,23 @@
             try {
                 allBookings = await apiRequest('/admin/bookings');
                 renderBookings(allBookings);
+                renderCharts(allBookings);
             } catch(e) { console.error(e); }
         }
 
         function renderBookings(list) {
+            if (!list.length) {
+                document.getElementById('bookings-list').innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>No bookings yet</p></div></td></tr>'; return;
+            }
             document.getElementById('bookings-list').innerHTML = list.map(b => `
                 <tr>
                     <td style="font-weight:600;">${b.employee?.user?.name || '—'}</td>
-                    <td>${b.type}</td>
+                    <td style="color:#9aa3b5;font-size:0.82rem;">${b.type}</td>
                     <td>${b.details?.origin || '—'} → ${b.details?.destination || '—'}</td>
                     <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
-                    <td style="font-weight:600;">$${b.cost || '—'}</td>
-                    <td style="color:var(--text-muted);font-size:0.85rem;">${new Date(b.createdAt).toLocaleDateString()}</td>
-                </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No bookings</td></tr>';
+                    <td style="font-weight:600;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                    <td style="color:#5a6478;font-size:0.78rem;">${new Date(b.createdAt).toLocaleDateString('en-IN')}</td>
+                </tr>`).join('');
         }
 
         function filterBookings() {
@@ -277,11 +320,10 @@
 
         async function loadManagers() {
             try {
-                const users = await apiRequest('/admin/users');
+                const users    = await apiRequest('/admin/users');
                 const managers = users.filter(u => u.role === 'MANAGER');
-                const sel = document.getElementById('u-manager');
-                sel.innerHTML = '<option value="">No manager</option>' +
-                    managers.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+                const sel      = document.getElementById('u-manager');
+                sel.innerHTML  = '<option value="">No manager</option>' + managers.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
             } catch(e) {}
         }
 
@@ -290,41 +332,36 @@
             toggleRoleFields();
             document.getElementById('user-modal').style.display = 'flex';
         }
-
         function hideModal(id) { document.getElementById(id).style.display = 'none'; }
 
         function toggleRoleFields() {
             const role = document.getElementById('u-role').value;
             document.getElementById('employee-fields').style.display = role === 'EMPLOYEE' ? 'grid' : 'none';
-            document.getElementById('vendor-fields').style.display = role === 'VENDOR' ? 'grid' : 'none';
+            document.getElementById('vendor-fields').style.display   = role === 'VENDOR'   ? 'grid' : 'none';
         }
 
         document.getElementById('user-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button[type=submit]');
-            btn.disabled = true; btn.innerText = 'Creating...';
+            const btn  = e.target.querySelector('button[type=submit]');
+            btn.disabled = true; btn.innerText = 'Creating…';
             const role = document.getElementById('u-role').value;
             try {
-                await apiRequest('/admin/users', {
-                    method: 'POST',
-                    body: {
-                        name: document.getElementById('u-name').value,
-                        email: document.getElementById('u-email').value,
-                        role,
-                        phone: document.getElementById('u-phone').value,
-                        password: document.getElementById('u-password').value || undefined,
-                        department: document.getElementById('u-dept').value,
-                        managerId: document.getElementById('u-manager').value || undefined,
-                        companyName: document.getElementById('u-company').value,
-                        serviceType: document.getElementById('u-service').value,
-                    }
-                });
+                await apiRequest('/admin/users', { method: 'POST', body: {
+                    name: document.getElementById('u-name').value,
+                    email: document.getElementById('u-email').value,
+                    role, phone: document.getElementById('u-phone').value,
+                    password:    document.getElementById('u-password').value || undefined,
+                    department:  document.getElementById('u-dept').value,
+                    managerId:   document.getElementById('u-manager').value || undefined,
+                    companyName: document.getElementById('u-company').value,
+                    serviceType: document.getElementById('u-service').value,
+                }});
                 hideModal('user-modal');
                 e.target.reset();
+                showToast('User created! Default password: Welcome@123', 'success', 5000);
                 loadUsers(); loadVendors(); loadStats();
-                alert('User created! Default password: Welcome@123');
             } catch(err) {
-                alert(err.message);
+                showToast(err.message, 'error');
             } finally {
                 btn.disabled = false; btn.innerText = 'Create User';
             }

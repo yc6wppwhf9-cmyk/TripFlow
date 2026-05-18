@@ -31,6 +31,24 @@ exports.getPendingApprovals = async (req, res) => {
   }
 };
 
+exports.getTeamBookings = async (req, res) => {
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: {
+        employee: { managerId: req.user.id }
+      },
+      include: {
+        employee: { include: { user: true } },
+        vendor: { include: { user: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.approveBooking = async (req, res) => {
   try {
     const { id } = req.params;

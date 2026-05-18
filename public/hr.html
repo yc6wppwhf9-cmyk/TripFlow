@@ -5,16 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TripFlow | HR Portal</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        .tab-nav { display:flex;gap:0.5rem;margin-bottom:2.5rem;border-bottom:2px solid #f1f5f9;padding-bottom:0; }
-        .tab-btn { padding:0.75rem 1.5rem;border:none;background:none;cursor:pointer;font-size:0.95rem;font-weight:600;color:var(--text-muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.2s; }
-        .tab-btn.active { color:#6366f1;border-bottom-color:#6366f1; }
-        .tab-content { display:none; }
-        .tab-content.active { display:block; }
-        .role-badge { padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;text-transform:uppercase; }
-        .role-EMPLOYEE { background:#f0f9ff;color:#0c4a6e; }
-        .role-MANAGER { background:#d1fae5;color:#065f46; }
-    </style>
 </head>
 <body>
     <nav class="dashboard-nav glass">
@@ -24,62 +14,61 @@
             <a href="admin.html">Admin</a>
         </div>
         <div class="user-info">
-            <span id="user-name" style="font-weight:600;"></span>
-            <button onclick="logout()" class="secondary" style="width:auto;padding:0.6rem 1.2rem;">Logout</button>
+            <span id="user-name" style="font-size:0.875rem;font-weight:600;color:#9aa3b5;"></span>
+            <button onclick="logout()" class="secondary" style="padding:0.45rem 0.9rem;font-size:0.8rem;">Logout</button>
         </div>
     </nav>
 
     <div class="container">
-        <div style="margin-bottom:2.5rem;">
-            <p style="color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.1em;font-size:0.8rem;margin-bottom:0.4rem;">Human Resources</p>
+        <div style="margin-bottom:2rem;">
+            <p class="page-label">Human Resources</p>
             <h1>HR Dashboard</h1>
         </div>
 
         <!-- Stats -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2.5rem;">
-            <div class="stat-card glass">
-                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Total Employees</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem;margin-bottom:2rem;">
+            <div class="stat-card">
+                <p class="stat-label">Total Employees</p>
                 <div class="stat-value" id="stat-emp">—</div>
             </div>
-            <div class="stat-card glass">
-                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Active Trips</p>
+            <div class="stat-card">
+                <p class="stat-label">Active Trips</p>
                 <div class="stat-value" id="stat-active">—</div>
             </div>
-            <div class="stat-card glass">
-                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Completed This Month</p>
+            <div class="stat-card">
+                <p class="stat-label">Completed This Month</p>
                 <div class="stat-value" id="stat-completed">—</div>
             </div>
-            <div class="stat-card glass">
-                <p style="color:var(--text-muted);font-size:0.85rem;font-weight:600;">Total Travel Spend</p>
+            <div class="stat-card">
+                <p class="stat-label">Total Travel Spend</p>
                 <div class="stat-value" id="stat-spend">—</div>
             </div>
         </div>
 
-        <!-- Tabs -->
         <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('employees')">Employees</button>
-            <button class="tab-btn" onclick="switchTab('bookings')">All Bookings</button>
-            <button class="tab-btn" onclick="switchTab('policies')">Policies</button>
+            <button class="tab-btn active" onclick="switchTab('employees',this)">Employees</button>
+            <button class="tab-btn" onclick="switchTab('bookings',this)">All Bookings</button>
+            <button class="tab-btn" onclick="switchTab('policies',this)">Policies</button>
         </div>
 
         <!-- Employees Tab -->
         <div id="tab-employees" class="tab-content active">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <div class="section-header">
                 <h3>Employee Directory</h3>
             </div>
-            <div class="table-container">
+            <div class="table-card">
                 <table>
                     <thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Manager</th><th>Policy</th><th>Assign Policy</th></tr></thead>
-                    <tbody id="emp-list"><tr><td colspan="6" style="text-align:center;">Loading...</td></tr></tbody>
+                    <tbody id="emp-list"></tbody>
                 </table>
             </div>
         </div>
 
         <!-- Bookings Tab -->
         <div id="tab-bookings" class="tab-content">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <div class="section-header">
                 <h3>All Travel Requests</h3>
-                <select id="stage-filter" onchange="filterBookings()" style="padding:0.5rem 1rem;border:1px solid #e2e8f0;border-radius:8px;">
+                <select id="stage-filter" onchange="filterBookings()" style="padding:0.45rem 0.9rem;font-size:0.82rem;width:auto;">
                     <option value="">All Stages</option>
                     <option value="PENDING_MANAGER">Pending Manager</option>
                     <option value="PENDING_VENDOR">Pending Vendor</option>
@@ -87,72 +76,73 @@
                     <option value="REJECTED">Rejected</option>
                 </select>
             </div>
-            <div class="table-container">
+            <div class="table-card">
                 <table>
                     <thead><tr><th>Employee</th><th>Type</th><th>Route</th><th>Stage</th><th>Cost</th><th>Date</th></tr></thead>
-                    <tbody id="bookings-list"><tr><td colspan="6" style="text-align:center;">Loading...</td></tr></tbody>
+                    <tbody id="bookings-list"></tbody>
                 </table>
             </div>
         </div>
 
         <!-- Policies Tab -->
         <div id="tab-policies" class="tab-content">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <div class="section-header">
                 <h3>Travel Policies</h3>
-                <button onclick="showPolicyModal()" style="padding:0.75rem 1.5rem;">+ New Policy</button>
+                <button onclick="showPolicyModal()" style="padding:0.6rem 1.2rem;font-size:0.82rem;">+ New Policy</button>
             </div>
-            <div class="table-container" style="margin-bottom:2rem;">
+            <div class="table-card" style="margin-bottom:2rem;">
                 <table>
-                    <thead><tr><th>Name</th><th>Flight Limit</th><th>Hotel Limit</th><th>Train</th><th>Cab</th><th>Monthly Budget</th></tr></thead>
-                    <tbody id="policy-list"><tr><td colspan="6" style="text-align:center;">Loading...</td></tr></tbody>
+                    <thead><tr><th>Name</th><th>Flight Limit</th><th>Hotel / Night</th><th>Train</th><th>Cab</th><th>Monthly Budget</th></tr></thead>
+                    <tbody id="policy-list"></tbody>
                 </table>
             </div>
 
-            <div class="card" style="background:white;">
-                <h3 style="margin-bottom:1rem;">AI Policy Extractor</h3>
-                <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem;">Paste a travel policy document and Claude will extract the spending limits automatically.</p>
-                <textarea id="policy-text" rows="5" placeholder="e.g. Employees are allowed to book flights up to $800. Hotel stays are capped at $150 per night. Cab rides should not exceed $40..." style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;font-family:inherit;font-size:0.9rem;"></textarea>
+            <div class="card">
+                <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5a6478;margin-bottom:0.4rem;">AI Policy Extractor</p>
+                <h3 style="margin-bottom:0.5rem;">Extract limits from a policy document</h3>
+                <p style="color:#5a6478;font-size:0.875rem;margin-bottom:1rem;">Paste a travel policy document and Claude will extract the spending limits automatically.</p>
+                <textarea id="policy-text" rows="5" placeholder="e.g. Employees are allowed to book flights up to ₹60,000. Hotel stays are capped at ₹8,000 per night…"></textarea>
                 <div style="display:flex;gap:1rem;margin-top:1rem;align-items:center;">
-                    <button onclick="analyzePolicy()" id="analyze-btn" style="width:auto;padding:0.75rem 1.5rem;background:var(--secondary-gradient);">Analyze with Claude</button>
-                    <span id="analyze-status" style="color:var(--text-muted);font-size:0.85rem;"></span>
+                    <button onclick="analyzePolicy()" id="analyze-btn" style="width:auto;padding:0.7rem 1.4rem;background:linear-gradient(135deg,#5dade2,#2ecc71);color:#0e1117;">Analyze with Claude</button>
+                    <span id="analyze-status" style="color:#5a6478;font-size:0.85rem;"></span>
                 </div>
-                <div id="policy-results" style="margin-top:1.5rem;display:none;padding:1.5rem;background:#f8fafc;border-radius:12px;"></div>
+                <div id="policy-results" style="margin-top:1.5rem;display:none;padding:1.5rem;background:#1c2333;border:1px solid rgba(255,255,255,0.06);border-radius:10px;"></div>
             </div>
         </div>
     </div>
 
-    <!-- New Policy Modal -->
+    <!-- Policy Modal -->
     <div id="policy-modal" class="modal">
         <div class="modal-content" style="max-width:480px;">
-            <h2>Create Travel Policy</h2>
-            <form id="policy-form" style="margin-top:1.5rem;">
+            <h2 style="margin-bottom:1.5rem;">Create Travel Policy</h2>
+            <form id="policy-form">
                 <div class="form-group">
                     <label>Policy Name</label>
                     <input type="text" id="p-name" required placeholder="e.g. Standard 2026">
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                     <div class="form-group">
-                        <label>Flight Limit (USD)</label>
-                        <input type="number" id="p-flight" placeholder="1000" min="0">
+                        <label>Flight Limit (₹)</label>
+                        <input type="number" id="p-flight" placeholder="60000" min="0">
                     </div>
                     <div class="form-group">
-                        <label>Hotel Limit / night (USD)</label>
-                        <input type="number" id="p-hotel" placeholder="200" min="0">
+                        <label>Hotel / night (₹)</label>
+                        <input type="number" id="p-hotel" placeholder="8000" min="0">
                     </div>
                     <div class="form-group">
-                        <label>Train Limit (USD)</label>
-                        <input type="number" id="p-train" placeholder="100" min="0">
+                        <label>Train Limit (₹)</label>
+                        <input type="number" id="p-train" placeholder="3000" min="0">
                     </div>
                     <div class="form-group">
-                        <label>Cab Limit (USD)</label>
-                        <input type="number" id="p-cab" placeholder="50" min="0">
+                        <label>Cab Limit (₹)</label>
+                        <input type="number" id="p-cab" placeholder="1500" min="0">
                     </div>
                     <div class="form-group" style="grid-column:span 2;">
-                        <label>Monthly Budget (USD)</label>
-                        <input type="number" id="p-budget" placeholder="5000" min="0">
+                        <label>Monthly Budget (₹)</label>
+                        <input type="number" id="p-budget" placeholder="200000" min="0">
                     </div>
                 </div>
-                <div style="display:flex;gap:1rem;margin-top:2rem;">
+                <div style="display:flex;gap:0.75rem;margin-top:2rem;">
                     <button type="submit" style="flex:1;">Save Policy</button>
                     <button type="button" onclick="hideModal('policy-modal')" class="secondary" style="flex:0.4;">Cancel</button>
                 </div>
@@ -163,13 +153,15 @@
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
-        let allBookings = [];
-        let allPolicies = [];
+        let allBookings = [], allPolicies = [];
 
         async function init() {
             const user = checkAuth();
             if (!user) return;
             document.getElementById('user-name').innerText = user.name;
+            showTableSkeleton('emp-list', 6);
+            showTableSkeleton('bookings-list', 6);
+            showTableSkeleton('policy-list', 6);
             loadStats();
             loadEmployees();
             loadBookings();
@@ -177,42 +169,45 @@
         }
         init();
 
-        function switchTab(name) {
+        function switchTab(name, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            btn.classList.add('active');
             document.getElementById('tab-' + name).classList.add('active');
         }
 
         async function loadStats() {
             try {
                 const s = await apiRequest('/admin/stats');
-                document.getElementById('stat-emp').innerText = s.totalUsers || '—';
-                document.getElementById('stat-active').innerText = s.pendingApprovals;
-                document.getElementById('stat-completed').innerText = s.completedTrips;
-                document.getElementById('stat-spend').innerText = '$' + (s.totalCost || 0).toLocaleString();
+                document.getElementById('stat-emp').innerText       = s.totalUsers || '—';
+                document.getElementById('stat-active').innerText    = s.pendingApprovals;
+                document.getElementById('stat-completed').innerText = s.completedTrips || '—';
+                document.getElementById('stat-spend').innerText     = '₹' + (s.totalCost || 0).toLocaleString('en-IN');
             } catch(e) {}
         }
 
         async function loadEmployees() {
             try {
                 allPolicies = await apiRequest('/admin/policies');
-                const emps = await apiRequest('/admin/employees');
-                const list = document.getElementById('emp-list');
+                const emps  = await apiRequest('/admin/employees');
+                const list  = document.getElementById('emp-list');
+                if (!emps.length) {
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👥</div><p>No employees found</p></div></td></tr>'; return;
+                }
                 list.innerHTML = emps.map(e => `
                     <tr>
                         <td style="font-weight:600;">${e.user.name}</td>
-                        <td style="color:var(--text-muted);">${e.user.email}</td>
-                        <td>${e.department}</td>
-                        <td>${e.manager?.name || '—'}</td>
-                        <td>${allPolicies.find(p => p.id === e.policyId)?.name || '<span style="color:#e63946;">No policy</span>'}</td>
+                        <td style="color:#9aa3b5;font-size:0.82rem;">${e.user.email}</td>
+                        <td style="color:#9aa3b5;">${e.department}</td>
+                        <td style="color:#9aa3b5;">${e.manager?.name || '—'}</td>
+                        <td>${allPolicies.find(p => p.id === e.policyId)?.name || '<span style="color:#e74c3c;font-size:0.78rem;">No policy</span>'}</td>
                         <td>
-                            <select onchange="assignPolicy('${e.id}', this.value)" style="padding:0.3rem 0.5rem;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;">
-                                <option value="">Assign policy...</option>
-                                ${allPolicies.map(p => `<option value="${p.id}" ${p.id === e.policyId ? 'selected' : ''}>${p.name}</option>`).join('')}
+                            <select onchange="assignPolicy('${e.id}', this.value)" style="padding:0.3rem 0.5rem;font-size:0.8rem;width:auto;">
+                                <option value="">Assign…</option>
+                                ${allPolicies.map(p => `<option value="${p.id}" ${p.id === e.policyId?'selected':''}>${p.name}</option>`).join('')}
                             </select>
                         </td>
-                    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No employees</td></tr>';
+                    </tr>`).join('');
             } catch(e) { console.error(e); }
         }
 
@@ -220,8 +215,9 @@
             if (!policyId) return;
             try {
                 await apiRequest('/admin/policies/assign', { method: 'POST', body: { employeeId, policyId } });
+                showToast('Policy assigned successfully.', 'success');
             } catch(err) {
-                alert('Failed to assign policy: ' + err.message);
+                showToast('Failed to assign policy: ' + err.message, 'error');
             }
         }
 
@@ -233,15 +229,18 @@
         }
 
         function renderBookings(list) {
+            if (!list.length) {
+                document.getElementById('bookings-list').innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>No bookings found</p></div></td></tr>'; return;
+            }
             document.getElementById('bookings-list').innerHTML = list.map(b => `
                 <tr>
                     <td style="font-weight:600;">${b.employee?.user?.name || '—'}</td>
-                    <td>${b.type}</td>
+                    <td style="color:#9aa3b5;font-size:0.82rem;">${b.type}</td>
                     <td>${b.details?.origin || '—'} → ${b.details?.destination || '—'}</td>
                     <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
-                    <td style="font-weight:600;">$${b.cost || '—'}</td>
-                    <td style="color:var(--text-muted);font-size:0.85rem;">${new Date(b.createdAt).toLocaleDateString()}</td>
-                </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No bookings</td></tr>';
+                    <td style="font-weight:600;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                    <td style="color:#5a6478;font-size:0.78rem;">${new Date(b.createdAt).toLocaleDateString('en-IN')}</td>
+                </tr>`).join('');
         }
 
         function filterBookings() {
@@ -252,44 +251,44 @@
         async function loadPolicies() {
             try {
                 allPolicies = await apiRequest('/admin/policies');
-                const list = document.getElementById('policy-list');
+                const list  = document.getElementById('policy-list');
+                if (!allPolicies.length) {
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>No policies yet. Create one to enforce spending limits.</p></div></td></tr>'; return;
+                }
                 list.innerHTML = allPolicies.map(p => `
                     <tr>
                         <td style="font-weight:600;">${p.name}</td>
-                        <td>$${p.rules.flightLimit || '—'}</td>
-                        <td>$${p.rules.hotelLimit || '—'}</td>
-                        <td>$${p.rules.trainLimit || '—'}</td>
-                        <td>$${p.rules.cabLimit || '—'}</td>
-                        <td>$${p.rules.globalMonthlyBudget || '—'}</td>
-                    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No policies yet</td></tr>';
+                        <td style="color:#d4a853;">₹${p.rules.flightLimit || '—'}</td>
+                        <td style="color:#d4a853;">₹${p.rules.hotelLimit  || '—'}</td>
+                        <td style="color:#d4a853;">₹${p.rules.trainLimit  || '—'}</td>
+                        <td style="color:#d4a853;">₹${p.rules.cabLimit    || '—'}</td>
+                        <td style="color:#d4a853;">₹${p.rules.globalMonthlyBudget || '—'}</td>
+                    </tr>`).join('');
             } catch(e) { console.error(e); }
         }
 
         function showPolicyModal() { document.getElementById('policy-modal').style.display = 'flex'; }
-        function hideModal(id) { document.getElementById(id).style.display = 'none'; }
+        function hideModal(id)      { document.getElementById(id).style.display = 'none'; }
 
         document.getElementById('policy-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type=submit]');
-            btn.disabled = true; btn.innerText = 'Saving...';
+            btn.disabled = true; btn.innerText = 'Saving…';
             try {
-                await apiRequest('/admin/policies', {
-                    method: 'POST',
-                    body: {
-                        name: document.getElementById('p-name').value,
-                        flightLimit: document.getElementById('p-flight').value,
-                        hotelLimit: document.getElementById('p-hotel').value,
-                        trainLimit: document.getElementById('p-train').value,
-                        cabLimit: document.getElementById('p-cab').value,
-                        globalMonthlyBudget: document.getElementById('p-budget').value
-                    }
-                });
+                await apiRequest('/admin/policies', { method: 'POST', body: {
+                    name: document.getElementById('p-name').value,
+                    flightLimit: document.getElementById('p-flight').value,
+                    hotelLimit:  document.getElementById('p-hotel').value,
+                    trainLimit:  document.getElementById('p-train').value,
+                    cabLimit:    document.getElementById('p-cab').value,
+                    globalMonthlyBudget: document.getElementById('p-budget').value
+                }});
                 hideModal('policy-modal');
                 e.target.reset();
-                loadPolicies();
-                loadEmployees();
+                showToast('Policy created successfully!', 'success');
+                loadPolicies(); loadEmployees();
             } catch(err) {
-                alert(err.message);
+                showToast(err.message, 'error');
             } finally {
                 btn.disabled = false; btn.innerText = 'Save Policy';
             }
@@ -297,27 +296,27 @@
 
         async function analyzePolicy() {
             const text = document.getElementById('policy-text').value;
-            if (!text.trim()) return alert('Please paste policy text first.');
-            const btn = document.getElementById('analyze-btn');
+            if (!text.trim()) { showToast('Please paste policy text first.', 'warning'); return; }
+            const btn    = document.getElementById('analyze-btn');
             const status = document.getElementById('analyze-status');
-            btn.disabled = true; btn.innerText = 'Analyzing...';
-            status.innerText = 'Claude is reading the policy...';
+            btn.disabled = true; btn.innerText = 'Analyzing…';
+            status.innerText = 'Claude is reading the policy…';
             try {
-                const r = await apiRequest('/admin/policies/analyze', { method: 'POST', body: { text } });
+                const r   = await apiRequest('/admin/policies/analyze', { method: 'POST', body: { text } });
                 const div = document.getElementById('policy-results');
                 div.style.display = 'block';
                 div.innerHTML = `
-                    <h4 style="margin-bottom:1rem;">Extracted Limits</h4>
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;">
-                        <div><p style="color:var(--text-muted);font-size:0.8rem;">FLIGHTS</p><strong>$${r.flightLimit || 'N/A'}</strong></div>
-                        <div><p style="color:var(--text-muted);font-size:0.8rem;">HOTELS / NIGHT</p><strong>$${r.hotelLimit || 'N/A'}</strong></div>
-                        <div><p style="color:var(--text-muted);font-size:0.8rem;">TRAINS</p><strong>$${r.trainLimit || 'N/A'}</strong></div>
-                        <div><p style="color:var(--text-muted);font-size:0.8rem;">CABS</p><strong>$${r.cabLimit || 'N/A'}</strong></div>
-                        <div><p style="color:var(--text-muted);font-size:0.8rem;">MONTHLY BUDGET</p><strong>$${r.globalMonthlyBudget || 'N/A'}</strong></div>
+                    <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5a6478;margin-bottom:1rem;">Extracted Limits</p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;">
+                        ${[['FLIGHTS','flightLimit'],['HOTELS/NIGHT','hotelLimit'],['TRAINS','trainLimit'],['CABS','cabLimit'],['MONTHLY BUDGET','globalMonthlyBudget']].map(([label,key]) => `
+                        <div style="padding:1rem;background:#202736;border-radius:8px;">
+                            <p style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5a6478;margin-bottom:0.35rem;">${label}</p>
+                            <strong style="font-size:1.1rem;color:#d4a853;">₹${r[key] || 'N/A'}</strong>
+                        </div>`).join('')}
                     </div>`;
-                status.innerText = '✅ Done';
+                status.innerText = 'Done.';
             } catch(err) {
-                status.innerText = '❌ Failed: ' + err.message;
+                status.innerText = 'Failed: ' + err.message;
             } finally {
                 btn.disabled = false; btn.innerText = 'Analyze with Claude';
             }

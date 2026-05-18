@@ -5,13 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TripFlow | Manager</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        .tab-nav { display:flex;gap:0.5rem;margin-bottom:2.5rem;border-bottom:2px solid #f1f5f9;padding-bottom:0; }
-        .tab-btn { padding:0.75rem 1.5rem;border:none;background:none;cursor:pointer;font-size:0.95rem;font-weight:600;color:var(--text-muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.2s; }
-        .tab-btn.active { color:#6366f1;border-bottom-color:#6366f1; }
-        .tab-content { display:none; }
-        .tab-content.active { display:block; }
-    </style>
 </head>
 <body>
     <nav class="dashboard-nav glass">
@@ -20,43 +13,40 @@
             <a href="#" class="active">Manager Portal</a>
         </div>
         <div class="user-info">
-            <span id="user-name" style="font-weight:600;color:var(--text-main);"></span>
-            <button onclick="logout()" class="secondary" style="width:auto;padding:0.6rem 1.2rem;">Logout</button>
+            <span id="user-name" style="font-size:0.875rem;font-weight:600;color:#9aa3b5;"></span>
+            <button onclick="logout()" class="secondary" style="padding:0.45rem 0.9rem;font-size:0.8rem;">Logout</button>
         </div>
     </nav>
 
     <div class="container">
-        <div style="margin-bottom:2.5rem;">
-            <p style="color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.1em;font-size:0.8rem;margin-bottom:0.4rem;">Manager Portal</p>
+        <div style="margin-bottom:2rem;">
+            <p class="page-label">Manager Portal</p>
             <h1>Travel Approvals</h1>
         </div>
 
         <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('pending')">
-                Pending Approvals <span id="pending-count" style="background:#6366f1;color:white;padding:0.1rem 0.5rem;border-radius:12px;font-size:0.75rem;margin-left:0.4rem;"></span>
+            <button class="tab-btn active" onclick="switchTab('pending',this)">
+                Pending
+                <span id="pending-count" style="background:#d4a853;color:#0e1117;padding:0.05rem 0.5rem;border-radius:8px;font-size:0.7rem;margin-left:0.35rem;display:none;font-weight:800;"></span>
             </button>
-            <button class="tab-btn" onclick="switchTab('team')">My Team</button>
+            <button class="tab-btn" onclick="switchTab('team',this)">My Team</button>
         </div>
 
-        <!-- Pending Approvals Tab -->
+        <!-- Pending Tab -->
         <div id="tab-pending" class="tab-content active">
-            <div class="table-container">
+            <div class="table-card">
                 <table>
-                    <thead>
-                        <tr><th>Employee</th><th>Type</th><th>Route & Date</th><th>Est. Cost</th><th>Actions</th></tr>
-                    </thead>
-                    <tbody id="approvals-list">
-                        <tr><td colspan="5" style="text-align:center;">Loading...</td></tr>
-                    </tbody>
+                    <thead><tr><th>Employee</th><th>Type</th><th>Route &amp; Date</th><th>Est. Cost</th><th>Actions</th></tr></thead>
+                    <tbody id="approvals-list"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- My Team Tab -->
+        <!-- Team Tab -->
         <div id="tab-team" class="tab-content">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <div class="section-header">
                 <h3>Team Bookings</h3>
-                <select id="team-filter" onchange="filterTeam()" style="padding:0.5rem 1rem;border:1px solid #e2e8f0;border-radius:8px;">
+                <select id="team-filter" onchange="filterTeam()" style="padding:0.45rem 0.9rem;font-size:0.82rem;width:auto;">
                     <option value="">All Stages</option>
                     <option value="PENDING_MANAGER">Pending Approval</option>
                     <option value="PENDING_VENDOR">With Vendor</option>
@@ -64,14 +54,10 @@
                     <option value="REJECTED">Rejected</option>
                 </select>
             </div>
-            <div class="table-container">
+            <div class="table-card">
                 <table>
-                    <thead>
-                        <tr><th>Employee</th><th>Type</th><th>Route</th><th>Stage</th><th>Cost</th><th>PNR</th></tr>
-                    </thead>
-                    <tbody id="team-list">
-                        <tr><td colspan="6" style="text-align:center;">Loading...</td></tr>
-                    </tbody>
+                    <thead><tr><th>Employee</th><th>Type</th><th>Route</th><th>Stage</th><th>Cost</th><th>PNR</th></tr></thead>
+                    <tbody id="team-list"></tbody>
                 </table>
             </div>
         </div>
@@ -80,17 +66,15 @@
     <!-- Approve Modal -->
     <div id="approval-modal" class="modal">
         <div class="modal-content" style="max-width:460px;">
-            <h2>Approve Request</h2>
-            <p style="color:var(--text-muted);margin-bottom:1.5rem;">Select a vendor to handle this booking.</p>
+            <h2 style="margin-bottom:0.4rem;">Approve Request</h2>
+            <p style="color:#5a6478;font-size:0.875rem;margin-bottom:1.75rem;">Select a vendor to handle this booking.</p>
             <form id="approval-form">
                 <input type="hidden" id="booking-id">
                 <div class="form-group">
                     <label>Assign Vendor</label>
-                    <select id="vendor-id" required style="width:100%;">
-                        <option value="">Loading vendors...</option>
-                    </select>
+                    <select id="vendor-id" required><option value="">Loading vendors…</option></select>
                 </div>
-                <div style="display:flex;gap:1rem;margin-top:2rem;">
+                <div style="display:flex;gap:0.75rem;margin-top:2rem;">
                     <button type="submit" style="flex:1;">Confirm Approval</button>
                     <button type="button" onclick="hideModal('approval-modal')" class="secondary" style="flex:0.5;">Cancel</button>
                 </div>
@@ -101,15 +85,16 @@
     <!-- Reject Modal -->
     <div id="rejection-modal" class="modal">
         <div class="modal-content" style="max-width:460px;">
-            <h2>Reject Request</h2>
+            <h2 style="margin-bottom:0.4rem;">Reject Request</h2>
+            <p style="color:#5a6478;font-size:0.875rem;margin-bottom:1.75rem;">The employee will be notified with your reason.</p>
             <form id="rejection-form">
                 <input type="hidden" id="reject-booking-id">
-                <div class="form-group" style="margin-top:1.5rem;">
+                <div class="form-group">
                     <label>Reason for Rejection</label>
-                    <textarea id="rejection-reason" required rows="4" placeholder="e.g. Cost exceeds policy limit. Please resubmit with a lower-cost option." style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:0.75rem;font-family:inherit;"></textarea>
+                    <textarea id="rejection-reason" required rows="4" placeholder="e.g. Cost exceeds policy limit. Please resubmit with a lower-cost option."></textarea>
                 </div>
-                <div style="display:flex;gap:1rem;margin-top:2rem;">
-                    <button type="submit" style="flex:1;background:#e63946;">Reject Request</button>
+                <div style="display:flex;gap:0.75rem;margin-top:2rem;">
+                    <button type="submit" class="danger" style="flex:1;">Reject Request</button>
                     <button type="button" onclick="hideModal('rejection-modal')" class="secondary" style="flex:0.5;">Cancel</button>
                 </div>
             </form>
@@ -125,126 +110,108 @@
             const user = checkAuth();
             if (!user) return;
             document.getElementById('user-name').innerText = user.name;
+            showTableSkeleton('approvals-list', 5);
+            showTableSkeleton('team-list', 6);
             loadApprovals();
             loadVendors();
             loadTeamBookings();
         }
         init();
 
-        function switchTab(name) {
+        function switchTab(name, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            btn.classList.add('active');
             document.getElementById('tab-' + name).classList.add('active');
         }
 
         async function loadApprovals() {
             try {
                 const approvals = await apiRequest('/approvals/pending');
-                const count = document.getElementById('pending-count');
-                count.innerText = approvals.length || '';
-                count.style.display = approvals.length ? 'inline' : 'none';
+                const badge     = document.getElementById('pending-count');
+                if (approvals.length) { badge.innerText = approvals.length; badge.style.display = 'inline'; }
+                else badge.style.display = 'none';
 
                 const list = document.getElementById('approvals-list');
                 if (!approvals.length) {
-                    list.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">✅ No pending approvals</td></tr>';
-                    return;
+                    list.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">✅</div><p>No pending approvals</p></div></td></tr>'; return;
                 }
                 list.innerHTML = approvals.map(b => `
                     <tr>
                         <td>
-                            <strong>${b.employee.user.name}</strong><br>
-                            <small style="color:var(--text-muted);">${b.employee.department}</small>
+                            <div style="font-weight:600;">${b.employee.user.name}</div>
+                            <div style="font-size:0.78rem;color:#5a6478;">${b.employee.department}</div>
                         </td>
                         <td><span class="badge badge-pending-manager">${b.type}</span></td>
                         <td>
                             <div style="font-weight:500;">${b.details.origin} → ${b.details.destination}</div>
-                            <div style="font-size:0.8rem;color:var(--text-muted);">${b.details.date}</div>
+                            <div style="font-size:0.78rem;color:#5a6478;">${b.details.date}</div>
                         </td>
-                        <td style="font-weight:700;color:#6366f1;">$${b.cost || '—'}</td>
+                        <td style="font-weight:700;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
                         <td>
-                            <button onclick="showApproveModal('${b.id}')" style="width:auto;padding:0.4rem 0.9rem;font-size:0.85rem;background:#059669;margin-right:0.4rem;">Approve</button>
-                            <button onclick="showRejectModal('${b.id}')" style="width:auto;padding:0.4rem 0.9rem;font-size:0.85rem;background:#e63946;">Reject</button>
+                            <div style="display:flex;gap:0.5rem;">
+                                <button onclick="showApproveModal('${b.id}')" style="padding:0.35rem 0.75rem;font-size:0.78rem;background:#2ecc71;color:#0e1117;">Approve</button>
+                                <button onclick="showRejectModal('${b.id}')" class="danger" style="padding:0.35rem 0.75rem;font-size:0.78rem;">Reject</button>
+                            </div>
                         </td>
                     </tr>`).join('');
-            } catch(err) {
-                console.error(err.message);
-            }
+            } catch(err) { console.error(err.message); }
         }
 
         async function loadVendors() {
             try {
                 const vendors = await apiRequest('/approvals/vendors');
                 const sel = document.getElementById('vendor-id');
-                if (!vendors.length) {
-                    sel.innerHTML = '<option value="">No vendors available — ask admin to add one</option>';
-                    return;
-                }
-                sel.innerHTML = '<option value="">Select a vendor...</option>' +
-                    vendors.map(v => `<option value="${v.id}">${v.companyName} (${v.serviceType})</option>`).join('');
-            } catch(err) {
-                console.error('Could not load vendors:', err.message);
-            }
+                if (!vendors.length) { sel.innerHTML = '<option value="">No vendors — ask admin to add one</option>'; return; }
+                sel.innerHTML = '<option value="">Select a vendor…</option>' + vendors.map(v => `<option value="${v.id}">${v.companyName} (${v.serviceType})</option>`).join('');
+            } catch(err) { console.error(err.message); }
         }
 
         async function loadTeamBookings() {
             try {
-                const approvals = await apiRequest('/approvals/pending');
-                allTeamBookings = approvals;
+                allTeamBookings = await apiRequest('/approvals/team');
                 renderTeam(allTeamBookings);
-            } catch(err) {
-                console.error(err.message);
-            }
+            } catch(err) { console.error(err.message); }
         }
 
         function renderTeam(list) {
-            const tbody = document.getElementById('team-list');
-            if (!list.length) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">No bookings found</td></tr>';
-                return;
+            const stage    = document.getElementById('team-filter').value;
+            const filtered = stage ? list.filter(b => b.stage === stage) : list;
+            const tbody    = document.getElementById('team-list');
+            if (!filtered.length) {
+                tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👥</div><p>No bookings found</p></div></td></tr>'; return;
             }
-            tbody.innerHTML = list.map(b => `
+            tbody.innerHTML = filtered.map(b => `
                 <tr>
-                    <td style="font-weight:600;">${b.employee?.user?.name || '—'}</td>
-                    <td>${b.type}</td>
+                    <td>
+                        <div style="font-weight:600;">${b.employee?.user?.name || '—'}</div>
+                        <div style="font-size:0.78rem;color:#5a6478;">${b.employee?.department || ''}</div>
+                    </td>
+                    <td style="color:#9aa3b5;font-size:0.82rem;">${b.type}</td>
                     <td>${b.details?.origin || '—'} → ${b.details?.destination || '—'}</td>
                     <td><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
-                    <td style="font-weight:600;">$${b.cost || '—'}</td>
-                    <td style="font-family:monospace;color:var(--accent);">${b.pnr || '—'}</td>
+                    <td style="font-weight:600;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                    <td style="font-family:monospace;font-size:0.82rem;color:#9aa3b5;">${b.pnr || '—'}</td>
                 </tr>`).join('');
         }
 
-        function filterTeam() {
-            const stage = document.getElementById('team-filter').value;
-            renderTeam(stage ? allTeamBookings.filter(b => b.stage === stage) : allTeamBookings);
-        }
+        function filterTeam() { renderTeam(allTeamBookings); }
 
-        function showApproveModal(id) {
-            document.getElementById('booking-id').value = id;
-            document.getElementById('approval-modal').style.display = 'flex';
-        }
-
-        function showRejectModal(id) {
-            document.getElementById('reject-booking-id').value = id;
-            document.getElementById('rejection-modal').style.display = 'flex';
-        }
-
-        function hideModal(id) { document.getElementById(id).style.display = 'none'; }
+        function showApproveModal(id) { document.getElementById('booking-id').value = id; document.getElementById('approval-modal').style.display = 'flex'; }
+        function showRejectModal(id)  { document.getElementById('reject-booking-id').value = id; document.getElementById('rejection-modal').style.display = 'flex'; }
+        function hideModal(id)        { document.getElementById(id).style.display = 'none'; }
 
         document.getElementById('approval-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type=submit]');
-            btn.disabled = true; btn.innerText = 'Approving...';
+            btn.disabled = true; btn.innerText = 'Approving…';
             try {
-                await apiRequest(`/approvals/${document.getElementById('booking-id').value}/approve`, {
-                    method: 'POST',
-                    body: { vendorId: document.getElementById('vendor-id').value }
-                });
+                await apiRequest(`/approvals/${document.getElementById('booking-id').value}/approve`, { method: 'POST', body: { vendorId: document.getElementById('vendor-id').value } });
                 hideModal('approval-modal');
-                loadApprovals();
-                loadTeamBookings();
+                showToast('Booking approved and sent to vendor.', 'success');
+                loadApprovals(); loadTeamBookings();
             } catch(err) {
-                alert(err.message);
+                showToast(err.message, 'error');
             } finally {
                 btn.disabled = false; btn.innerText = 'Confirm Approval';
             }
@@ -253,18 +220,15 @@
         document.getElementById('rejection-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type=submit]');
-            btn.disabled = true; btn.innerText = 'Rejecting...';
+            btn.disabled = true; btn.innerText = 'Rejecting…';
             try {
-                await apiRequest(`/approvals/${document.getElementById('reject-booking-id').value}/reject`, {
-                    method: 'POST',
-                    body: { reason: document.getElementById('rejection-reason').value }
-                });
+                await apiRequest(`/approvals/${document.getElementById('reject-booking-id').value}/reject`, { method: 'POST', body: { reason: document.getElementById('rejection-reason').value } });
                 hideModal('rejection-modal');
                 document.getElementById('rejection-reason').value = '';
-                loadApprovals();
-                loadTeamBookings();
+                showToast('Request rejected and employee notified.', 'warning');
+                loadApprovals(); loadTeamBookings();
             } catch(err) {
-                alert(err.message);
+                showToast(err.message, 'error');
             } finally {
                 btn.disabled = false; btn.innerText = 'Reject Request';
             }

@@ -1,5 +1,33 @@
 const API_URL = '/api';
 
+/* ── Toast notification ──────────────────────────────────── */
+function showToast(message, type = 'info', duration = 3500) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<span class="toast-icon"></span><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('hide');
+    setTimeout(() => toast.remove(), 320);
+  }, duration);
+}
+
+/* ── Skeleton table rows ─────────────────────────────────── */
+function showTableSkeleton(tbodyId, cols, rows = 5) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  tbody.innerHTML = Array(rows).fill(0).map(() =>
+    `<tr>${Array(cols).fill(0).map(() =>
+      `<td><div class="skeleton" style="height:14px;"></div></td>`).join('')}</tr>`
+  ).join('');
+}
+
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('tripflow_token');
   

@@ -9,6 +9,7 @@ router.use(role(['MANAGER', 'ADMIN']));
 
 router.get('/vendors', approvalController.getVendors);
 router.get('/pending', approvalController.getPendingApprovals);
+router.get('/team', approvalController.getTeamBookings);
 router.post('/:id/approve', approvalController.approveBooking);
 router.post('/:id/reject', approvalController.rejectBooking);
 

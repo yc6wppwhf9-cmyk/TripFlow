@@ -6,295 +6,425 @@
     <title>TripFlow | Sign In</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             min-height: 100vh;
             display: flex;
-            background: #f0f4ff;
+            background: #0e1117;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            color: #e8eaf0;
             overflow: hidden;
         }
 
-        .login-left {
+        /* ── Left Editorial Panel ── */
+        .panel-left {
             flex: 1;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #a855f7 100%);
+            position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 5rem;
-            position: relative;
+            justify-content: space-between;
+            padding: 3rem 3.5rem;
             overflow: hidden;
+            background: #0b0e14;
         }
 
-        .login-left::before {
+        /* Grid lines */
+        .panel-left::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(212,168,83,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212,168,83,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        /* Large ambient glow */
+        .panel-left::after {
             content: '';
             position: absolute;
             width: 500px;
             height: 500px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.06);
-            top: -120px;
-            right: -120px;
-        }
-
-        .login-left::after {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.06);
-            bottom: -80px;
-            left: -80px;
+            background: radial-gradient(circle, rgba(212,168,83,0.08) 0%, transparent 70%);
+            bottom: -100px;
+            left: -100px;
+            pointer-events: none;
         }
 
         .brand {
-            font-size: 2rem;
-            font-weight: 800;
-            color: white;
-            letter-spacing: -1px;
-            margin-bottom: 3rem;
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #d4a853;
+            letter-spacing: 0.04em;
+            position: relative;
+            z-index: 1;
         }
 
-        .brand span {
-            opacity: 0.6;
+        .panel-left-center {
+            position: relative;
+            z-index: 1;
+        }
+
+        .tagline-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #d4a853;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .tagline-label::before {
+            content: '';
+            display: block;
+            width: 24px;
+            height: 1px;
+            background: #d4a853;
+        }
+
+        h1.hero {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(2.4rem, 4vw, 3.6rem);
+            font-weight: 600;
+            color: #e8eaf0;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 1.5rem;
+        }
+
+        h1.hero em {
+            font-style: italic;
+            color: #d4a853;
+        }
+
+        .hero-sub {
+            font-size: 0.925rem;
+            color: #5a6478;
+            line-height: 1.7;
+            max-width: 380px;
             font-weight: 400;
         }
 
-        .login-left h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            color: white;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-            letter-spacing: -1.5px;
-        }
-
-        .login-left p {
-            font-size: 1.1rem;
-            color: rgba(255,255,255,0.75);
-            max-width: 380px;
-            line-height: 1.7;
-        }
-
+        /* Feature list */
         .features {
-            margin-top: 3rem;
-            display: flex;
-            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
 
-        .feature-item {
+        .feat {
             display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: rgba(255,255,255,0.85);
-            font-size: 0.9rem;
+            align-items: flex-start;
+            gap: 0.6rem;
         }
 
-        .feature-icon {
-            width: 32px;
-            height: 32px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
+        .feat-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #d4a853;
+            margin-top: 0.45rem;
             flex-shrink: 0;
         }
 
-        .login-right {
-            width: 480px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 3rem;
-            background: white;
+        .feat-text {
+            font-size: 0.8rem;
+            color: #5a6478;
+            line-height: 1.5;
+            font-weight: 400;
         }
 
-        .login-form-wrap {
-            width: 100%;
-            max-width: 380px;
-        }
-
-        .login-form-wrap h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #1e293b;
-            letter-spacing: -0.5px;
-            margin-bottom: 0.4rem;
-        }
-
-        .login-form-wrap .subtitle {
-            color: #64748b;
-            font-size: 0.95rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.4rem;
-        }
-
-        .form-group label {
-            display: block;
+        .feat-text strong {
+            color: #9aa3b5;
             font-weight: 600;
-            color: #374151;
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
+            display: block;
+            margin-bottom: 0.1rem;
         }
 
-        .input-wrap {
+        /* ── Right Sign-in Panel ── */
+        .panel-right {
+            width: 440px;
+            flex-shrink: 0;
+            background: #0e1117;
+            border-left: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem 3rem;
             position: relative;
         }
 
-        .input-wrap input {
+        .panel-right::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212,168,83,0.3), transparent);
+        }
+
+        .sign-in-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .sign-in-header p.overline {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #d4a853;
+            margin-bottom: 0.6rem;
+        }
+
+        .sign-in-header h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #e8eaf0;
+            letter-spacing: -0.01em;
+        }
+
+        .sign-in-header .sub {
+            margin-top: 0.4rem;
+            font-size: 0.85rem;
+            color: #5a6478;
+        }
+
+        /* Form fields */
+        .field { margin-bottom: 1.15rem; }
+
+        .field label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #5a6478;
+            margin-bottom: 0.45rem;
+        }
+
+        .field-wrap { position: relative; }
+
+        .field-wrap input {
             width: 100%;
-            padding: 0.85rem 1rem;
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            color: #1e293b;
+            background: #161b27;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            font-size: 0.9rem;
+            color: #e8eaf0;
             transition: all 0.2s;
             outline: none;
         }
 
-        .input-wrap input:focus {
-            background: white;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 4px rgba(99,102,241,0.12);
+        .field-wrap input::placeholder { color: #3a4152; }
+
+        .field-wrap input:focus {
+            background: #1c2333;
+            border-color: rgba(212,168,83,0.4);
+            box-shadow: 0 0 0 3px rgba(212,168,83,0.07);
         }
 
         .toggle-pw {
             position: absolute;
-            right: 1rem;
+            right: 0.875rem;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             cursor: pointer;
-            color: #94a3b8;
-            font-size: 1rem;
+            color: #3a4152;
+            font-size: 0.85rem;
             padding: 0;
             box-shadow: none;
+            transition: color 0.15s;
             display: flex;
             align-items: center;
         }
+        .toggle-pw:hover { color: #d4a853; transform: translateY(-50%) scale(1.1); background: none; box-shadow: none; }
 
-        .toggle-pw:hover {
-            color: #6366f1;
-            transform: translateY(-50%) scale(1.1);
-        }
-
+        /* Submit button */
         .submit-btn {
             width: 100%;
-            padding: 0.95rem;
-            font-size: 1rem;
-            border-radius: 12px;
-            margin-top: 0.5rem;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
-            font-weight: 700;
+            margin-top: 1.5rem;
+            padding: 0.875rem 1.5rem;
+            background: #d4a853;
+            color: #0e1117;
             border: none;
+            border-radius: 8px;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
             cursor: pointer;
-            letter-spacing: 0.01em;
             transition: all 0.2s;
-            box-shadow: 0 4px 14px rgba(99,102,241,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .submit-btn:hover:not(:disabled) {
+            background: #e8c47a;
+            box-shadow: 0 6px 24px rgba(212,168,83,0.3);
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(99,102,241,0.5);
         }
 
         .submit-btn:disabled {
-            opacity: 0.7;
+            opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
 
+        /* Error box */
         .error-box {
             display: none;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 0.85rem 1rem;
-            border-radius: 10px;
-            font-size: 0.875rem;
             margin-top: 1rem;
-            text-align: left;
+            padding: 0.75rem 1rem;
+            background: rgba(231,76,60,0.1);
+            border: 1px solid rgba(231,76,60,0.25);
+            border-radius: 8px;
+            font-size: 0.825rem;
+            color: #e74c3c;
+        }
+
+        /* Bottom note */
+        .panel-right-foot {
+            position: absolute;
+            bottom: 2rem;
+            left: 3rem;
+            right: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-right-foot span {
+            font-size: 0.72rem;
+            color: #3a4152;
+        }
+
+        /* Decorative accent line on left panel */
+        .accent-rule {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(212,168,83,0.2) 30%, rgba(212,168,83,0.2) 70%, transparent);
         }
 
         @media (max-width: 900px) {
-            .login-left { display: none; }
-            .login-right { width: 100%; }
+            .panel-left { display: none; }
+            .panel-right { width: 100%; border-left: none; padding: 2.5rem 2rem; }
+            .panel-right-foot { position: static; margin-top: 2rem; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
-    <!-- Left panel -->
-    <div class="login-left">
-        <div class="brand">TripFlow <span>by HSC</span></div>
-        <h1>Smarter corporate travel starts here.</h1>
-        <p>Book flights, trains and hotels in seconds. AI handles the search — your team handles the journey.</p>
+    <!-- Left editorial panel -->
+    <div class="panel-left">
+        <div class="accent-rule"></div>
+
+        <div class="brand">TripFlow</div>
+
+        <div class="panel-left-center">
+            <div class="tagline-label">Corporate Travel Platform</div>
+            <h1 class="hero">Where every<br>journey is<br><em>deliberate.</em></h1>
+            <p class="hero-sub">AI-powered booking, multi-stage approvals, and real-time visibility — all in one platform built for how modern enterprises travel.</p>
+        </div>
+
         <div class="features">
-            <div class="feature-item">
-                <div class="feature-icon">✈️</div>
-                <span>Real-time flight, train &amp; hotel prices</span>
+            <div class="feat">
+                <div class="feat-dot"></div>
+                <div class="feat-text">
+                    <strong>AI Booking</strong>
+                    Voice or chat — describe the trip, we handle the rest.
+                </div>
             </div>
-            <div class="feature-item">
-                <div class="feature-icon">🤖</div>
-                <span>AI-powered booking via voice or chat</span>
+            <div class="feat">
+                <div class="feat-dot"></div>
+                <div class="feat-text">
+                    <strong>Approval Flows</strong>
+                    Manager → Vendor → Ticket, fully automated.
+                </div>
             </div>
-            <div class="feature-item">
-                <div class="feature-icon">✅</div>
-                <span>Automated manager approval workflow</span>
+            <div class="feat">
+                <div class="feat-dot"></div>
+                <div class="feat-text">
+                    <strong>Policy Engine</strong>
+                    Spending rules enforced at the point of booking.
+                </div>
             </div>
-            <div class="feature-item">
-                <div class="feature-icon">📊</div>
-                <span>Policy enforcement &amp; spend analytics</span>
+            <div class="feat">
+                <div class="feat-dot"></div>
+                <div class="feat-text">
+                    <strong>Full Visibility</strong>
+                    Live spend analytics across every team.
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Right panel -->
-    <div class="login-right">
-        <div class="login-form-wrap">
-            <h2>Welcome back</h2>
-            <p class="subtitle">Sign in to your TripFlow account.</p>
+    <!-- Right sign-in panel -->
+    <div class="panel-right">
+        <div class="sign-in-header">
+            <p class="overline">Secure Access</p>
+            <h2>Sign in</h2>
+            <p class="sub">Enter your work credentials to continue.</p>
+        </div>
 
-            <form id="login-form" autocomplete="on">
-                <div class="form-group">
-                    <label for="email">Email address</label>
-                    <div class="input-wrap">
-                        <input type="email" id="email" name="email" required
-                               placeholder="you@company.com" autocomplete="email">
-                    </div>
+        <form id="login-form" autocomplete="on">
+            <div class="field">
+                <label for="email">Email address</label>
+                <div class="field-wrap">
+                    <input type="email" id="email" name="email" required
+                           placeholder="you@company.com" autocomplete="email">
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <div class="input-wrap">
-                        <input type="password" id="password" name="password" required
-                               placeholder="••••••••" autocomplete="current-password">
-                        <button type="button" class="toggle-pw" id="toggle-pw" tabindex="-1" aria-label="Show password">👁</button>
-                    </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <div class="field-wrap">
+                    <input type="password" id="password" name="password" required
+                           placeholder="••••••••" autocomplete="current-password">
+                    <button type="button" class="toggle-pw" id="toggle-pw" tabindex="-1" aria-label="Show password">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
                 </div>
+            </div>
 
-                <button type="submit" class="submit-btn" id="sign-in-btn">Sign In</button>
-            </form>
+            <button type="submit" class="submit-btn" id="sign-in-btn">
+                Sign In
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+        </form>
 
-            <div class="error-box" id="error-msg"></div>
+        <div class="error-box" id="error-msg"></div>
+
+        <div class="panel-right-foot">
+            <span>TripFlow by HSC &nbsp;·&nbsp; © 2026</span>
+            <span>Enterprise Travel</span>
         </div>
     </div>
 
     <script src="js/auth.js"></script>
     <script>
-        // Redirect if already logged in
         checkAuth();
 
-        // Toggle password visibility
         document.getElementById('toggle-pw').addEventListener('click', () => {
             const pw = document.getElementById('password');
             pw.type = pw.type === 'password' ? 'text' : 'password';
@@ -302,30 +432,30 @@
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value.trim();
+            const email    = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const errorBox = document.getElementById('error-msg');
-            const btn = document.getElementById('sign-in-btn');
+            const btn      = document.getElementById('sign-in-btn');
 
             errorBox.style.display = 'none';
-            btn.disabled = true;
+            btn.disabled    = true;
             btn.textContent = 'Signing in…';
 
             try {
                 const data = await login(email, password);
                 const routes = {
-                    ADMIN: 'admin.html',
-                    MANAGER: 'manager.html',
-                    VENDOR: 'vendor.html',
-                    HR: 'hr.html',
+                    ADMIN:    'admin.html',
+                    MANAGER:  'manager.html',
+                    VENDOR:   'vendor.html',
+                    HR:       'hr.html',
                     EMPLOYEE: 'employee.html'
                 };
                 window.location.href = routes[data.role] || 'employee.html';
             } catch (err) {
-                errorBox.textContent = err.message || 'Invalid email or password. Please try again.';
-                errorBox.style.display = 'block';
-                btn.disabled = false;
-                btn.textContent = 'Sign In';
+                errorBox.textContent    = err.message || 'Invalid credentials. Please try again.';
+                errorBox.style.display  = 'block';
+                btn.disabled            = false;
+                btn.innerHTML = 'Sign In <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
             }
         });
     </script>
