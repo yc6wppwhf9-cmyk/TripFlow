@@ -306,33 +306,47 @@ async function searchTrains(origin, destination, date) {
   if (process.env.RAPIDAPI_KEY) {
     try {
       const params = new URLSearchParams({
-        fromStation:   fromCode,
-        toStation:     toCode,
-        dateOfJourney: toIRCTCDate(date)
+        source:      fromCode,
+        destination: toCode,
+        date:        toIRCTCDate(date)
       });
       const res = await axios.post(
-        'https://irctc-api3.p.rapidapi.com/searchTrain.php',
+        'https://irctc-api3.p.rapidapi.com/search.php',
         params.toString(),
         {
           headers: {
             'X-RapidAPI-Key':  process.env.RAPIDAPI_KEY,
             'X-RapidAPI-Host': 'irctc-api3.p.rapidapi.com',
             'Content-Type':    'application/x-www-form-urlencoded'
-          }
+          },
+          timeout: 8000
         }
       );
-      // API returns { trainBetweenStation: [...] } or { data: [...] }
-      const list = res.data?.trainBetweenStation || res.data?.data || [];
+      const list = res.data?.trains?.data?.trainList || [];
       if (Array.isArray(list) && list.length) {
-        return list.slice(0, 5).map(t => ({
-          trainNumber: t.train_no   || t.train_number,
-          trainName:   t.train_name,
-          departure:   t.from_time  || t.departure,
-          arrival:     t.to_time    || t.arrival,
-          duration:    t.travel_time || t.duration,
-          classes:     t.class_type  || ['SL', '3A', '2A', '1A'],
-          note:        'Book at IRCTC.co.in'
-        }));
+        return list.slice(0, 5).map(t => {
+          // Build per-class fare summary from availabilityCache
+          const cache = t.availabilityCache || {};
+          const fares = Object.entries(cache).map(([cls, info]) =>
+            `${cls}: ₹${info.fare} (${info.availabilityDisplayName || info.availability || ''})`
+          ).join(' · ');
+
+          // duration is in minutes — convert to "Xh Ym"
+          const dur = t.duration
+            ? `${Math.floor(t.duration / 60)}h ${t.duration % 60}m`
+            : null;
+
+          return {
+            trainNumber: t.trainNumber,
+            trainName:   t.trainName,
+            departure:   t.departureTime,
+            arrival:     t.arrivalTime,
+            duration:    dur,
+            classes:     t.avlClasses || ['SL', '3A', '2A', '1A'],
+            fares:       fares || null,
+            note:        'Book at IRCTC.co.in'
+          };
+        });
       }
     } catch (_) { /* fall through to known-routes table */ }
   }
