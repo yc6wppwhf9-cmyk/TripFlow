@@ -495,7 +495,6 @@ async function searchTrains(origin, destination, date) {
   } catch {
     return { available: false, reason: `Train search unavailable for this route. Check IRCTC.co.in directly.` };
   }
-  }
 }
 
 // ── Hotels ────────────────────────────────────────────────────────────────────
