@@ -592,16 +592,16 @@
                     <h2 style="font-size:1.85rem;margin-bottom:0.5rem;line-height:1.2;">Ready for your next journey?</h2>
                     <p style="font-size:0.9rem;font-weight:400;color:var(--on-surface-variant);margin-bottom:2rem;max-width:540px;">You have active bookings waiting to be processed, and quarterly budget allocations open.</p>
                     
-                    <div class="bento-badge-group">
+                    <div class="bento-badge-group" id="greeting-badges">
                         <div class="bento-badge">
                             <span class="bb-label">Next Flight</span>
-                            <div class="bb-value">SFO → LHR <span class="material-symbols-outlined" style="color:var(--primary);">flight</span></div>
-                            <span class="bb-sub">Oct 24 • Confirmed</span>
+                            <div class="bb-value" style="color:var(--secondary);font-size:0.95rem;">None Scheduled</div>
+                            <span class="bb-sub">No upcoming flights</span>
                         </div>
                         <div class="bento-badge">
                             <span class="bb-label">Lodging</span>
-                            <div class="bb-value">Ritz-Carlton <span class="material-symbols-outlined" style="color:var(--primary);">hotel</span></div>
-                            <span class="bb-sub">4 Nights • Arranged</span>
+                            <div class="bb-value" style="color:var(--secondary);font-size:0.95rem;">No Lodging</div>
+                            <span class="bb-sub">No hotel arranged</span>
                         </div>
                     </div>
                 </div>
@@ -609,13 +609,13 @@
                 <!-- Stats Bento Block -->
                 <div class="bento-card-stats">
                     <!-- Q4 Budget Progress -->
-                    <div class="budget-card">
+                    <div class="budget-card" id="budget-progress-card">
                         <span class="page-label">Q4 Travel Budget</span>
-                        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.2;">₹3,40,000</div>
+                        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.2;">₹0</div>
                         <div class="budget-progress-container">
-                            <div class="budget-progress-bar" style="width: 65%;"></div>
+                            <div class="budget-progress-bar" style="width: 0%;"></div>
                         </div>
-                        <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">65% of quarterly allowance used</span>
+                        <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">0% of quarterly allowance used</span>
                     </div>
 
                     <!-- Active Requests Box -->
@@ -623,7 +623,7 @@
                         <span class="page-label">Active Requests</span>
 
                         <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-                            <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:700;line-height:1;" id="active-req-count">03</div>
+                            <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:700;line-height:1;" id="active-req-count">00</div>
                             <button class="secondary" onclick="window.location.href='request.html'" style="padding:0.4rem 0.8rem;font-size:0.75rem;">Plan Trip</button>
                         </div>
                     </div>
@@ -661,40 +661,21 @@
                     <div>
                         <h2 style="margin-bottom:1rem;">Recent Activity</h2>
                         <div class="card" style="padding:1.5rem 1.25rem;">
-                            <div class="activity-feed">
-                                <div class="activity-item">
-                                    <div class="activity-icon">✓</div>
-                                    <div class="activity-details">
-                                        <p>Sarah Jenkins approved your trip to Berlin.</p>
-                                        <span class="time">2 hours ago</span>
-                                    </div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="activity-icon">✉</div>
-                                    <div class="activity-details">
-                                        <p>New booking confirmation for Flight LX-204.</p>
-                                        <span class="time">Yesterday</span>
-                                    </div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="activity-icon" style="background:var(--accent-red);color:#ffffff;">!</div>
-                                    <div class="activity-details">
-                                        <p>Trip request for NY Summit was rejected.</p>
-                                        <span class="time">2 days ago</span>
-                                        <span style="font-size:0.75rem;font-weight:600;display:block;color:var(--accent-red);margin-top:0.1rem;">"Budget constraints."</span>
-                                    </div>
+                            <div class="activity-feed" id="activity-feed-container">
+                                <div style="text-align:center;padding:1.5rem;color:var(--secondary);font-size:0.85rem;font-weight:500;">
+                                    No recent activity.
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Concierge Brutalist Call -->
-                    <div class="concierge-card">
-                        <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#ffcc00;letter-spacing:0.05em;">Concierge Support</span>
-                        <h3 style="font-size:1.3rem;margin-top:0.25rem;">24/7 Live Agent</h3>
-                        <p>Stuck at the transit or need flight changes? Connect instantly with our travel team.</p>
-                        <button onclick="toggleChat()" style="width:100%;background:#ffffff;color:#1a1a1a;border:2px solid #ffffff;box-shadow:3px 3px 0px #ffcc00;">
-                            <span class="material-symbols-outlined">support_agent</span>
+                    <!-- Concierge Support -->
+                    <div class="concierge-card" style="background:var(--primary);color:#ffffff;border-radius:var(--radius-lg);padding:1.5rem;">
+                        <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary-container);letter-spacing:0.05em;">Concierge Support</span>
+                        <h3 style="font-size:1.3rem;margin-top:0.25rem;color:#ffffff;">24/7 Live Agent</h3>
+                        <p style="color:rgba(255,255,255,0.85);margin-bottom:1.25rem;">Stuck at transit or need changes? Connect instantly with our corporate travel team.</p>
+                        <button onclick="toggleChat()" style="width:100%;background:#ffffff;color:var(--primary);border-color:transparent;border-radius:var(--radius-md);padding:0.6rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:0.5rem;cursor:pointer;">
+                            <span class="material-symbols-outlined" style="font-size:18px;">support_agent</span>
                             Open Chat
                         </button>
                     </div>
@@ -704,40 +685,17 @@
             <!-- Upcoming Trips Summary -->
             <section style="display:flex;flex-direction:column;gap:1rem;">
                 <h2>Upcoming Trip Summary</h2>
-                <div class="trips-grid">
-                    <div class="trip-item-card">
-                        <div class="img-wrap">
-                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCR3kVM3E1t3ovodCEx6QO-3rwLMr8hLGst7uvzcv-7mTcs-Mj47ZMrLunXfH6bBjYe-KsJJHOha_TCcv-oMUg57q8DHBVIIEMgyPDqFMmZaDhxLb5ACd6SviKzKwbfBvILPw4cSrS2nKVohf0QC4AbWy_zl9MTxRZIUYxC-DhOrUWMlAjZa2pP1RYiZTEoHw1qjZjcefw-bMZc4DP8VzRgUZAESUn9lmF7_MRS_ahDSrpfuEia9aLEEbyz6TZGW3nFxAw0IXr2DjM" alt="Paris HQ">
-                            <span class="days-badge">In 12 Days</span>
-                        </div>
-                        <div class="content">
-                            <div style="margin-bottom:0.75rem;">
-                                <h4 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin:0;">Paris HQ Visit</h4>
-                                <span style="font-size:0.75rem;font-weight:600;color:rgba(26,26,26,0.6);">Paris, FR</span>
-                            </div>
-                            <span style="font-size:0.8rem;font-weight:700;display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;">calendar_today</span> Oct 24 - Oct 28</span>
-                        </div>
-                    </div>
-                    <div class="trip-item-card">
-                        <div class="img-wrap">
-                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB02SJk-KYaEzQNa3AsA_KxcXpUdyRi1hQTxtlGU1gqDbOXXQJqjucJCGJHUzavRuXU3ZKHJhow5weqZ-QDivPR1zi2dhss1rXGWHIl2y5bxa3hwqJDQSLOaCU4IGxBaF_EfeTq6_7fnDjUCG3aaqbB7wC4FL1aqpvx2LJrkGSrpCNVSoYyB63_MZrkSEaCFcvlzX49iQHTq7DztJ3LpT5rLLhw0zYhmN3uPnngmW4KqB3W8cYAUjhg7YmVXsSi5WHZQbg1X37apfQ" alt="Dubai Expo">
-                            <span class="days-badge">In 45 Days</span>
-                        </div>
-                        <div class="content">
-                            <div style="margin-bottom:0.75rem;">
-                                <h4 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin:0;">Dubai Tech Expo</h4>
-                                <span style="font-size:0.75rem;font-weight:600;color:rgba(26,26,26,0.6);">Dubai, UAE</span>
-                            </div>
-                            <span style="font-size:0.8rem;font-weight:700;display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;">calendar_today</span> Nov 15 - Nov 20</span>
-                        </div>
-                    </div>
-                    <div class="plan-new-card" onclick="window.location.href='request.html'">
+                <div class="trips-grid" id="upcoming-trips-grid">
+                    <div class="plan-new-card" onclick="window.location.href='request.html'" style="grid-column: span 4; min-height: 160px;">
                         <div class="icon-box">
                             <span class="material-symbols-outlined">add_location_alt</span>
                         </div>
                         <span style="font-family:var(--font-display);font-size:0.9rem;font-weight:700;text-transform:uppercase;">Plan New Trip</span>
                     </div>
                 </div>
+            </section>
+        </div>
+    </main>
             </section>
         </div>
     </main>
@@ -853,6 +811,7 @@
             document.getElementById('user-name').innerText = currentUser.name.toUpperCase();
             showTableSkeleton('bookings-list', 6);
             await loadBookings();
+            await loadNotifications();
         }
         init();
 
@@ -868,29 +827,124 @@
             }
         });
 
+        async function loadNotifications() {
+            try {
+                const notifications = await apiRequest('/notifications');
+                const container = document.getElementById('activity-feed-container');
+                if (!notifications || !notifications.length) {
+                    container.innerHTML = `
+                        <div style="text-align:center;padding:1.5rem;color:var(--secondary);font-size:0.85rem;font-weight:500;">
+                            No recent activity.
+                        </div>`;
+                    return;
+                }
+                container.innerHTML = notifications.slice(0, 5).map(n => {
+                    let icon = 'info';
+                    let color = 'var(--primary)';
+                    if (n.message.toLowerCase().includes('approve')) {
+                        icon = 'check_circle';
+                        color = 'var(--success-text)';
+                    } else if (n.message.toLowerCase().includes('reject')) {
+                        icon = 'cancel';
+                        color = 'var(--danger-text)';
+                    }
+                    return `
+                        <div class="activity-item" style="border-bottom:1px solid var(--outline-variant);padding-bottom:0.75rem;margin-bottom:0.75rem;display:flex;gap:0.75rem;align-items:flex-start;">
+                            <span class="material-symbols-outlined" style="color:${color};font-size:20px;">${icon}</span>
+                            <div class="activity-details">
+                                <p style="margin:0;font-size:0.85rem;font-weight:500;color:var(--on-surface);">${n.message}</p>
+                                <span class="time" style="font-size:0.7rem;color:var(--secondary);font-weight:600;">${new Date(n.createdAt).toLocaleDateString()}</span>
+                            </div>
+                        </div>`;
+                }).join('');
+            } catch (err) {
+                console.error(err.message);
+            }
+        }
+
         async function loadBookings() {
             try {
                 const bookings = await apiRequest('/bookings/mine');
                 const list = document.getElementById('bookings-list');
                 document.getElementById('active-req-count').innerText = bookings.filter(b => b.stage === 'PENDING_MANAGER' || b.stage === 'PENDING_VENDOR').length.toString().padStart(2, '0');
+                
+                // 1. Calculate and update Q4 Budget card
+                const totalCost = bookings.filter(b => b.stage === 'COMPLETED').reduce((acc, curr) => acc + Number(curr.cost || 0), 0);
+                const limit = 500000;
+                const percentage = Math.min(100, Math.round((totalCost / limit) * 100));
+                document.getElementById('budget-progress-card').innerHTML = `
+                    <span class="page-label">Q4 Travel Budget</span>
+                    <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.2;color:var(--on-surface);">₹${totalCost.toLocaleString('en-IN')}</div>
+                    <div class="budget-progress-container">
+                        <div class="budget-progress-bar" style="width: ${percentage}%;"></div>
+                    </div>
+                    <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">${percentage}% of quarterly allowance used</span>
+                `;
+
+                // 2. Greeting Badges: Flight & Lodging
+                const nextFlight = bookings.find(b => b.type === 'FLIGHT' && b.stage === 'COMPLETED');
+                const nextHotel = bookings.find(b => b.type === 'HOTEL' && b.stage === 'COMPLETED');
+                document.getElementById('greeting-badges').innerHTML = `
+                    <div class="bento-badge">
+                        <span class="bb-label">Next Flight</span>
+                        <div class="bb-value" style="font-size:1.1rem;font-weight:700;">${nextFlight ? `${nextFlight.details.origin || '—'} → ${nextFlight.details.destination || '—'}` : 'None Scheduled'} <span class="material-symbols-outlined" style="color:var(--primary);font-size:18px;">flight</span></div>
+                        <span class="bb-sub">${nextFlight ? `${nextFlight.details.date || 'Arranged'} • Confirmed` : 'No upcoming flights'}</span>
+                    </div>
+                    <div class="bento-badge">
+                        <span class="bb-label">Lodging</span>
+                        <div class="bb-value" style="font-size:1.1rem;font-weight:700;">${nextHotel ? nextHotel.details.destination : 'None Reserved'} <span class="material-symbols-outlined" style="color:var(--primary);font-size:18px;">hotel</span></div>
+                        <span class="bb-sub">${nextHotel ? `${nextHotel.details.date || 'Arranged'} • Confirmed` : 'No lodging reserved'}</span>
+                    </div>
+                `;
+
                 if (!bookings.length) {
                     list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✈</div><p>No travel requests yet. Click <strong>Plan a Trip</strong> to get started.</p></div></td></tr>';
-                    return;
+                } else {
+                    list.innerHTML = bookings.map(b => `
+                        <tr>
+                            <td data-label="Type"><span class="role-badge role-VENDOR">${b.type}</span></td>
+                            <td data-label="Route">
+                                <a href="detail.html?id=${b.id}" style="text-decoration:none;color:inherit;display:block;">
+                                    <div style="font-weight:700;color:var(--on-surface);text-decoration:underline;text-underline-offset:2px;">${b.details.origin || '—'} → ${b.details.destination || '—'}</div>
+                                    <div style="font-size:0.75rem;font-weight:500;color:var(--secondary);margin-top:0.15rem;">${b.details.date || ''}</div>
+                                </a>
+                            </td>
+                            <td data-label="Status"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
+                            <td data-label="Cost" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">${b.cost ? '₹' + Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                            <td data-label="PNR" style="font-family:monospace;font-size:0.85rem;color:var(--on-surface);font-weight:600;">${b.pnr || '—'}</td>
+                            <td data-label="Ticket">${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color:var(--primary);font-weight:600;text-decoration:none;font-size:0.82rem;">View ↗</a>` : '<span style="color:var(--outline);">—</span>'}</td>
+                        </tr>`).join('');
                 }
-                list.innerHTML = bookings.map(b => `
-                    <tr>
-                        <td data-label="Type"><span class="role-badge role-VENDOR">${b.type}</span></td>
-                        <td data-label="Route">
-                            <a href="detail.html?id=${b.id}" style="text-decoration:none;color:inherit;display:block;">
-                                <div style="font-weight:700;color:#1a1a1a;text-decoration:underline;text-underline-offset:2px;">${b.details.origin || '—'} → ${b.details.destination || '—'}</div>
-                                <div style="font-size:0.75rem;font-weight:700;color:rgba(26,26,26,0.6);margin-top:0.15rem;">${b.details.date || ''}</div>
-                            </a>
-                        </td>
-                        <td data-label="Status"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
-                        <td data-label="Cost" style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#0055ff;">${b.cost ? '₹' + Number(b.cost).toLocaleString('en-IN') : '—'}</td>
-                        <td data-label="PNR" style="font-family:monospace;font-size:0.85rem;color:#1a1a1a;font-weight:700;">${b.pnr || '—'}</td>
-                        <td data-label="Ticket">${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color:#0055ff;font-weight:700;text-decoration:none;font-size:0.82rem;">View ↗</a>` : '<span style="color:rgba(26,26,26,0.4);">—</span>'}</td>
-                    </tr>`).join('');
+
+                // 4. Upcoming Trip Summary Grid (up to 2 cards + plan-new-card)
+                const upcomingTrips = bookings.filter(b => b.stage === 'COMPLETED').slice(0, 2);
+                let tripHtml = upcomingTrips.map((b, idx) => {
+                    const daysLabel = idx === 0 ? 'Next Trip' : 'Upcoming';
+                    return `
+                        <div class="trip-item-card">
+                            <div class="img-wrap">
+                                <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=400&q=80" alt="${b.details.destination}">
+                                <span class="days-badge">${daysLabel}</span>
+                            </div>
+                            <div class="content">
+                                <div style="margin-bottom:0.75rem;">
+                                    <h4 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin:0;">${b.details.destination} Visit</h4>
+                                    <span style="font-size:0.75rem;font-weight:500;color:var(--secondary);">${b.details.origin} → ${b.details.destination}</span>
+                                </div>
+                                <span style="font-size:0.8rem;font-weight:700;display:flex;align-items:center;gap:0.25rem;color:var(--primary);"><span class="material-symbols-outlined" style="font-size:16px;">calendar_today</span> ${b.details.date || 'Arranged'}</span>
+                            </div>
+                        </div>`;
+                }).join('');
+
+                tripHtml += `
+                    <div class="plan-new-card" onclick="window.location.href='request.html'" style="grid-column: span 4; min-height: 160px;">
+                        <div class="icon-box">
+                            <span class="material-symbols-outlined">add_location_alt</span>
+                        </div>
+                        <span style="font-family:var(--font-display);font-size:0.9rem;font-weight:700;text-transform:uppercase;">Plan New Trip</span>
+                    </div>`;
+                document.getElementById('upcoming-trips-grid').innerHTML = tripHtml;
+
             } catch (err) {
                 console.error(err.message);
             }
