@@ -134,6 +134,59 @@ exports.createBooking = async (req, res) => {
 
     res.status(201).json(booking);
   } catch (error) {
+    res.status(501).json({ error: error.message });
+  }
+};
+
+exports.getBookingById = async (req, res) => {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { id: req.params.id },
+      include: {
+        employee: {
+          include: {
+            user: true,
+            manager: true
+          }
+        }
+      }
+    });
+
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+    // Enforce that employees can only view their own bookings
+    if (req.user.role === 'EMPLOYEE' && booking.employee.userId !== req.user.id) {
+      return res.status(403).json({ error: 'Unauthorized to view this booking' });
+    }
+
+    res.json(booking);
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.deleteBooking = async (req, res) => {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { id: req.params.id },
+      include: { employee: true }
+    });
+
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+    // Enforce that employees can only cancel their own bookings
+    if (req.user.role === 'EMPLOYEE' && booking.employee.userId !== req.user.id) {
+      return res.status(403).json({ error: 'Unauthorized to cancel this booking' });
+    }
+
+    await prisma.booking.delete({
+      where: { id: req.params.id }
+    });
+
+    res.json({ success: true, message: 'Booking cancelled successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+

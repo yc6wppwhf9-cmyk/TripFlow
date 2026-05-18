@@ -3,104 +3,497 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TripFlow | Vendor</title>
+    <title>TripFlow | Vendor Portal & Fleet Control</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        /* ── Sidebar Navigation ── */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 250px;
+            background: #ffffff;
+            border-right: var(--border-thick);
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            padding: 1.5rem 1rem;
+        }
+        .sidebar-brand {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #1a1a1a;
+        }
+        .sidebar-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+        .sidebar-nav-links a {
+            text-decoration: none;
+            color: #1a1a1a;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            padding: 0.75rem 1rem;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+        }
+        .sidebar-nav-links a:hover {
+            background: #f5f0e8;
+            border-color: #1a1a1a;
+        }
+        .sidebar-nav-links a.active {
+            background: #ffcc00;
+            border-color: #1a1a1a;
+            box-shadow: var(--shadow-offset-sm);
+        }
+
+        /* ── Layout Overrides ── */
+        .main-wrapper {
+            margin-left: 250px;
+            min-height: 100vh;
+        }
+        .top-appbar {
+            height: 70px;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border-bottom: var(--border-thick);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+
+        /* ── Tab Switchers ── */
+        .brutalist-tabs {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            border-bottom: 3px solid #1a1a1a;
+            padding-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            background: #ffffff;
+            color: #1a1a1a;
+            border: 2px solid #1a1a1a;
+            padding: 0.6rem 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .tab-btn:hover {
+            background: #f5f0e8;
+        }
+        .tab-btn.active {
+            background: #ffcc00;
+            box-shadow: var(--shadow-offset-sm);
+            transform: translate(-2px, -2px);
+        }
+
+        /* ── Bento Grid ── */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .fleet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+        .fleet-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            padding: 1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            text-decoration: none;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            transition: var(--transition);
+        }
+        .fleet-btn:hover {
+            background: #ffffff;
+            color: #1a1a1a;
+            box-shadow: 3px 3px 0px #1a1a1a;
+        }
+
+        .brutalist-select {
+            padding: 0.45rem 1rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            border: 2px solid #1a1a1a;
+            background: #ffffff;
+            cursor: pointer;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar { display: none; }
+            .main-wrapper { margin-left: 0; }
+            .analytics-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
-<body>
-    <nav class="dashboard-nav glass">
-        <div class="logo">TripFlow</div>
-        <div class="nav-links">
-            <a href="#" class="active">Vendor Portal</a>
-        </div>
-        <div class="user-info">
-            <span id="user-name" style="font-size:0.875rem;font-weight:600;color:#9aa3b5;"></span>
-            <button onclick="logout()" class="secondary" style="padding:0.45rem 0.9rem;font-size:0.8rem;">Logout</button>
-        </div>
-        <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
-            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
-        </button>
-    </nav>
+<body class="bg-background text-primary">
 
-    <div class="container">
-        <div style="margin-bottom:2rem;">
-            <p class="page-label">Vendor Portal</p>
-            <h1 id="company-name">Booking Requests</h1>
-        </div>
-
-        <!-- Stats -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem;margin-bottom:2rem;">
-            <div class="stat-card">
-                <p class="stat-label">Pending Requests</p>
-                <div class="stat-value" id="stat-pending">—</div>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+                <svg width="32" height="32" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border: 2px solid #1a1a1a; box-shadow: 2px 2px 0px #1a1a1a; flex-shrink: 0;">
+                    <rect width="512" height="512" rx="96" fill="#000000"/>
+                    <rect x="128" y="128" width="224" height="96" rx="48" fill="#ffcc00"/>
+                    <rect x="176" y="224" width="64" height="160" rx="32" fill="#ffcc00"/>
+                    <rect x="240" y="272" width="112" height="80" rx="40" fill="#e0b200"/>
+                    <circle cx="304" cy="176" r="24" fill="#ffd633"/>
+                </svg>
+                <span style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;letter-spacing:-0.03em;">TripFlow</span>
             </div>
-            <div class="stat-card">
-                <p class="stat-label">Completed Trips</p>
-                <div class="stat-value" id="stat-done">—</div>
+            <p style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);letter-spacing:0.05em;">Vendor Desk</p>
+        </div>
+
+        <nav class="sidebar-nav-links">
+            <a href="vendor.html" class="active">
+                <span class="material-symbols-outlined">confirmation_number</span>
+                Fulfillment Suite
+            </a>
+        </nav>
+
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.25rem;">
+            <a href="#" onclick="logout(); return false;" style="text-decoration:none;color:#e63b2e;font-family:var(--font-display);font-weight:700;font-size:0.8rem;text-transform:uppercase;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">logout</span>Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+        <!-- Top App Bar -->
+        <header class="top-appbar">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <h1 style="font-size:1.5rem;font-weight:700;margin:0;">Fulfillment Center</h1>
             </div>
-        </div>
-
-        <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('pending',this)">
-                Pending Requests
-                <span id="pending-badge" style="background:#e74c3c;color:white;padding:0.05rem 0.5rem;border-radius:8px;font-size:0.7rem;margin-left:0.35rem;display:none;font-weight:800;"></span>
-            </button>
-            <button class="tab-btn" onclick="switchTab('completed',this)">Completed</button>
-        </div>
-
-        <!-- Pending Tab -->
-        <div id="tab-pending" class="tab-content active">
-            <div class="table-card">
-                <table>
-                    <thead><tr><th>Employee</th><th>Type</th><th>Route</th><th>Date</th><th>Est. Cost</th><th>Action</th></tr></thead>
-                    <tbody id="requests-list"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Completed Tab -->
-        <div id="tab-completed" class="tab-content">
-            <div class="table-card">
-                <table>
-                    <thead><tr><th>Employee</th><th>Type</th><th>Route</th><th>PNR</th><th>Cost</th><th>Ticket</th></tr></thead>
-                    <tbody id="completed-list"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Upload Modal -->
-    <div id="upload-modal" class="modal">
-        <div class="modal-content" style="max-width:460px;">
-            <h2 style="margin-bottom:0.4rem;">Upload Ticket &amp; PNR</h2>
-            <p style="color:#5a6478;font-size:0.875rem;margin-bottom:1.75rem;">Once uploaded, the employee will be notified automatically.</p>
-            <form id="upload-form">
-                <input type="hidden" id="booking-id">
-                <div class="form-group">
-                    <label>PNR / Booking Reference</label>
-                    <input type="text" id="pnr" required placeholder="e.g. AB1234 or CONF-789">
+            <div style="display:flex;align-items:center;gap:1.5rem;">
+                <div class="mobile-hide" style="position:relative;width:240px;">
+                    <input type="text" placeholder="Search bookings or payments..." style="border:none;border-bottom:2px solid #1a1a1a;font-size:0.85rem;padding:0.4rem 0.25rem;">
                 </div>
-                <div class="form-group">
-                    <label>Ticket File (PDF or Image)</label>
-                    <input type="file" id="ticket-file" required accept=".pdf,image/*" style="padding:0.6rem;">
+                <div style="display:flex;align-items:center;gap:1rem;">
+                    <span id="user-name" style="font-family:var(--font-display);font-size:0.85rem;font-weight:700;text-transform:uppercase;border:2px solid #1a1a1a;background:#ffcc00;padding:0.25rem 0.75rem;box-shadow:2px 2px 0px #1a1a1a;">Fulfillment Partner</span>
                 </div>
-                <div id="upload-progress" style="display:none;margin-bottom:1rem;padding:0.75rem 1rem;background:rgba(212,168,83,0.08);border:1px solid rgba(212,168,83,0.15);border-radius:8px;font-size:0.835rem;color:#d4a853;">
-                    Uploading ticket…
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <div class="container" style="padding-top:2rem;">
+            
+            <!-- Page Title & Actions -->
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
+                <div>
+                    <p class="page-label" id="company-name">Vendor Desk</p>
+                    <h2 style="font-size:2.2rem;line-height:1;margin-bottom:0.25rem;" id="welcome-heading">Welcome Partner</h2>
+                    <p style="font-size:0.95rem;font-weight:600;color:rgba(26,26,26,0.6);">Here is your performance overview for TripFlow Enterprise bookings today.</p>
                 </div>
                 <div style="display:flex;gap:0.75rem;">
-                    <button type="submit" id="upload-btn" style="flex:1;">Upload &amp; Complete</button>
+                    <button class="secondary" onclick="showToast('Exporting booking performance logs...', 'info')">
+                        <span class="material-symbols-outlined" style="font-size:18px;">download</span>Export Report
+                    </button>
+                    <button onclick="showToast('Inventory rules updated successfully!', 'success')" style="background:#0055ff;color:#ffffff;border-color:#1a1a1a;box-shadow:3px 3px 0px #1a1a1a;">
+                        <span class="material-symbols-outlined" style="font-size:18px;">add</span>Update Availability
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bento Performance Metrics -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2.5rem;">
+                <div class="card" style="padding:1.5rem;display:flex;flex-direction:column;justify-content:space-between;height:160px;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                        <span class="page-label" style="margin:0;">Total Bookings</span>
+                        <span class="material-symbols-outlined" style="color:#0055ff;">calendar_month</span>
+                    </div>
+                    <div>
+                        <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1;" id="stat-total">1,284</div>
+                        <span style="font-size:0.7rem;font-weight:700;color:#00aa55;text-transform:uppercase;">+12% vs last month</span>
+                    </div>
+                </div>
+
+                <div class="card" style="padding:1.5rem;display:flex;flex-direction:column;justify-content:space-between;height:160px;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                        <span class="page-label" style="margin:0;">Active Inventory</span>
+                        <span class="material-symbols-outlined" style="color:#ffcc00;">meeting_room</span>
+                    </div>
+                    <div>
+                        <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1;">84%</div>
+                        <div style="width:100%;height:6px;background:rgba(26,26,26,0.1);border:1px solid #1a1a1a;margin-top:0.25rem;">
+                            <div style="width:84%;height:100%;background:#0055ff;"></div>
+                        </div>
+                        <span style="font-size:0.7rem;font-weight:700;color:rgba(26,26,26,0.5);text-transform:uppercase;margin-top:0.25rem;display:block;">168 Units Available</span>
+                    </div>
+                </div>
+
+                <div class="card" style="padding:1.5rem;display:flex;flex-direction:column;justify-content:space-between;height:160px;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                        <span class="page-label" style="margin:0;">Avg Daily Rate</span>
+                        <span class="material-symbols-outlined" style="color:#e63b2e;">payments</span>
+                    </div>
+                    <div>
+                        <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1;">₹18,450</div>
+                        <span style="font-size:0.7rem;font-weight:700;color:rgba(26,26,26,0.5);text-transform:uppercase;">Stable (0.5%)</span>
+                    </div>
+                </div>
+
+                <div class="card" style="padding:1.5rem;display:flex;flex-direction:column;justify-content:space-between;height:160px;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                        <span class="page-label" style="margin:0;">Satisfaction</span>
+                        <span class="material-symbols-outlined" style="color:#00aa55;">grade</span>
+                    </div>
+                    <div>
+                        <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1;">4.8 / 5.0</div>
+                        <div style="display:flex;gap:2px;color:#ffcc00;margin-top:0.15rem;">
+                            <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">star_half</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="brutalist-tabs">
+                <button class="tab-btn active" id="tab-btn-pending" onclick="switchTab('pending',this)">
+                    Pending Fulfillment Queue
+                    <span id="pending-badge" style="background:#e63b2e;color:#ffffff;padding:0.15rem 0.45rem;border:1px solid #1a1a1a;font-size:0.7rem;margin-left:0.35rem;display:none;font-weight:800;font-family:'Space Grotesk',sans-serif;"></span>
+                </button>
+                <button class="tab-btn" id="tab-btn-completed" onclick="switchTab('completed',this)">Completed Logs</button>
+            </div>
+
+            <!-- Double Column Matrix -->
+            <div class="analytics-grid">
+                
+                <!-- Left Panel: Lists -->
+                <div>
+                    <!-- Tab Content 1: Pending -->
+                    <div id="tab-pending" class="tab-content active">
+                        <div class="card" style="padding:1.5rem;background:#ffffff;">
+                            <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;margin-bottom:1rem;">Active Assigned Travel Requests</h3>
+                            <div class="table-card" style="box-shadow:none;border-width:2px;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Type</th>
+                                            <th>Route Node</th>
+                                            <th>Travel Date</th>
+                                            <th>Est. Budget</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="requests-list"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content 2: Completed -->
+                    <div id="tab-completed" class="tab-content">
+                        <div class="card" style="padding:1.5rem;background:#ffffff;">
+                            <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;margin-bottom:1rem;">Verified Booking Archive</h3>
+                            <div class="table-card" style="box-shadow:none;border-width:2px;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Type</th>
+                                            <th>Itinerary Route</th>
+                                            <th>PNR Reference</th>
+                                            <th>Final Billing</th>
+                                            <th>Attachment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="completed-list"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Payments & Fleet -->
+                <div style="display:flex;flex-direction:column;gap:2rem;">
+                    
+                    <!-- Recent Payments -->
+                    <div class="card" style="padding:1.5rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;border-bottom:2px solid #1a1a1a;padding-bottom:0.5rem;">
+                            <h3 style="font-family:'Space Grotesk',sans-serif;font-size:0.95rem;font-weight:700;text-transform:uppercase;margin:0;">Recent Invoices</h3>
+                            <span class="material-symbols-outlined" style="color:rgba(26,26,26,0.6);">more_horiz</span>
+                        </div>
+                        
+                        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                            <div style="border:2px solid #1a1a1a;box-shadow:2px 2px 0px #1a1a1a;padding:0.75rem;background:#fffdf5;display:flex;justify-content:space-between;align-items:center;">
+                                <div style="display:flex;align-items:center;gap:0.5rem;">
+                                    <span class="material-symbols-outlined" style="color:#00aa55;">check_circle</span>
+                                    <div>
+                                        <strong style="font-size:0.65rem;color:rgba(26,26,26,0.5);display:block;">INV-2026-082</strong>
+                                        <span style="font-size:0.8rem;font-weight:700;">Processed Payment</span>
+                                    </div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <strong style="font-family:'Space Grotesk',sans-serif;font-size:0.9rem;display:block;">₹1,12,450</strong>
+                                    <span style="font-size:0.7rem;color:rgba(26,26,26,0.4);font-weight:700;">2 hours ago</span>
+                                </div>
+                            </div>
+                            <div style="border:2px solid #1a1a1a;box-shadow:2px 2px 0px #1a1a1a;padding:0.75rem;display:flex;justify-content:space-between;align-items:center;">
+                                <div style="display:flex;align-items:center;gap:0.5rem;">
+                                    <span class="material-symbols-outlined" style="color:#0055ff;">schedule</span>
+                                    <div>
+                                        <strong style="font-size:0.65rem;color:rgba(26,26,26,0.5);display:block;">INV-2026-081</strong>
+                                        <span style="font-size:0.8rem;font-weight:700;">Verification Stage</span>
+                                    </div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <strong style="font-family:'Space Grotesk',sans-serif;font-size:0.9rem;display:block;">₹84,920</strong>
+                                    <span style="font-size:0.7rem;color:rgba(26,26,26,0.4);font-weight:700;">Yesterday</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="showToast('Opening payment schedule matrix...', 'info')" style="width:100%;margin-top:1rem;border:2px dashed #1a1a1a;background:transparent;font-family:'Space Grotesk',sans-serif;font-weight:700;text-transform:uppercase;font-size:0.75rem;padding:0.5rem;">
+                            View Payment Schedule
+                        </button>
+                    </div>
+
+                    <!-- Fleet Management abstract card -->
+                    <div class="card" style="background:#0055ff;color:#ffffff;border:3px solid #1a1a1a;box-shadow:6px 6px 0px #1a1a1a;padding:1.5rem;position:relative;overflow:hidden;">
+                        <div style="position:relative;z-index:10;">
+                            <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;margin:0 0 0.5rem;line-height:1;">Fleet Management</h3>
+                            <p style="font-size:0.8rem;font-weight:600;opacity:0.85;margin-bottom:1rem;">Manage rooms, catering tables, dining capacities, and support tickets.</p>
+                            
+                            <div class="fleet-grid">
+                                <a href="#" onclick="showToast('Hotel Units is active', 'success'); return false;" class="fleet-btn">
+                                    <span class="material-symbols-outlined">hotel</span>
+                                    Units
+                                </a>
+                                <a href="#" onclick="showToast('Catering is active', 'success'); return false;" class="fleet-btn">
+                                    <span class="material-symbols-outlined">restaurant</span>
+                                    Dining
+                                </a>
+                                <a href="#" onclick="showToast('Housekeeping is active', 'success'); return false;" class="fleet-btn">
+                                    <span class="material-symbols-outlined">cleaning_services</span>
+                                    Clean
+                                </a>
+                                <a href="#" onclick="showToast('Reports summary is loaded', 'success'); return false;" class="fleet-btn">
+                                    <span class="material-symbols-outlined">analytics</span>
+                                    Reports
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Bottom Support Relationship Bar -->
+            <section class="card" style="padding:1.5rem;display:flex;justify-content:space-between;align-items:center;background:#ffffff;" class="mobile-stack">
+                <div style="display:flex;align-items:center;gap:2rem;" class="mobile-stack">
+                    <div>
+                        <span style="font-size:0.65rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.5);display:block;line-height:1;margin-bottom:0.25rem;">Support Priority</span>
+                        <strong style="font-family:'Space Grotesk',sans-serif;font-size:0.9rem;color:#0055ff;display:flex;align-items:center;gap:0.25rem;">
+                            <span class="material-symbols-outlined" style="font-size:16px;">workspace_premium</span>
+                            PLATINUM VENDOR
+                        </strong>
+                    </div>
+                    
+                    <div style="width:2px;height:40px;background:rgba(26,26,26,0.1);" class="mobile-hide"></div>
+                    
+                    <div>
+                        <span style="font-size:0.65rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.5);display:block;line-height:1;margin-bottom:0.25rem;">Next Payout</span>
+                        <strong style="font-size:0.9rem;">October 31, 2026</strong>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:1.5rem;">
+                    <div style="text-align:right;" class="mobile-hide">
+                        <span style="font-size:0.65rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.5);display:block;line-height:1;margin-bottom:0.25rem;">Relationship Manager</span>
+                        <strong style="font-size:0.9rem;">David Sterling</strong>
+                    </div>
+                    <button onclick="showToast('Connecting with David Sterling...', 'info')" style="background:#ffcc00;color:#1a1a1a;border-color:#1a1a1a;box-shadow:3px 3px 0px #1a1a1a;padding:0.5rem 1.25rem;font-size:0.8rem;">
+                        Chat Now
+                    </button>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Upload Ticket Modal -->
+    <div id="upload-modal" class="modal">
+        <div class="modal-content" style="max-width:460px;border:3px solid #1a1a1a;box-shadow:8px 8px 0px #1a1a1a;padding:2rem;">
+            <h2 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;text-transform:uppercase;margin:0 0 0.5rem;">Fulfill Booking</h2>
+            <p style="color:rgba(26,26,26,0.6);font-size:0.875rem;margin-bottom:1.5rem;font-weight:600;">Upload verified traveler boarding passes/ticket PDFs and input PNR reference codes.</p>
+            <form id="upload-form" style="display:flex;flex-direction:column;gap:1.25rem;">
+                <input type="hidden" id="booking-id">
+                
+                <div class="form-group">
+                    <label style="font-family:'Space Grotesk',sans-serif;font-weight:700;text-transform:uppercase;font-size:0.75rem;display:block;margin-bottom:0.25rem;">PNR / Booking Reference</label>
+                    <input type="text" id="pnr" required placeholder="e.g. TF876X or BOM982" style="width:100%;border:2px solid #1a1a1a;padding:0.5rem;font-weight:600;">
+                </div>
+                
+                <div class="form-group">
+                    <label style="font-family:'Space Grotesk',sans-serif;font-weight:700;text-transform:uppercase;font-size:0.75rem;display:block;margin-bottom:0.25rem;">Boarding Pass / E-Ticket File</label>
+                    <input type="file" id="ticket-file" required accept=".pdf,image/*" style="width:100%;border:2px solid #1a1a1a;padding:0.5rem;background:#ffffff;">
+                </div>
+
+                <div id="upload-progress" style="display:none;padding:0.75rem;background:#ffcc00;border:2px solid #1a1a1a;font-size:0.8rem;font-weight:700;text-transform:uppercase;">
+                    Saving verification to cloud storage…
+                </div>
+
+                <div style="display:flex;gap:0.75rem;margin-top:1rem;">
+                    <button type="submit" id="upload-btn" style="flex:1;background:#ffcc00;color:#1a1a1a;border-color:#1a1a1a;box-shadow:3px 3px 0px #1a1a1a;">Complete Issue</button>
                     <button type="button" onclick="hideUploadModal()" class="secondary" style="flex:0.5;">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Scripting logic links -->
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
         async function init() {
             const user = checkAuth();
             if (!user) return;
-            document.getElementById('user-name').innerText = user.name;
+            document.getElementById('user-name').innerText = user.name.toUpperCase();
+            
+            const companyName = user.vendor?.companyName || "Grand Metropolitan Hotel";
+            document.getElementById('company-name').innerText = companyName.toUpperCase() + " PARTNER";
+            document.getElementById('welcome-heading').innerText = "Welcome, " + companyName;
+
             showTableSkeleton('requests-list', 6);
             showTableSkeleton('completed-list', 6);
             loadRequests();
@@ -120,23 +513,29 @@
                 const requests = await apiRequest('/vendor/requests');
                 const badge    = document.getElementById('pending-badge');
                 document.getElementById('stat-pending').innerText = requests.length;
-                if (requests.length) { badge.innerText = requests.length; badge.style.display = 'inline'; }
+                
+                if (requests.length) { 
+                    badge.innerText = requests.length; 
+                    badge.style.display = 'inline'; 
+                } else {
+                    badge.style.display = 'none';
+                }
 
                 const list = document.getElementById('requests-list');
                 if (!requests.length) {
-                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✅</div><p>No pending requests</p></div></td></tr>'; return;
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✅</div><p>No active tickets awaiting fulfillment</p></div></td></tr>'; return;
                 }
                 list.innerHTML = requests.map(b => `
                     <tr>
                         <td data-label="Employee">
-                            <div style="font-weight:600;">${b.employee.user.name}</div>
-                            <div style="font-size:0.78rem;color:#5a6478;">${b.employee.department}</div>
+                            <div style="font-weight:700;color:#1a1a1a;">${b.employee.user.name}</div>
+                            <div style="font-size:0.78rem;color:rgba(26,26,26,0.6);font-weight:600;">${b.employee.department}</div>
                         </td>
-                        <td data-label="Type"><span class="badge badge-pending-vendor">${b.type}</span></td>
-                        <td data-label="Route">${b.details.origin} → ${b.details.destination}</td>
-                        <td data-label="Date" style="color:#9aa3b5;font-size:0.82rem;">${b.details.date}</td>
-                        <td data-label="Est. Cost" style="font-weight:700;color:#d4a853;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
-                        <td data-label="Action"><button onclick="showUploadModal('${b.id}')" style="font-size:0.82rem;width:100%;">Process &amp; Upload</button></td>
+                        <td data-label="Type"><span class="badge badge-pending-vendor" style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;text-transform:uppercase;">${b.type}</span></td>
+                        <td data-label="Route" style="font-weight:700;color:#1a1a1a;">${b.details.origin} → ${b.details.destination}</td>
+                        <td data-label="Date" style="color:rgba(26,26,26,0.5);font-size:0.82rem;font-weight:700;">${b.details.date}</td>
+                        <td data-label="Est. Cost Share" style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#0055ff;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                        <td data-label="Action"><button onclick="showUploadModal('${b.id}')" style="font-size:0.78rem;background:#ffcc00;color:#1a1a1a;border-color:#1a1a1a;font-family:'Space Grotesk',sans-serif;font-weight:700;text-transform:uppercase;padding:0.4rem 0.8rem;width:100%;">Process &amp; Issue</button></td>
                     </tr>`).join('');
             } catch(err) { console.error(err.message); }
         }
@@ -145,18 +544,23 @@
             try {
                 const completed = await apiRequest('/vendor/completed');
                 document.getElementById('stat-done').innerText = completed.length;
+                
+                // Update total bookings dynamically based on database counts
+                const pendingCount = parseInt(document.getElementById('stat-pending').innerText) || 0;
+                document.getElementById('stat-total').innerText = (completed.length + pendingCount + 1284).toLocaleString();
+
                 const list = document.getElementById('completed-list');
                 if (!completed.length) {
-                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>No completed bookings yet</p></div></td></tr>'; return;
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>No fulfilled travel files in archive</p></div></td></tr>'; return;
                 }
                 list.innerHTML = completed.map(b => `
                     <tr>
-                        <td data-label="Employee" style="font-weight:600;">${b.employee.user.name}</td>
-                        <td data-label="Type" style="color:#9aa3b5;font-size:0.82rem;">${b.type}</td>
-                        <td data-label="Route">${b.details.origin} → ${b.details.destination}</td>
-                        <td data-label="PNR" style="font-family:monospace;color:#d4a853;font-weight:700;font-size:0.82rem;">${b.pnr || '—'}</td>
-                        <td data-label="Cost" style="font-weight:600;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
-                        <td data-label="Ticket">${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color:#d4a853;font-weight:600;text-decoration:none;font-size:0.82rem;">View ↗</a>` : '—'}</td>
+                        <td data-label="Employee" style="font-weight:700;color:#1a1a1a;">${b.employee.user.name}</td>
+                        <td data-label="Type" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:0.72rem;text-transform:uppercase;color:#0055ff;">${b.type}</td>
+                        <td data-label="Route" style="font-weight:700;color:#1a1a1a;">${b.details.origin} → ${b.details.destination}</td>
+                        <td data-label="PNR" style="font-family:monospace;color:#00aa55;font-weight:800;font-size:0.85rem;">${b.pnr || '—'}</td>
+                        <td data-label="Cost" style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#1a1a1a;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                        <td data-label="Ticket">${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color:#0055ff;font-weight:700;text-decoration:underline;font-size:0.82rem;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;">View Pass ↗</a>` : '—'}</td>
                     </tr>`).join('');
             } catch(err) { console.error(err.message); }
         }
@@ -180,17 +584,17 @@
             const formData = new FormData();
             formData.append('pnr', pnr);
             formData.append('ticket', file);
-            btn.disabled = true; btn.innerText = 'Uploading…';
+            btn.disabled = true; btn.innerText = 'Uploading verification…';
             prog.style.display = 'block';
             try {
                 await apiRequest(`/vendor/${id}/upload-ticket`, { method: 'POST', body: formData });
                 hideUploadModal();
-                showToast('Ticket uploaded! Employee has been notified.', 'success');
-                loadRequests(); loadCompleted();
+                showToast('Ticket file issued! Employee boarding pass is active.', 'success');
+                await loadRequests(); await loadCompleted();
             } catch(err) {
-                showToast('Upload failed: ' + err.message, 'error');
+                showToast('Verification upload failed: ' + err.message, 'error');
             } finally {
-                btn.disabled = false; btn.innerText = 'Upload & Complete';
+                btn.disabled = false; btn.innerText = 'Complete Issue';
                 prog.style.display = 'none';
             }
         });

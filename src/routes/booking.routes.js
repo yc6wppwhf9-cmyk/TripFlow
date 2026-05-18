@@ -11,6 +11,8 @@ router.use(auth);
 router.get('/mine',      bookingController.getMyBookings);
 router.get('/trip-plan', bookingController.getTripPlan);
 router.get('/suggestions', bookingController.getSuggestions);
+router.get('/:id',       bookingController.getBookingById);
+router.delete('/:id',    bookingController.deleteBooking);
 
 router.post('/', role('EMPLOYEE'), [
   body('type').isIn(['FLIGHT', 'HOTEL', 'TRAIN', 'CAB']).withMessage('type must be FLIGHT, HOTEL, TRAIN, or CAB'),

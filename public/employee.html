@@ -5,35 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TripFlow | My Trips</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-        /* Override flatpickr for dark theme */
+        /* ── Brutalist Flatpickr Override ── */
         .flatpickr-calendar {
-            background: #1c2333 !important;
-            border: 1px solid rgba(255,255,255,0.07) !important;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
-            border-radius: 12px !important;
+            background: #ffffff !important;
+            border: 3px solid #1a1a1a !important;
+            box-shadow: 4px 4px 0px #1a1a1a !important;
+            font-family: 'Space Grotesk', system-ui, sans-serif !important;
+            border-radius: 0px !important;
         }
-        .flatpickr-day { color: #e8eaf0 !important; border-radius: 8px !important; }
-        .flatpickr-day:hover, .flatpickr-day.selected { background: #d4a853 !important; color: #0e1117 !important; border-color: transparent !important; }
-        .flatpickr-day.today { border-color: #d4a853 !important; }
-        .flatpickr-months .flatpickr-month, .flatpickr-weekday { color: #9aa3b5 !important; }
+        .flatpickr-day {
+            color: #1a1a1a !important;
+            border-radius: 0px !important;
+            font-weight: 600;
+        }
+        .flatpickr-day:hover, .flatpickr-day.selected {
+            background: #ffcc00 !important;
+            color: #1a1a1a !important;
+            border-color: #1a1a1a !important;
+        }
+        .flatpickr-day.today {
+            border-color: #0055ff !important;
+            background: rgba(0,85,255,0.05);
+        }
+        .flatpickr-months .flatpickr-month, .flatpickr-weekday {
+            color: #1a1a1a !important;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
         .flatpickr-current-month .flatpickr-monthDropdown-months,
-        .flatpickr-current-month input.cur-year { color: #e8eaf0 !important; background: transparent !important; }
-        .flatpickr-prev-month svg, .flatpickr-next-month svg { fill: #9aa3b5 !important; }
-        .flatpickr-prev-month:hover svg, .flatpickr-next-month:hover svg { fill: #d4a853 !important; }
+        .flatpickr-current-month input.cur-year {
+            color: #1a1a1a !important;
+            background: transparent !important;
+        }
+        .flatpickr-prev-month svg, .flatpickr-next-month svg {
+            fill: #1a1a1a !important;
+        }
 
-        /* City dropdown */
+        /* ── Brutalist City Dropdown ── */
         .city-dropdown {
             position: absolute;
             top: calc(100% + 4px);
             left: 0;
-            min-width: 260px;
-            background: #1c2333;
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 10px;
-            box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+            min-width: 280px;
+            background: #ffffff;
+            border: 2px solid #1a1a1a;
+            box-shadow: 4px 4px 0px #1a1a1a;
             z-index: 9999;
             max-height: 220px;
             overflow-y: auto;
@@ -41,267 +62,746 @@
         }
         .city-dropdown.open { display: block; }
         .city-option {
-            padding: 0.6rem 1rem;
+            padding: 0.75rem 1rem;
             cursor: pointer;
-            font-size: 0.83rem;
+            font-size: 0.85rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 0.6rem;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            color: #e8eaf0;
-            transition: background 0.12s;
+            border-bottom: 2px solid #1a1a1a;
+            color: #1a1a1a;
+            transition: var(--transition);
         }
         .city-option:last-child { border-bottom: none; }
-        .city-option:hover { background: rgba(212,168,83,0.08); }
+        .city-option:hover {
+            background: #ffcc00;
+        }
         .city-code {
-            font-size: 0.67rem;
-            color: #d4a853;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.7rem;
+            color: #1a1a1a;
             font-weight: 700;
-            background: rgba(212,168,83,0.12);
-            padding: 0.1rem 0.4rem;
-            border-radius: 4px;
+            background: #0055ff;
+            color: #ffffff;
+            padding: 0.15rem 0.45rem;
+            border: 1px solid #1a1a1a;
             flex-shrink: 0;
         }
-        .city-state { font-size: 0.72rem; color: #5a6478; margin-left: auto; }
+        .city-state {
+            font-size: 0.75rem;
+            color: rgba(26,26,26,0.6);
+            margin-left: auto;
+        }
 
-        /* Trip plan cards */
+        /* ── Trip Planner Cards ── */
         .trip-section { margin-bottom: 1.5rem; }
         .trip-section-header {
-            font-size: 0.68rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
             font-weight: 700;
-            letter-spacing: 0.12em;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
-            color: #5a6478;
-            margin-bottom: 0.6rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            color: #1a1a1a;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #1a1a1a;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         .trip-card {
-            padding: 0.75rem 1rem;
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px;
-            margin-bottom: 0.4rem;
+            padding: 1rem;
+            border: 2px solid #1a1a1a;
+            background: #ffffff;
+            margin-bottom: 0.5rem;
             cursor: pointer;
-            font-size: 0.835rem;
-            background: #1c2333;
-            transition: all 0.15s;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: var(--transition);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: #e8eaf0;
+            color: #1a1a1a;
         }
-        .trip-card:hover { border-color: rgba(212,168,83,0.25); background: #202736; }
-        .trip-card.selected { border-color: #d4a853; background: rgba(212,168,83,0.06); }
-        .trip-card .price { font-weight: 700; color: #d4a853; white-space: nowrap; margin-left: 1rem; font-size: 0.9rem; }
-        .best-tag { font-size: 0.6rem; color: #0e1117; background: #d4a853; padding: 0.1rem 0.45rem; border-radius: 4px; font-weight: 800; letter-spacing: 0.05em; margin-right: 0.4rem; }
-        .via-label { font-size: 0.7rem; color: #5a6478; font-weight: 600; letter-spacing: 0.06em; margin-bottom: 0.4rem; text-transform: uppercase; }
-        .no-result { color: #3a4152; font-size: 0.82rem; padding: 0.5rem 0; }
+        .trip-card:hover {
+            background: #ffcc00;
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0px #1a1a1a;
+        }
+        .trip-card.selected {
+            background: #0055ff;
+            color: #ffffff;
+            box-shadow: none;
+            transform: none;
+        }
+        .trip-card.selected span { color: #ffffff !important; }
+        .trip-card .price {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: #e63b2e;
+            white-space: nowrap;
+            margin-left: 1rem;
+            font-size: 0.95rem;
+        }
+        .trip-card.selected .price { color: #ffffff; }
+        .best-tag {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.65rem;
+            color: #1a1a1a;
+            background: #ffcc00;
+            padding: 0.15rem 0.45rem;
+            border: 1px solid #1a1a1a;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-right: 0.5rem;
+        }
+        .via-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.72rem;
+            color: #1a1a1a;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+        }
+        .no-result {
+            color: rgba(26,26,26,0.6);
+            font-size: 0.85rem;
+            padding: 0.5rem 0;
+            font-style: italic;
+        }
 
-        /* Plan modal custom inputs */
-        .plan-input {
-            background: #1c2333;
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 8px;
-            padding: 0.65rem 0.9rem;
-            font-size: 0.875rem;
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-            color: #e8eaf0;
-            outline: none;
-            transition: all 0.18s;
-            width: 100%;
+        /* ── Side Nav Bar ── */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 250px;
+            background: #ffffff;
+            border-right: var(--border-thick);
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            padding: 1.5rem 1rem;
         }
-        .plan-input:focus { border-color: rgba(212,168,83,0.4); background: #202736; }
-        .plan-input::placeholder { color: #3a4152; }
-        .plan-label {
+        .sidebar-brand {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #1a1a1a;
+        }
+        .sidebar-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+        .sidebar-nav-links a {
+            text-decoration: none;
+            color: #1a1a1a;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            padding: 0.75rem 1rem;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+        }
+        .sidebar-nav-links a:hover {
+            background: #f5f0e8;
+            border-color: #1a1a1a;
+        }
+        .sidebar-nav-links a.active {
+            background: #ffcc00;
+            border-color: #1a1a1a;
+            box-shadow: var(--shadow-offset-sm);
+        }
+
+        /* ── Layout Overrides ── */
+        .main-wrapper {
+            margin-left: 250px;
+            min-height: 100vh;
+        }
+        .top-appbar {
+            height: 70px;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border-bottom: var(--border-thick);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+
+        /* ── Bento Grid ── */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .bento-card-greeting {
+            grid-span: 8;
+            grid-column: span 8;
+            background: #ffffff;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-offset);
+            padding: 2.5rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .bento-card-stats {
+            grid-column: span 4;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .bento-badge-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .bento-badge {
+            border: var(--border-thin);
+            background: #f5f0e8;
+            padding: 1rem;
+            box-shadow: var(--shadow-offset-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+            min-width: 160px;
+        }
+        .bento-badge .bb-label {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 0.65rem;
             font-weight: 700;
-            letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: #5a6478;
-            display: block;
-            margin-bottom: 0.3rem;
+            color: #0055ff;
+        }
+        .bento-badge .bb-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+        }
+        .bento-badge .bb-sub {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(26,26,26,0.6);
         }
 
-        /* AI Chat */
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50%       { transform: translateY(-4px); }
+        /* ── Q4 Budget Card ── */
+        .budget-card {
+            background: #ffffff;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-offset);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        @keyframes bubbleIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to   { opacity: 1; transform: translateY(0); }
+        .budget-progress-container {
+            width: 100%;
+            height: 16px;
+            background: #f5f0e8;
+            border: 2px solid #1a1a1a;
+            margin: 0.5rem 0;
+            position: relative;
         }
-        .chat-bubble { animation: bubbleIn 0.2s ease; }
-        #chat-panel { display: none; flex-direction: column; }
-        #chat-panel.open { display: flex; }
-        #chat-messages::-webkit-scrollbar { width: 3px; }
-        #chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
+        .budget-progress-bar {
+            height: 100%;
+            background: #ffcc00;
+            border-right: 2px solid #1a1a1a;
+        }
 
-        /* Booking table extras */
-        .booking-type-chip {
-            display: inline-flex; align-items: center; gap: 0.3rem;
-            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em;
-            text-transform: uppercase; color: #5a6478;
+        /* ── Concierge Block ── */
+        .concierge-card {
+            background: #1a1a1a;
+            color: #ffffff;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-offset);
+            padding: 1.5rem;
         }
+        .concierge-card h3 { color: #ffcc00; }
+        .concierge-card p { color: #f5f0e8; margin-top: 0.5rem; margin-bottom: 1.25rem; font-size: 0.85rem; font-weight: 500; }
 
-        /* ── Trip planner responsive grid ── */
-        .tp-grid {
+        /* ── Section Grid ── */
+        .dashboard-sections {
             display: grid;
-            grid-template-columns: 1fr auto 1fr 1fr 1fr auto;
-            gap: 0.6rem;
-            align-items: end;
-            margin-top: 1.25rem;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        /* ── Upcoming Trips Grid ── */
+        .trips-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+        .trip-item-card {
+            background: #ffffff;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-offset);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+        }
+        .trip-item-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: var(--shadow-offset-lg);
+        }
+        .trip-item-card .img-wrap {
+            height: 120px;
+            background: #ffcc00;
+            border-bottom: var(--border-thin);
+            position: relative;
+        }
+        .trip-item-card .img-wrap img {
+            width: 100%; height: 100%; object-cover: cover; object-fit: cover;
+            filter: grayscale(100%);
+            transition: all 0.3s;
+        }
+        .trip-item-card:hover .img-wrap img {
+            filter: grayscale(0%);
+        }
+        .trip-item-card .img-wrap .days-badge {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.65rem; font-weight: 700;
+            background: #ffffff; border: 2px solid #1a1a1a;
+            padding: 0.15rem 0.45rem; text-transform: uppercase;
+        }
+        .trip-item-card .content {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .plan-new-card {
+            border: 3px dashed #1a1a1a;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition);
+            min-height: 200px;
+        }
+        .plan-new-card:hover {
+            background: #ffcc00;
+            box-shadow: var(--shadow-offset);
+            transform: translate(-3px, -3px);
+        }
+        .plan-new-card .icon-box {
+            width: 48px; height: 48px;
+            background: #0055ff;
+            color: #ffffff;
+            border: 2px solid #1a1a1a;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+        .plan-new-card:hover .icon-box {
+            transform: scale(1.1);
+        }
+
+        /* ── Recent Activity ── */
+        .activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            position: relative;
+        }
+        .activity-icon {
+            width: 36px; height: 36px;
+            background: #ffffff;
+            border: 2px solid #1a1a1a;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+        .activity-details {
+            flex: 1;
+        }
+        .activity-details p {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .activity-details .time {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #0055ff;
+            text-transform: uppercase;
+        }
+
+        /* ── AI Chat Widget ── */
+        #chat-panel {
+            display: none;
+            flex-direction: column;
+        }
+        #chat-panel.open {
+            display: flex;
+        }
+        .brutalist-chat-panel {
+            position: absolute;
+            bottom: 70px; right: 0;
+            width: 360px;
+            height: 520px;
+            background: #ffffff;
+            border: 3px solid #1a1a1a;
+            box-shadow: var(--shadow-offset);
+            overflow: hidden;
+        }
+        .brutalist-chat-bubble {
+            max-width: 85%;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            line-height: 1.4;
+            border: 2px solid #1a1a1a;
+        }
+        .chat-bubble-user {
+            background: #ffcc00;
+            align-self: flex-end;
+            box-shadow: 2px 2px 0px #1a1a1a;
+        }
+        .chat-bubble-assistant {
+            background: #ffffff;
+            align-self: flex-start;
+            box-shadow: 2px 2px 0px #1a1a1a;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 1024px) {
+            .sidebar { display: none; }
+            .main-wrapper { margin-left: 0; }
+            .bento-grid { grid-template-columns: 1fr; }
+            .bento-card-greeting { grid-column: span 12; }
+            .bento-card-stats { grid-column: span 12; }
+            .dashboard-sections { grid-template-columns: 1fr; }
+            .trips-grid { grid-template-columns: 1fr 1fr; }
         }
         @media (max-width: 640px) {
-            .tp-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-            .tp-from  { grid-column: span 2; }
-            .tp-arrow { display: none; }
-            .tp-to    { grid-column: span 2; }
-            .tp-search-btn { grid-column: span 2; width: 100%; justify-content: center; }
+            .trips-grid { grid-template-columns: 1fr; }
+            .top-appbar { padding: 0 1rem; }
         }
-
-        /* ── AI Chat panel responsive ── */
-        #chat-panel {
-            width: min(360px, calc(100vw - 3rem));
-        }
-        @media (max-width: 480px) {
-            #ai-chat { right: 1rem; bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
-            #chat-panel {
-                position: fixed !important;
-                inset: 0 !important;
-                width: 100% !important;
-                height: 100dvh !important;
-                border-radius: 0 !important;
-                bottom: 0 !important;
-                right: 0 !important;
-                z-index: 1001;
-            }
-            #chat-panel #chat-messages { height: calc(100dvh - 120px) !important; }
-        }
-
-        /* City dropdown: never overflow viewport */
-        .city-dropdown { max-width: calc(100vw - 2rem); }
     </style>
 </head>
-<body>
-    <nav class="dashboard-nav glass">
-        <div class="logo">TripFlow</div>
-        <div class="nav-links">
-            <a href="#" class="active">My Trips</a>
-            <a href="#" onclick="showBookingModal(); return false;">+ New Request</a>
-        </div>
-        <div class="user-info">
-            <span id="user-name" style="font-size:0.875rem;font-weight:600;color:#9aa3b5;"></span>
-            <button onclick="logout()" class="secondary" style="padding:0.45rem 0.9rem;font-size:0.8rem;">Logout</button>
-        </div>
-        <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
-            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
-        </button>
-    </nav>
+<body class="bg-background text-primary">
 
-    <div class="container">
-        <!-- Header -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.5rem;">
-            <div>
-                <p class="page-label">Dashboard</p>
-                <h1>My Travel Requests</h1>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+                <svg width="32" height="32" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border: 2px solid #1a1a1a; box-shadow: 2px 2px 0px #1a1a1a; flex-shrink: 0;">
+                    <rect width="512" height="512" rx="96" fill="#000000"/>
+                    <rect x="128" y="128" width="224" height="96" rx="48" fill="#0055ff"/>
+                    <rect x="176" y="224" width="64" height="160" rx="32" fill="#0055ff"/>
+                    <rect x="240" y="272" width="112" height="80" rx="40" fill="#004acc"/>
+                    <circle cx="304" cy="176" r="24" fill="#4a8ef7"/>
+                </svg>
+                <span style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;letter-spacing:-0.03em;">TripFlow</span>
             </div>
-            <button onclick="showBookingModal()" style="padding:0.7rem 1.4rem;">Plan a Trip</button>
+            <p style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);letter-spacing:0.05em;">Enterprise</p>
         </div>
 
-        <!-- Bookings table -->
-        <div class="table-card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>Route</th>
-                        <th>Status</th>
-                        <th>Cost</th>
-                        <th>PNR</th>
-                        <th>Ticket</th>
-                    </tr>
-                </thead>
-                <tbody id="bookings-list">
-                    <tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✈</div><p>Loading your trips…</p></div></td></tr>
-                </tbody>
-            </table>
+        <button onclick="window.location.href='request.html'" style="width:100%;margin-bottom:1.5rem;">
+            <span class="material-symbols-outlined">add</span>
+            New Request
+        </button>
+
+        <nav class="sidebar-nav-links">
+            <a href="#" class="active">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+            <a href="request.html">
+                <span class="material-symbols-outlined">flight_takeoff</span>
+                Plan Trip
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">fact_check</span>
+                Approvals
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">history</span>
+                Archive
+            </a>
+        </nav>
+
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.25rem;">
+            <a href="#" style="text-decoration:none;color:#1a1a1a;font-family:var(--font-display);font-weight:700;font-size:0.8rem;text-transform:uppercase;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">settings</span>Settings
+            </a>
+            <a href="#" onclick="logout(); return false;" style="text-decoration:none;color:#e63b2e;font-family:var(--font-display);font-weight:700;font-size:0.8rem;text-transform:uppercase;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">logout</span>Logout
+            </a>
         </div>
-    </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+        <!-- Top App Bar -->
+        <header class="top-appbar">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <h1 style="font-size:1.5rem;font-weight:700;margin:0;">Dashboard</h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:1.5rem;">
+                <div class="mobile-hide" style="position:relative;width:240px;">
+                    <input type="text" placeholder="Search trips..." style="border:none;border-bottom:2px solid #1a1a1a;font-size:0.85rem;padding:0.4rem 0.25rem;">
+                </div>
+                <div style="display:flex;align-items:center;gap:1rem;">
+                    <span id="user-name" style="font-family:var(--font-display);font-size:0.85rem;font-weight:700;text-transform:uppercase;border:2px solid #1a1a1a;background:#ffcc00;padding:0.25rem 0.75rem;box-shadow:2px 2px 0px #1a1a1a;">Employee</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <div class="container" style="padding-top:2rem;">
+            <!-- Bento Hero Section -->
+            <div class="bento-grid">
+                <!-- Greeting Card -->
+                <div class="bento-card-greeting">
+                    <p class="page-label">Welcome back</p>
+                    <h2 style="font-size:2.2rem;margin-bottom:0.5rem;line-height:1;">Ready for your next journey?</h2>
+                    <p style="font-size:0.95rem;font-weight:600;margin-bottom:2rem;max-width:540px;">You have active bookings waiting to be processed, and quarterly budget allocations open.</p>
+                    
+                    <div class="bento-badge-group">
+                        <div class="bento-badge">
+                            <span class="bb-label">Next Flight</span>
+                            <div class="bb-value">SFO → LHR <span class="material-symbols-outlined" style="color:#0055ff;">flight</span></div>
+                            <span class="bb-sub">Oct 24 • Confirmed</span>
+                        </div>
+                        <div class="bento-badge">
+                            <span class="bb-label">Lodging</span>
+                            <div class="bb-value">Ritz-Carlton <span class="material-symbols-outlined" style="color:#ffcc00;">hotel</span></div>
+                            <span class="bb-sub">4 Nights • Arranged</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Bento Block -->
+                <div class="bento-card-stats">
+                    <!-- Q4 Budget Progress -->
+                    <div class="budget-card">
+                        <span class="page-label">Q4 Travel Budget</span>
+                        <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:700;line-height:1.2;">₹3,40,000</div>
+                        <div class="budget-progress-container">
+                            <div class="budget-progress-bar" style="width: 65%;"></div>
+                        </div>
+                        <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);">65% of quarterly allowance used</span>
+                    </div>
+
+                    <!-- Active Requests Box -->
+                    <div class="budget-card" style="background:#ffffff;">
+                        <span class="page-label">Active Requests</span>
+                        <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+                            <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:700;line-height:1;" id="active-req-count">03</div>
+                            <button class="secondary" onclick="window.location.href='request.html'" style="padding:0.4rem 0.8rem;font-size:0.75rem;">Plan Trip</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Sections Grid -->
+            <div class="dashboard-sections">
+                <!-- Bookings Table -->
+                <section style="display:flex;flex-direction:column;gap:1rem;">
+                    <div class="section-header">
+                        <h2>Active Request Status</h2>
+                    </div>
+                    <div class="table-card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Route</th>
+                                    <th>Status</th>
+                                    <th>Cost</th>
+                                    <th>PNR</th>
+                                    <th>Ticket</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookings-list">
+                                <tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">⏳</div><p>Loading your trips…</p></div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Activity Feed & Live Service -->
+                <aside style="display:flex;flex-direction:column;gap:2rem;">
+                    <div>
+                        <h2 style="margin-bottom:1rem;">Recent Activity</h2>
+                        <div class="card" style="padding:1.5rem 1.25rem;">
+                            <div class="activity-feed">
+                                <div class="activity-item">
+                                    <div class="activity-icon">✓</div>
+                                    <div class="activity-details">
+                                        <p>Sarah Jenkins approved your trip to Berlin.</p>
+                                        <span class="time">2 hours ago</span>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon">✉</div>
+                                    <div class="activity-details">
+                                        <p>New booking confirmation for Flight LX-204.</p>
+                                        <span class="time">Yesterday</span>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon" style="background:var(--accent-red);color:#ffffff;">!</div>
+                                    <div class="activity-details">
+                                        <p>Trip request for NY Summit was rejected.</p>
+                                        <span class="time">2 days ago</span>
+                                        <span style="font-size:0.75rem;font-weight:600;display:block;color:var(--accent-red);margin-top:0.1rem;">"Budget constraints."</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Concierge Brutalist Call -->
+                    <div class="concierge-card">
+                        <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#ffcc00;letter-spacing:0.05em;">Concierge Support</span>
+                        <h3 style="font-size:1.3rem;margin-top:0.25rem;">24/7 Live Agent</h3>
+                        <p>Stuck at the transit or need flight changes? Connect instantly with our travel team.</p>
+                        <button onclick="toggleChat()" style="width:100%;background:#ffffff;color:#1a1a1a;border:2px solid #ffffff;box-shadow:3px 3px 0px #ffcc00;">
+                            <span class="material-symbols-outlined">support_agent</span>
+                            Open Chat
+                        </button>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Upcoming Trips Summary -->
+            <section style="display:flex;flex-direction:column;gap:1rem;">
+                <h2>Upcoming Trip Summary</h2>
+                <div class="trips-grid">
+                    <div class="trip-item-card">
+                        <div class="img-wrap">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCR3kVM3E1t3ovodCEx6QO-3rwLMr8hLGst7uvzcv-7mTcs-Mj47ZMrLunXfH6bBjYe-KsJJHOha_TCcv-oMUg57q8DHBVIIEMgyPDqFMmZaDhxLb5ACd6SviKzKwbfBvILPw4cSrS2nKVohf0QC4AbWy_zl9MTxRZIUYxC-DhOrUWMlAjZa2pP1RYiZTEoHw1qjZjcefw-bMZc4DP8VzRgUZAESUn9lmF7_MRS_ahDSrpfuEia9aLEEbyz6TZGW3nFxAw0IXr2DjM" alt="Paris HQ">
+                            <span class="days-badge">In 12 Days</span>
+                        </div>
+                        <div class="content">
+                            <div style="margin-bottom:0.75rem;">
+                                <h4 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin:0;">Paris HQ Visit</h4>
+                                <span style="font-size:0.75rem;font-weight:600;color:rgba(26,26,26,0.6);">Paris, FR</span>
+                            </div>
+                            <span style="font-size:0.8rem;font-weight:700;display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;">calendar_today</span> Oct 24 - Oct 28</span>
+                        </div>
+                    </div>
+                    <div class="trip-item-card">
+                        <div class="img-wrap">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB02SJk-KYaEzQNa3AsA_KxcXpUdyRi1hQTxtlGU1gqDbOXXQJqjucJCGJHUzavRuXU3ZKHJhow5weqZ-QDivPR1zi2dhss1rXGWHIl2y5bxa3hwqJDQSLOaCU4IGxBaF_EfeTq6_7fnDjUCG3aaqbB7wC4FL1aqpvx2LJrkGSrpCNVSoYyB63_MZrkSEaCFcvlzX49iQHTq7DztJ3LpT5rLLhw0zYhmN3uPnngmW4KqB3W8cYAUjhg7YmVXsSi5WHZQbg1X37apfQ" alt="Dubai Expo">
+                            <span class="days-badge">In 45 Days</span>
+                        </div>
+                        <div class="content">
+                            <div style="margin-bottom:0.75rem;">
+                                <h4 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin:0;">Dubai Tech Expo</h4>
+                                <span style="font-size:0.75rem;font-weight:600;color:rgba(26,26,26,0.6);">Dubai, UAE</span>
+                            </div>
+                            <span style="font-size:0.8rem;font-weight:700;display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;">calendar_today</span> Nov 15 - Nov 20</span>
+                        </div>
+                    </div>
+                    <div class="plan-new-card" onclick="window.location.href='request.html'">
+                        <div class="icon-box">
+                            <span class="material-symbols-outlined">add_location_alt</span>
+                        </div>
+                        <span style="font-family:var(--font-display);font-size:0.9rem;font-weight:700;text-transform:uppercase;">Plan New Trip</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
 
     <!-- Trip Planner Modal -->
     <div id="booking-modal" class="modal">
-        <div class="modal-content" style="max-width:700px;padding:0;overflow:hidden;max-height:92vh;display:flex;flex-direction:column;background:#161b27;border-radius:16px;">
-
+        <div class="modal-content" style="max-width:720px;padding:0;overflow:hidden;max-height:92vh;display:flex;flex-direction:column;border:3px solid #1a1a1a;box-shadow:8px 8px 0px #1a1a1a;">
             <!-- Modal header -->
-            <div style="padding:1.5rem 2rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;">
+            <div style="padding:1.5rem 2rem;border-bottom:3px solid #1a1a1a;background:#ffcc00;flex-shrink:0;">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                     <div>
-                        <p style="font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#d4a853;margin-bottom:0.35rem;">Trip Planner</p>
-                        <h2 style="font-size:1.25rem;margin:0;">Plan Your Journey</h2>
-                        <p style="color:#5a6478;font-size:0.8rem;margin-top:0.2rem;">Enter destination — AI finds flights, trains &amp; hotels.</p>
+                        <p style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#1a1a1a;margin-bottom:0.25rem;">Trip Planner</p>
+                        <h2 style="font-size:1.5rem;margin:0;text-transform:uppercase;color:#1a1a1a;letter-spacing:-0.02em;">Plan Your Journey</h2>
                     </div>
-                    <button type="button" onclick="hideBookingModal()" style="background:none;border:none;box-shadow:none;color:#5a6478;font-size:1.4rem;padding:0;cursor:pointer;line-height:1;margin-top:-4px;" aria-label="Close">×</button>
+                    <button type="button" onclick="hideBookingModal()" style="background:none;border:none;box-shadow:none;color:#1a1a1a;font-size:1.8rem;padding:0;cursor:pointer;line-height:1;margin-top:-4px;" aria-label="Close">×</button>
                 </div>
 
                 <!-- Search grid -->
-                <div class="tp-grid">
-                    <div class="tp-from">
+                <div class="tp-grid" style="display:grid;grid-template-columns:1fr auto 1fr 1fr 1fr auto;gap:0.75rem;align-items:end;margin-top:1.25rem;">
+                    <div class="tp-from" style="position:relative;">
                         <label class="plan-label">From</label>
-                        <div style="position:relative;">
-                            <input id="tp-from" type="text" placeholder="Mumbai" autocomplete="off" class="plan-input"
-                                inputmode="text"
-                                oninput="showCitySuggestions(this,'tp-from-list')"
-                                onfocus="showCitySuggestions(this,'tp-from-list')"
-                                onblur="setTimeout(()=>hideCityList('tp-from-list'),200)">
-                            <div id="tp-from-list" class="city-dropdown"></div>
-                        </div>
+                        <input id="tp-from" type="text" placeholder="Mumbai" autocomplete="off" class="plan-input" style="background:#ffffff;border:2px solid #1a1a1a;border-radius:0px;"
+                            oninput="showCitySuggestions(this,'tp-from-list')"
+                            onfocus="showCitySuggestions(this,'tp-from-list')"
+                            onblur="setTimeout(()=>hideCityList('tp-from-list'),200)">
+                        <div id="tp-from-list" class="city-dropdown"></div>
                     </div>
-                    <div class="tp-arrow" style="padding-bottom:0.4rem;color:#3a4152;font-size:1rem;text-align:center;">→</div>
-                    <div class="tp-to">
+                    <div class="tp-arrow" style="padding-bottom:0.6rem;color:#1a1a1a;font-weight:900;font-size:1.2rem;">→</div>
+                    <div class="tp-to" style="position:relative;">
                         <label class="plan-label">To</label>
-                        <div style="position:relative;">
-                            <input id="tp-to" type="text" placeholder="Delhi" autocomplete="off" class="plan-input"
-                                inputmode="text"
-                                oninput="showCitySuggestions(this,'tp-to-list')"
-                                onfocus="showCitySuggestions(this,'tp-to-list')"
-                                onblur="setTimeout(()=>hideCityList('tp-to-list'),200)">
-                            <div id="tp-to-list" class="city-dropdown"></div>
-                        </div>
+                        <input id="tp-to" type="text" placeholder="Delhi" autocomplete="off" class="plan-input" style="background:#ffffff;border:2px solid #1a1a1a;border-radius:0px;"
+                            oninput="showCitySuggestions(this,'tp-to-list')"
+                            onfocus="showCitySuggestions(this,'tp-to-list')"
+                            onblur="setTimeout(()=>hideCityList('tp-to-list'),200)">
+                        <div id="tp-to-list" class="city-dropdown"></div>
                     </div>
                     <div>
                         <label class="plan-label">Departure</label>
-                        <input id="tp-from-date" type="text" readonly placeholder="DD/MM/YYYY" class="plan-input" style="cursor:pointer;">
+                        <input id="tp-from-date" type="text" readonly placeholder="YYYY-MM-DD" class="plan-input" style="cursor:pointer;background:#ffffff;border:2px solid #1a1a1a;border-radius:0px;">
                     </div>
                     <div>
                         <label class="plan-label">Return (opt)</label>
-                        <input id="tp-to-date" type="text" readonly placeholder="DD/MM/YYYY" class="plan-input" style="cursor:pointer;">
+                        <input id="tp-to-date" type="text" readonly placeholder="YYYY-MM-DD" class="plan-input" style="cursor:pointer;background:#ffffff;border:2px solid #1a1a1a;border-radius:0px;">
                     </div>
-                    <button type="button" onclick="runTripPlan()" id="tp-search-btn" class="tp-search-btn" style="padding:0.65rem 1.1rem;font-size:0.82rem;white-space:nowrap;height:fit-content;">Search</button>
+                    <button type="button" onclick="runTripPlan()" id="tp-search-btn" class="tp-search-btn" style="padding:0.75rem 1.25rem;border:2px solid #1a1a1a;background:#1a1a1a;color:#ffffff;box-shadow:none;height:fit-content;">Search</button>
                 </div>
             </div>
 
             <!-- Results -->
-            <div id="trip-plan-results" style="flex:1;overflow-y:auto;padding:1.5rem 2rem;">
-                <p style="color:#3a4152;font-size:0.85rem;text-align:center;margin-top:2rem;">Enter trip details above and click <strong style="color:#5a6478;">Search</strong>.</p>
+            <div id="trip-plan-results" style="flex:1;overflow-y:auto;padding:1.5rem 2rem;background:#f5f0e8;">
+                <p style="color:#1a1a1a;font-size:0.9rem;text-align:center;margin-top:2rem;font-weight:600;">Enter trip details above and click <strong style="color:#0055ff;">Search</strong>.</p>
             </div>
 
             <!-- Submit bar -->
-            <div id="submit-bar" style="display:none;padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.06);background:#0e1117;flex-shrink:0;">
+            <div id="submit-bar" style="display:none;padding:1.5rem 2rem;border-top:3px solid #1a1a1a;background:#ffffff;flex-shrink:0;">
                 <input type="hidden" id="travel-type" value="FLIGHT">
                 <input type="hidden" id="origin" value="">
                 <input type="hidden" id="destination" value="">
                 <input type="hidden" id="travel-date" value="">
-                <div style="margin-bottom:0.75rem;">
-                    <label class="plan-label">Estimated Cost (₹)</label>
-                    <input type="number" id="estimated-cost" min="1" placeholder="Select an option above or enter manually" class="plan-input" inputmode="numeric" style="margin-top:0.25rem;">
-                </div>
-                <div style="display:flex;gap:0.5rem;">
-                    <button type="button" onclick="submitTripBooking()" style="flex:2;padding:0.75rem;">Submit Request</button>
-                    <button type="button" onclick="hideBookingModal()" class="secondary" style="flex:1;padding:0.75rem;">Cancel</button>
+                <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;">
+                    <div style="flex:1;">
+                        <label class="plan-label">Estimated Cost (₹)</label>
+                        <input type="number" id="estimated-cost" min="1" placeholder="Select an option above or enter manually" class="plan-input" style="border:2px solid #1a1a1a;border-radius:0px;">
+                    </div>
+                    <div style="display:flex;gap:0.75rem;align-items:flex-end;margin-top:1.5rem;">
+                        <button type="button" onclick="submitTripBooking()" style="padding:0.75rem 1.5rem;">Submit Request</button>
+                        <button type="button" onclick="hideBookingModal()" class="secondary" style="padding:0.75rem 1.5rem;">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -310,30 +810,31 @@
     <!-- AI Chat Widget -->
     <div id="ai-chat" style="position:fixed;bottom:2rem;right:2rem;z-index:1000;">
         <!-- Chat Panel -->
-        <div id="chat-panel" style="position:absolute;bottom:70px;right:0;height:520px;background:#161b27;border:1px solid rgba(255,255,255,0.07);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.6);overflow:hidden;">
+        <div id="chat-panel" class="brutalist-chat-panel">
             <!-- Header -->
-            <div style="padding:1rem 1.25rem;background:#1c2333;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:0.75rem;">
-                <div style="width:34px;height:34px;background:rgba(212,168,83,0.12);border:1px solid rgba(212,168,83,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;">✈</div>
+            <div style="padding:1rem 1.25rem;background:#ffcc00;border-bottom:3px solid #1a1a1a;display:flex;align-items:center;gap:0.75rem;">
+                <div style="width:34px;height:34px;background:#1a1a1a;color:#ffffff;border:2px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;">✈</div>
                 <div style="flex:1;">
-                    <div style="font-weight:700;font-size:0.875rem;color:#e8eaf0;">TripFlow Assistant</div>
-                    <div style="font-size:0.7rem;color:#5a6478;">AI-powered booking</div>
+                    <div style="font-family:var(--font-display);font-weight:700;font-size:0.9rem;color:#1a1a1a;text-transform:uppercase;">TripFlow AI</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:rgba(26,26,26,0.6);text-transform:uppercase;">Assistant</div>
                 </div>
-                <button onclick="toggleChat()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.07);color:#9aa3b5;width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:none;">×</button>
+                <button onclick="toggleChat()" style="background:#ffffff;border:2px solid #1a1a1a;color:#1a1a1a;width:26px;height:26px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:none;font-weight:700;">×</button>
             </div>
             <!-- Messages -->
-            <div id="chat-messages" style="flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.6rem;height:380px;background:#0e1117;"></div>
+            <div id="chat-messages" style="flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:0.75rem;height:380px;background:#f5f0e8;"></div>
             <!-- Input -->
-            <div style="padding:0.75rem 1rem;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:0.5rem;background:#161b27;align-items:center;">
-                <input id="chat-input" placeholder="Describe your travel need…" style="flex:1;background:#1c2333;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:0.6rem 0.875rem;font-size:0.835rem;outline:none;font-family:inherit;color:#e8eaf0;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
-                <button id="voice-btn" onclick="toggleVoice()" title="Voice input" style="width:34px;height:34px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);background:#1c2333;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;transition:background 0.2s;box-shadow:none;padding:0;color:#5a6478;">🎤</button>
-                <button onclick="sendChat()" id="chat-send" style="padding:0.6rem 0.9rem;border-radius:8px;font-size:0.8rem;min-width:52px;">Send</button>
+            <div style="padding:0.75rem 1rem;border-top:3px solid #1a1a1a;display:flex;gap:0.5rem;background:#ffffff;align-items:center;">
+                <input id="chat-input" placeholder="Describe your travel need…" style="flex:1;background:transparent;border:none;border-bottom:2px solid #1a1a1a;padding:0.5rem;font-size:0.875rem;outline:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
+                <button id="voice-btn" onclick="toggleVoice()" title="Voice input" style="width:36px;height:36px;border:2px solid #1a1a1a;background:#ffffff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;transition:var(--transition);box-shadow:2px 2px 0px #1a1a1a;padding:0;color:#1a1a1a;">🎤</button>
+                <button onclick="sendChat()" id="chat-send" style="padding:0.5rem 1rem;border:2px solid #1a1a1a;">Send</button>
             </div>
         </div>
 
-        <!-- Toggle -->
-        <button id="chat-btn" onclick="toggleChat()" style="width:52px;height:52px;border-radius:12px;background:#d4a853;border:none;cursor:pointer;box-shadow:0 6px 24px rgba(212,168,83,0.35);display:flex;align-items:center;justify-content:center;font-size:1.25rem;transition:all 0.2s;color:#0e1117;position:relative;z-index:1;">✈</button>
+        <!-- Toggle Button -->
+        <button id="chat-btn" onclick="toggleChat()" style="width:56px;height:56px;border-radius:0px;background:#ffcc00;border:3px solid #1a1a1a;cursor:pointer;box-shadow:var(--shadow-offset);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#1a1a1a;position:relative;z-index:1;">✈</button>
     </div>
 
+    <!-- JS Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
@@ -345,7 +846,7 @@
         async function init() {
             currentUser = checkAuth();
             if (!currentUser) return;
-            document.getElementById('user-name').innerText = currentUser.name;
+            document.getElementById('user-name').innerText = currentUser.name.toUpperCase();
             showTableSkeleton('bookings-list', 6);
             await loadBookings();
         }
@@ -367,21 +868,24 @@
             try {
                 const bookings = await apiRequest('/bookings/mine');
                 const list = document.getElementById('bookings-list');
+                document.getElementById('active-req-count').innerText = bookings.filter(b => b.stage === 'PENDING_MANAGER' || b.stage === 'PENDING_VENDOR').length.toString().padStart(2, '0');
                 if (!bookings.length) {
                     list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✈</div><p>No travel requests yet. Click <strong>Plan a Trip</strong> to get started.</p></div></td></tr>';
                     return;
                 }
                 list.innerHTML = bookings.map(b => `
                     <tr>
-                        <td data-label="Type"><span class="booking-type-chip">${b.type}</span></td>
+                        <td data-label="Type"><span class="role-badge role-VENDOR">${b.type}</span></td>
                         <td data-label="Route">
-                            <div style="font-weight:600;color:#e8eaf0;">${b.details.origin || '—'} → ${b.details.destination || '—'}</div>
-                            <div style="font-size:0.78rem;color:#5a6478;margin-top:0.15rem;">${b.details.date || ''}</div>
+                            <a href="detail.html?id=${b.id}" style="text-decoration:none;color:inherit;display:block;">
+                                <div style="font-weight:700;color:#1a1a1a;text-decoration:underline;text-underline-offset:2px;">${b.details.origin || '—'} → ${b.details.destination || '—'}</div>
+                                <div style="font-size:0.75rem;font-weight:700;color:rgba(26,26,26,0.6);margin-top:0.15rem;">${b.details.date || ''}</div>
+                            </a>
                         </td>
                         <td data-label="Status"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
-                        <td data-label="Cost" style="font-weight:600;color:#d4a853;">${b.cost ? '₹' + Number(b.cost).toLocaleString('en-IN') : '—'}</td>
-                        <td data-label="PNR" style="font-family:monospace;font-size:0.82rem;color:#9aa3b5;">${b.pnr || '—'}</td>
-                        <td data-label="Ticket">${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color:#d4a853;font-weight:600;text-decoration:none;font-size:0.82rem;">View ↗</a>` : '<span style="color:#3a4152;">—</span>'}</td>
+                        <td data-label="Cost" style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#0055ff;">${b.cost ? '₹' + Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                        <td data-label="PNR" style="font-family:monospace;font-size:0.85rem;color:#1a1a1a;font-weight:700;">${b.pnr || '—'}</td>
+                        <td data-label="Ticket">${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color:#0055ff;font-weight:700;text-decoration:none;font-size:0.82rem;">View ↗</a>` : '<span style="color:rgba(26,26,26,0.4);">—</span>'}</td>
                     </tr>`).join('');
             } catch (err) {
                 console.error(err.message);
@@ -429,7 +933,7 @@
 
         function showBookingModal() {
             document.getElementById('booking-modal').style.display = 'flex';
-            document.getElementById('trip-plan-results').innerHTML = '<p style="color:#3a4152;font-size:0.85rem;text-align:center;margin-top:2rem;">Enter your trip details above and click <strong style="color:#5a6478;">Search</strong>.</p>';
+            document.getElementById('trip-plan-results').innerHTML = '<p style="color:#1a1a1a;font-size:0.9rem;text-align:center;margin-top:2rem;font-weight:600;">Enter your trip details above and click <strong style="color:#0055ff;">Search</strong>.</p>';
             document.getElementById('submit-bar').style.display = 'none';
             document.getElementById('estimated-cost').value = '';
         }
@@ -444,9 +948,9 @@
             const btn = document.getElementById('tp-search-btn');
             btn.disabled = true; btn.textContent = 'Searching…';
             document.getElementById('trip-plan-results').innerHTML = `
-                <div style="text-align:center;padding:2.5rem;color:#5a6478;">
-                    <div style="font-size:1.5rem;margin-bottom:0.75rem;opacity:0.5;">⏳</div>
-                    Searching flights, trains &amp; hotels for <strong style="color:#9aa3b5;">${to}</strong>…
+                <div style="text-align:center;padding:2.5rem;color:#1a1a1a;font-weight:700;">
+                    <div style="font-size:2rem;margin-bottom:0.75rem;animation:bounce 1s infinite;">✈</div>
+                    SEARCHING FLIGHTS &amp; HOTELS FOR ${to.toUpperCase()}…
                 </div>`;
             document.getElementById('origin').value      = from;
             document.getElementById('destination').value = to;
@@ -458,7 +962,7 @@
                 renderTripPlan(plan, from, to, fromDate, toDate);
                 document.getElementById('submit-bar').style.display = 'block';
             } catch (err) {
-                document.getElementById('trip-plan-results').innerHTML = `<p style="color:#e74c3c;padding:1rem;font-size:0.85rem;">Error: ${err.message}</p>`;
+                document.getElementById('trip-plan-results').innerHTML = `<p style="color:var(--accent-red);padding:1rem;font-size:0.9rem;font-weight:700;">Error: ${err.message}</p>`;
             } finally {
                 btn.disabled = false; btn.textContent = 'Search';
             }
@@ -471,14 +975,14 @@
                 ? plan.nearestAirports.map(a => `${a.city} (${a.code}${a.distanceKm>0?`, ~${a.distanceKm}km`:''})`).join(' · ')
                 : null;
 
-            let html = `<div style="background:rgba(212,168,83,0.06);border:1px solid rgba(212,168,83,0.12);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1.25rem;font-size:0.82rem;color:#9aa3b5;">
-                <strong style="color:#e8eaf0;">${from}</strong> → <strong style="color:#e8eaf0;">${to}</strong>
-                &nbsp;·&nbsp; ${fromDate}${toDate?' → '+toDate:''} &nbsp;·&nbsp; ${nights} night${nights>1?'s':''}
-                ${apInfo?`<br><span style="color:#5a6478;margin-top:0.2rem;display:block;">Nearest airports: ${apInfo}</span>`:''}
+            let html = `<div style="background:#ffffff;border:2px solid #1a1a1a;padding:1rem;margin-bottom:1.5rem;font-size:0.85rem;font-weight:700;">
+                ROUTE: <span style="color:#0055ff;">${from.toUpperCase()} → ${to.toUpperCase()}</span>
+                &nbsp;·&nbsp; ${fromDate}${toDate?' → '+toDate:''} &nbsp;·&nbsp; ${nights} NIGHT${nights>1?'S':''}
+                ${apInfo?`<br><span style="color:rgba(26,26,26,0.6);margin-top:0.3rem;display:block;font-size:0.75rem;">NEAREST AIRPORTS: ${apInfo}</span>`:''}
             </div>`;
 
             if (plan.outboundFlights?.length) {
-                html += `<div class="trip-section"><div class="trip-section-header">✈ Flights to ${to} <span style="margin-left:auto;">${fromDate}</span></div>`;
+                html += `<div class="trip-section"><div class="trip-section-header">✈ Outbound Flights to ${to} <span style="margin-left:auto;">${fromDate}</span></div>`;
                 plan.outboundFlights.forEach(group => {
                     const flights = Array.isArray(group.results) ? group.results : [];
                     html += `<div class="via-label">via ${group.via} (${group.code})${group.km>0?' · ~'+group.km+'km':''}</div>`;
@@ -487,7 +991,7 @@
                         const dep = f.departure?.slice(11,16)||f.departure||'—';
                         const arr = f.arrival?.slice(11,16)||f.arrival||'—';
                         html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT')">
-                            <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} &nbsp;·&nbsp; ${dep} → ${arr} &nbsp;·&nbsp; <span style="color:#5a6478;">${f.duration||''} · ${f.stops===0?'Non-stop':f.stops+' stop'}</span></span>
+                            <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} &nbsp;·&nbsp; ${dep} → ${arr} &nbsp;·&nbsp; <span style="color:rgba(26,26,26,0.6);">${f.duration||''} · ${f.stops===0?'Non-stop':f.stops+' stop'}</span></span>
                             <span class="price">₹${f.price?.toLocaleString('en-IN')}</span>
                         </div>`;
                     });
@@ -501,8 +1005,8 @@
             else trains.forEach((t,i) => {
                 const timing = (t.departure&&t.arrival)?`${t.departure} → ${t.arrival}`:t.departure?`Dep ${t.departure}`:'';
                 html += `<div class="trip-card" onclick="pickPrice(0,'TRAIN')">
-                    <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${t.trainName}</strong> <span style="color:#5a6478;">${t.trainNumber}</span>${timing?' · '+timing:''} ${t.classes?.length?'· <span style="color:#5a6478;font-size:0.78rem;">'+t.classes.join(', ')+'</span>':''}</span>
-                    <span class="price" style="color:#5a6478;font-size:0.75rem;font-weight:600;">IRCTC</span>
+                    <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${t.trainName}</strong> <span style="color:rgba(26,26,26,0.6);">${t.trainNumber}</span>${timing?' · '+timing:''} ${t.classes?.length?'· <span style="color:rgba(26,26,26,0.6);font-size:0.78rem;">'+t.classes.join(', ')+'</span>':''}</span>
+                    <span class="price" style="color:rgba(26,26,26,0.6);font-size:0.75rem;font-weight:700;">IRCTC</span>
                 </div>`;
             });
             html += `</div>`;
@@ -511,11 +1015,11 @@
             const hotels = Array.isArray(plan.hotels) ? plan.hotels : [];
             if (!hotels.length) { html += `<p class="no-result">${plan.hotelNote||'No hotels found.'}</p>`; }
             else hotels.forEach((h,i) => {
-                const rating = h.rating?` · ${h.rating}`:'';
-                const dist   = h.distanceFromCenter?` · ${h.distanceFromCenter} from centre`:'';
+                const rating = h.rating?` · ★${h.rating}`:'';
+                const dist   = h.distanceFromCenter?` · ${h.distanceFromCenter} from center`:'';
                 html += `<div class="trip-card" onclick="pickPrice(${h.price||h.pricePerNight||0},'HOTEL')">
                     <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${h.name}</strong>${dist}${rating}</span>
-                    <span class="price">₹${(h.pricePerNight||0).toLocaleString('en-IN')}<span style="font-size:0.7rem;font-weight:400;color:#9aa3b5;">/night</span></span>
+                    <span class="price">₹${(h.pricePerNight||0).toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:400;color:inherit;">/night</span></span>
                 </div>`;
             });
             html += `</div>`;
@@ -530,7 +1034,7 @@
                         const dep = f.departure?.slice(11,16)||f.departure||'—';
                         const arr = f.arrival?.slice(11,16)||f.arrival||'—';
                         html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT')">
-                            <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} · ${dep} → ${arr} · <span style="color:#5a6478;">${f.duration||''}</span></span>
+                            <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} · ${dep} → ${arr} · <span style="color:rgba(26,26,26,0.6);">${f.duration||''}</span></span>
                             <span class="price">₹${f.price?.toLocaleString('en-IN')}</span>
                         </div>`;
                     });
@@ -583,16 +1087,9 @@
             const isUser = role === 'user';
             const wrap = document.createElement('div');
             wrap.className = 'chat-bubble';
-            wrap.style.cssText = `display:flex;justify-content:${isUser?'flex-end':'flex-start'};`;
+            wrap.style.cssText = `display:flex;justify-content:${isUser?'flex-end':'flex-start'};margin-bottom:0.75rem;`;
             const bubble = document.createElement('div');
-            bubble.style.cssText = `
-                max-width:82%;padding:0.6rem 0.875rem;
-                border-radius:${isUser?'12px 12px 4px 12px':'4px 12px 12px 12px'};
-                background:${isUser?'#d4a853':'#1c2333'};
-                color:${isUser?'#0e1117':'#e8eaf0'};
-                font-size:0.835rem;line-height:1.55;
-                border:${isUser?'none':'1px solid rgba(255,255,255,0.06)'};
-                white-space:pre-wrap;`;
+            bubble.className = `brutalist-chat-bubble ${isUser ? 'chat-bubble-user' : 'chat-bubble-assistant'}`;
             bubble.innerHTML = text
                 .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g,'<em>$1</em>')
@@ -605,12 +1102,12 @@
 
         function showTyping() {
             const el = document.createElement('div');
-            el.id = 'typing-dot'; el.className = 'chat-bubble';
-            el.style.cssText = 'display:flex;justify-content:flex-start;';
-            el.innerHTML = `<div style="padding:0.6rem 0.875rem;border-radius:4px 12px 12px 12px;background:#1c2333;border:1px solid rgba(255,255,255,0.06);display:flex;gap:4px;align-items:center;">
-                <span style="width:6px;height:6px;background:#d4a853;border-radius:50%;animation:bounce 0.9s infinite;display:block;opacity:0.7;"></span>
-                <span style="width:6px;height:6px;background:#d4a853;border-radius:50%;animation:bounce 0.9s 0.18s infinite;display:block;opacity:0.7;"></span>
-                <span style="width:6px;height:6px;background:#d4a853;border-radius:50%;animation:bounce 0.9s 0.36s infinite;display:block;opacity:0.7;"></span>
+            el.id = 'typing-dot';
+            el.style.cssText = 'display:flex;justify-content:flex-start;margin-bottom:0.75rem;';
+            el.innerHTML = `<div class="brutalist-chat-bubble chat-bubble-assistant" style="display:flex;gap:4px;align-items:center;">
+                <span style="width:6px;height:6px;background:#1a1a1a;border-radius:50%;animation:bounce 0.9s infinite;display:block;opacity:0.7;"></span>
+                <span style="width:6px;height:6px;background:#1a1a1a;border-radius:50%;animation:bounce 0.9s 0.18s infinite;display:block;opacity:0.7;"></span>
+                <span style="width:6px;height:6px;background:#1a1a1a;border-radius:50%;animation:bounce 0.9s 0.36s infinite;display:block;opacity:0.7;"></span>
             </div>`;
             const msgs = document.getElementById('chat-messages');
             msgs.appendChild(el); msgs.scrollTop = msgs.scrollHeight;
@@ -627,8 +1124,9 @@
             voiceRecognition.interimResults = true;
             voiceRecognition.onstart = () => {
                 voiceActive = true;
-                btn.style.background = 'rgba(231,76,60,0.15)';
-                btn.style.color = '#e74c3c';
+                btn.style.background = 'rgba(230,59,46,0.1)';
+                btn.style.borderColor = '#e63b2e';
+                btn.style.color = '#e63b2e';
                 document.getElementById('chat-input').placeholder = 'Listening…';
             };
             voiceRecognition.onresult = (e) => {
@@ -636,15 +1134,16 @@
             };
             voiceRecognition.onend = () => {
                 voiceActive = false;
-                btn.style.background = '#1c2333';
-                btn.style.color = '#5a6478';
+                btn.style.background = '#ffffff';
+                btn.style.borderColor = '#1a1a1a';
+                btn.style.color = '#1a1a1a';
                 const input = document.getElementById('chat-input');
                 input.placeholder = 'Describe your travel need…';
                 if (input.value.trim()) sendChat();
             };
             voiceRecognition.onerror = (e) => {
                 voiceActive = false;
-                btn.style.background = '#1c2333'; btn.style.color = '#5a6478';
+                btn.style.background = '#ffffff'; btn.style.borderColor = '#1a1a1a'; btn.style.color = '#1a1a1a';
                 if (e.error !== 'no-speech') showToast(`Mic error: ${e.error}`, 'error');
             };
             voiceRecognition.start();
@@ -673,5 +1172,8 @@
             }
         }
     </script>
+    <style>
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    </style>
 </body>
 </html>

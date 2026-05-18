@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripFlow | Trip Detail View</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        /* ── Sidebar Navigation ── */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 250px;
+            background: #ffffff;
+            border-right: var(--border-thick);
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            padding: 1.5rem 1rem;
+        }
+        .sidebar-brand {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #1a1a1a;
+        }
+        .sidebar-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+        .sidebar-nav-links a {
+            text-decoration: none;
+            color: #1a1a1a;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            padding: 0.75rem 1rem;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+        }
+        .sidebar-nav-links a:hover {
+            background: #f5f0e8;
+            border-color: #1a1a1a;
+        }
+        .sidebar-nav-links a.active {
+            background: #ffcc00;
+            border-color: #1a1a1a;
+            box-shadow: var(--shadow-offset-sm);
+        }
+
+        /* ── Layout Overrides ── */
+        .main-wrapper {
+            margin-left: 250px;
+            min-height: 100vh;
+        }
+        .top-appbar {
+            height: 70px;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border-bottom: var(--border-thick);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+
+        /* ── Bento Grid Detail ── */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        /* ── Workflow Tracker ── */
+        .workflow-card {
+            background: #ffffff;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-offset);
+            padding: 2rem;
+            position: relative;
+        }
+        .workflow-timeline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .workflow-timeline::before {
+            content: '';
+            position: absolute;
+            height: 3px;
+            background: #1a1a1a;
+            top: 18px; left: 0; right: 0;
+            z-index: 1;
+        }
+        .wf-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            background: #ffffff;
+            padding: 0 0.5rem;
+        }
+        .wf-circle {
+            width: 36px; height: 36px;
+            border: 2px solid #1a1a1a;
+            background: #ffffff;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+        .wf-step.approved .wf-circle {
+            background: #0055ff;
+            color: #ffffff;
+        }
+        .wf-step.active .wf-circle {
+            background: #ffcc00;
+            box-shadow: 2px 2px 0px #1a1a1a;
+        }
+        .wf-step.rejected .wf-circle {
+            background: #e63b2e;
+            color: #ffffff;
+        }
+        .wf-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+            color: rgba(26,26,26,0.6);
+        }
+        .wf-step.active .wf-label { color: #1a1a1a; }
+        .wf-date {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: rgba(26,26,26,0.4);
+        }
+
+        /* ── Itinerary Card Blocks ── */
+        .itinerary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .itinerary-card {
+            background: #ffffff;
+            border: var(--border-thick);
+            box-shadow: var(--shadow-offset);
+            overflow: hidden;
+        }
+        .itinerary-header {
+            background: #ffcc00;
+            border-bottom: 2px solid #1a1a1a;
+            padding: 0.75rem 1rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .itinerary-body {
+            padding: 1.25rem;
+        }
+
+        /* ── Contacts / Details ── */
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem;
+            border: 2px solid #1a1a1a;
+            background: #ffffff;
+            margin-top: 0.5rem;
+        }
+        .contact-avatar {
+            width: 32px; height: 32px;
+            background: #f5f0e8;
+            border: 1px solid #1a1a1a;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700; font-size: 0.8rem;
+        }
+
+        /* ── Document Item ── */
+        .doc-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border: 2px solid #1a1a1a;
+            background: #ffffff;
+            margin-top: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .doc-item:hover {
+            background: #f5f0e8;
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0px #1a1a1a;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar { display: none; }
+            .main-wrapper { margin-left: 0; }
+            .details-grid { grid-template-columns: 1fr; }
+            .itinerary-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="bg-background text-primary">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+                <svg width="32" height="32" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border: 2px solid #1a1a1a; box-shadow: 2px 2px 0px #1a1a1a; flex-shrink: 0;">
+                    <rect width="512" height="512" rx="96" fill="#000000"/>
+                    <rect x="128" y="128" width="224" height="96" rx="48" fill="#0055ff"/>
+                    <rect x="176" y="224" width="64" height="160" rx="32" fill="#0055ff"/>
+                    <rect x="240" y="272" width="112" height="80" rx="40" fill="#004acc"/>
+                    <circle cx="304" cy="176" r="24" fill="#4a8ef7"/>
+                </svg>
+                <span style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;letter-spacing:-0.03em;">TripFlow</span>
+            </div>
+            <p style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);letter-spacing:0.05em;">Enterprise</p>
+        </div>
+
+        <nav class="sidebar-nav-links">
+            <a href="employee.html" class="active">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+            <a href="request.html">
+                <span class="material-symbols-outlined">flight_takeoff</span>
+                Plan Trip
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">fact_check</span>
+                Approvals
+            </a>
+            <a href="#">
+                <span class="material-symbols-outlined">history</span>
+                Archive
+            </a>
+        </nav>
+
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.25rem;">
+            <a href="#" style="text-decoration:none;color:#1a1a1a;font-family:var(--font-display);font-weight:700;font-size:0.8rem;text-transform:uppercase;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">settings</span>Settings
+            </a>
+            <a href="#" onclick="logout(); return false;" style="text-decoration:none;color:#e63b2e;font-family:var(--font-display);font-weight:700;font-size:0.8rem;text-transform:uppercase;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">logout</span>Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+        <!-- Top App Bar -->
+        <header class="top-appbar">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <span class="mobile-hide" style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.5);">Requests / <span id="bar-id">TR-XXXX</span> / Details</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:1.5rem;">
+                <div style="display:flex;align-items:center;gap:1rem;">
+                    <span id="user-name" style="font-family:var(--font-display);font-size:0.85rem;font-weight:700;text-transform:uppercase;border:2px solid #1a1a1a;background:#ffcc00;padding:0.25rem 0.75rem;box-shadow:2px 2px 0px #1a1a1a;">Employee</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <div class="container" style="padding-top:2rem;">
+            
+            <!-- Page Header -->
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;flex-wrap:wrap;gap:1.5rem;">
+                <div>
+                    <h1 style="font-size:2.2rem;margin-bottom:0.5rem;line-height:1.1;" id="trip-title">Trip to Destination</h1>
+                    <div style="display:flex;align-items:center;gap:0.75rem;">
+                        <span class="badge" id="trip-id" style="background:#e7e7f2;border:2px solid #1a1a1a;color:#1a1a1a;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:0.8rem;">TR-8842</span>
+                        <span id="trip-status-badge">Awaiting loading…</span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:0.75rem;">
+                    <button class="secondary" onclick="window.location.href='employee.html'">
+                        <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>Back
+                    </button>
+                    <button onclick="cancelRequest()" style="background:#e63b2e;color:#ffffff;border-color:#1a1a1a;box-shadow:3px 3px 0px #1a1a1a;" id="cancel-btn">
+                        <span class="material-symbols-outlined" style="font-size:18px;">close</span>Cancel Trip
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bento Details Layout -->
+            <div class="details-grid">
+                
+                <!-- Main details (Left) -->
+                <div style="display:flex;flex-direction:column;gap:2rem;">
+                    
+                    <!-- Approval Workflow Card -->
+                    <section class="workflow-card">
+                        <h3 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);margin-bottom:1.5rem;">Approval Workflow</h3>
+                        <div class="workflow-timeline">
+                            <div class="wf-step approved" id="wf-1">
+                                <div class="wf-circle">✓</div>
+                                <span class="wf-label">Department Lead</span>
+                                <span class="wf-date" id="wf-1-date">Approved</span>
+                            </div>
+                            <div class="wf-step" id="wf-2">
+                                <div class="wf-circle" id="wf-2-circle">2</div>
+                                <span class="wf-label">Finance Review</span>
+                                <span class="wf-date" id="wf-2-date">Pending</span>
+                            </div>
+                            <div class="wf-step" id="wf-3">
+                                <div class="wf-circle" id="wf-3-circle">3</div>
+                                <span class="wf-label">VP Operations</span>
+                                <span class="wf-date">Awaiting</span>
+                            </div>
+                            <div class="wf-step" id="wf-4">
+                                <div class="wf-circle" id="wf-4-circle">4</div>
+                                <span class="wf-label">Final Booking</span>
+                                <span class="wf-date">Awaiting</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Itinerary Card Grid -->
+                    <div class="itinerary-grid">
+                        <!-- Outbound Travel Card -->
+                        <div class="itinerary-card" id="itinerary-travel-card">
+                            <div class="itinerary-header">
+                                <span class="material-symbols-outlined" id="travel-icon">flight_takeoff</span>
+                                <span id="travel-type-label">Outbound Flight</span>
+                            </div>
+                            <div class="itinerary-body">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                                    <div>
+                                        <p style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:700;margin:0;" id="route-origin">BOM</p>
+                                        <p style="font-size:0.75rem;font-weight:600;color:rgba(26,26,26,0.5);margin:0;">Mumbai, IN</p>
+                                    </div>
+                                    <div style="flex:1;padding:0 1rem;display:flex;flex-direction:column;align-items:center;position:relative;">
+                                        <span style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;font-weight:700;text-transform:uppercase;" id="route-duration">2h 15m</span>
+                                        <div style="width:100%;height:2px;background:#1a1a1a;margin:0.25rem 0;position:relative;">
+                                            <span class="material-symbols-outlined" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#ffffff;font-size:16px;color:#0055ff;" id="travel-mid-icon">flight</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <p style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:700;margin:0;" id="route-dest">LHR</p>
+                                        <p style="font-size:0.75rem;font-weight:600;color:rgba(26,26,26,0.5);margin:0;" id="route-dest-city">London, UK</p>
+                                    </div>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;border-top:2px solid #1a1a1a;padding-top:1rem;">
+                                    <div>
+                                        <p style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.5);margin:0 0 0.15rem;">Departure Date</p>
+                                        <p style="font-size:0.85rem;font-weight:700;margin:0;" id="travel-date">Nov 14, 2026</p>
+                                    </div>
+                                    <div>
+                                        <p style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.5);margin:0 0 0.15rem;">Service Provider</p>
+                                        <p style="font-size:0.85rem;font-weight:700;margin:0;" id="travel-provider">Air India (AI-120)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Accommodation Card -->
+                        <div class="itinerary-card">
+                            <div class="itinerary-header" style="background:#ffcc00;">
+                                <span class="material-symbols-outlined">hotel</span>
+                                <span>Hotel Lodging</span>
+                            </div>
+                            <div class="itinerary-body">
+                                <div style="display:flex;gap:1rem;margin-bottom:1.5rem;align-items:center;">
+                                    <div style="width:64px;height:64px;background:#f5f0e8;border:2px solid #1a1a1a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <span class="material-symbols-outlined" style="font-size:32px;color:#0055ff;">hotel</span>
+                                    </div>
+                                    <div>
+                                        <p style="font-size:1.15rem;font-weight:700;margin:0;" id="hotel-name">Le Méridien Paris</p>
+                                        <p style="font-size:0.75rem;font-weight:600;color:rgba(26,26,26,0.5);margin:0;" id="hotel-address">Arranged Hotel Selection</p>
+                                    </div>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;border-top:2px solid #1a1a1a;padding-top:1rem;">
+                                    <div>
+                                        <p style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.5);margin:0 0 0.15rem;">Stipend Days</p>
+                                        <p style="font-size:0.85rem;font-weight:700;margin:0;">3 Nights Allowance</p>
+                                    </div>
+                                    <div>
+                                        <p style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.5);margin:0 0 0.15rem;">Status</p>
+                                        <p style="font-size:0.85rem;font-weight:700;margin:0;color:#0055ff;">Policy Approved</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents & Notes -->
+                    <section class="card" style="padding:2rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                            <h3 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);margin:0;">Documents &amp; Attachments</h3>
+                            <button class="secondary" style="font-size:0.72rem;padding:0.4rem 0.8rem;">+ Upload New</button>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                            <div class="doc-item">
+                                <div style="display:flex;align-items:center;gap:0.75rem;">
+                                    <div style="width:36px;height:36px;background:#ffdad6;border:1px solid #1a1a1a;display:flex;align-items:center;justify-content:center;">
+                                        <span class="material-symbols-outlined" style="color:#ba1a1a;">picture_as_pdf</span>
+                                    </div>
+                                    <div>
+                                        <p style="font-size:0.85rem;font-weight:700;margin:0;">conference_invite_v2.pdf</p>
+                                        <p style="font-size:0.65rem;font-weight:700;color:rgba(26,26,26,0.4);margin:0;">2.4 MB • Uploaded Oct 12</p>
+                                    </div>
+                                </div>
+                                <span class="material-symbols-outlined" style="color:#0055ff;">download</span>
+                            </div>
+                            <div class="doc-item">
+                                <div style="display:flex;align-items:center;gap:0.75rem;">
+                                    <div style="width:36px;height:36px;background:#dae2ff;border:1px solid #1a1a1a;display:flex;align-items:center;justify-content:center;">
+                                        <span class="material-symbols-outlined" style="color:#003d9b;">description</span>
+                                    </div>
+                                    <div>
+                                        <p style="font-size:0.85rem;font-weight:700;margin:0;">project_briefing_notes.docx</p>
+                                        <p style="font-size:0.65rem;font-weight:700;color:rgba(26,26,26,0.4);margin:0;">450 KB • Uploaded Oct 12</p>
+                                    </div>
+                                </div>
+                                <span class="material-symbols-outlined" style="color:#0055ff;">download</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:1.5rem;">
+                            <h4 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);margin-bottom:0.5rem;">Requester Justification Notes</h4>
+                            <div style="background:#f5f0e8;border:2px solid #1a1a1a;padding:1rem;font-size:0.85rem;font-weight:600;line-height:1.4;" id="requester-notes">
+                                Attending as guest speaker. Booking request is policy compliant.
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Summary Sidebar (Right) -->
+                <div style="display:flex;flex-direction:column;gap:1.5rem;">
+                    <!-- Estimated Budget Summary Card -->
+                    <section class="card" style="padding:1.5rem;">
+                        <h3 style="font-family:'Space Grotesk',sans-serif;font-size:0.8rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);margin-bottom:1.25rem;">Estimated Budget</h3>
+                        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                            <div style="display:flex;justify-content:space-between;font-size:0.85rem;font-weight:600;">
+                                <span style="color:rgba(26,26,26,0.6);">Airfare (Est)</span>
+                                <span id="budget-airfare">₹20,000</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:0.85rem;font-weight:600;">
+                                <span style="color:rgba(26,26,26,0.6);">Accommodation</span>
+                                <span id="budget-hotel">₹12,000</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:0.85rem;font-weight:600;">
+                                <span style="color:rgba(26,26,26,0.6);">Daily Stipend</span>
+                                <span>₹3,500</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:0.85rem;font-weight:600;">
+                                <span style="color:rgba(26,26,26,0.6);">Incidentals</span>
+                                <span>₹1,500</span>
+                            </div>
+                            <div style="border-top:2px solid #1a1a1a;padding-top:1rem;margin-top:0.25rem;display:flex;justify-content:space-between;align-items:flex-end;">
+                                <span style="font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:700;text-transform:uppercase;">Total Estimate</span>
+                                <span style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:#0055ff;line-height:1;" id="budget-total">₹37,000</span>
+                            </div>
+                        </div>
+                        <div style="background:#dae2ff;padding:0.75rem 1rem;border:1px solid #1a1a1a;margin-top:1.25rem;display:flex;gap:0.5rem;align-items:flex-start;">
+                            <span class="material-symbols-outlined" style="font-size:16px;color:#003d9b;margin-top:2px;">info</span>
+                            <p style="font-size:0.68rem;font-weight:700;color:#003d9b;margin:0;text-transform:uppercase;">This budget is fully within the 2026 travel policy limits.</p>
+                        </div>
+                    </section>
+
+                    <!-- Destination Map View -->
+                    <section class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+                        <div style="padding:1.25rem 1.25rem 0.75rem;">
+                            <span style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.5);">Destination</span>
+                            <div style="display:flex;align-items:center;gap:0.25rem;font-size:0.95rem;font-weight:700;color:#1a1a1a;margin-top:0.15rem;">
+                                <span class="material-symbols-outlined" style="color:#0055ff;font-size:18px;">location_on</span>
+                                <span id="destination-label">Paris, France</span>
+                            </div>
+                        </div>
+                        <div style="height:160px;background:#ffcc00;border-top:2px solid #1a1a1a;position:relative;">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyXO7DgIX0f7gaPQ2oMqOSH7eUV66IuE0qHabidKNWW3QENoIqLKtZh8aNH9gRc2uIGJ01F2juRIfj9SN72rj6tdgvnbhj_PIz71Z3cx0NEsmgXi-KlPUcSjhQpd-2F-1Qa_0Cv998-Gw8fIZln5_YO35Lg8o9O84-Kx7OIGqEwYPIjRYm08jIJtky0LO32v32yw2-WJ8YBwA8av4aPFS3jH42nlmOJpiXznXk0lGZY3iVYrX5xxSFeSxsEHU8ZiPwdBisFZcZePc" alt="Map View" style="width:100%;height:100%;object-fit:cover;filter:grayscale(100%);">
+                            <div style="position:absolute;bottom:0.75rem;left:0.75rem;background:#ffffff;border:1px solid #1a1a1a;padding:0.2rem 0.6rem;font-family:'Space Grotesk',sans-serif;font-size:0.65rem;font-weight:700;">14°C • MOSTLY SUNNY</div>
+                        </div>
+                    </section>
+
+                    <!-- Related Contacts Card -->
+                    <section class="card" style="padding:1.25rem;">
+                        <h3 style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;color:rgba(26,26,26,0.6);margin-bottom:0.75rem;">Related Contacts</h3>
+                        <div style="display:flex;flex-direction:column;gap:0.25rem;">
+                            <div class="contact-item">
+                                <div class="contact-avatar">SJ</div>
+                                <div style="flex:1;">
+                                    <p style="font-size:0.8rem;font-weight:700;margin:0;" id="contact-manager">Sarah Jenkins</p>
+                                    <p style="font-size:0.7rem;font-weight:600;color:rgba(26,26,26,0.5);margin:0;">Direct Manager</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-avatar" style="background:#0055ff;color:#ffffff;">✈</div>
+                                <div style="flex:1;">
+                                    <p style="font-size:0.8rem;font-weight:700;margin:0;">TripFlow Support</p>
+                                    <p style="font-size:0.7rem;font-weight:600;color:rgba(26,26,26,0.5);margin:0;">24/7 Corporate Concierge</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- JS Hooks -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentUser = null;
+        let bookingId = null;
+
+        async function init() {
+            currentUser = checkAuth();
+            if (!currentUser) return;
+            document.getElementById('user-name').innerText = currentUser.name.toUpperCase();
+
+            const params = new URLSearchParams(window.location.search);
+            bookingId = params.get('id');
+            if (!bookingId) {
+                showToast('No booking ID provided.', 'error');
+                setTimeout(() => { window.location.href = 'employee.html'; }, 1500);
+                return;
+            }
+            await loadBookingDetails();
+        }
+        init();
+
+        async function loadBookingDetails() {
+            try {
+                const b = await apiRequest(`/bookings/${bookingId}`);
+                
+                // Set Header
+                const dest = b.details?.destination || 'Destination';
+                const purpose = b.details?.purpose || 'Business Travel';
+                document.getElementById('trip-title').innerText = `${purpose} to ${dest}`;
+                document.getElementById('bar-id').innerText = `TR-${b.id.slice(0,5).toUpperCase()}`;
+                document.getElementById('trip-id').innerText = `TR-${b.id.slice(0,8).toUpperCase()}`;
+                
+                // Status Badge styling
+                const statusBadge = document.getElementById('trip-status-badge');
+                let badgeClass = 'badge-pending-manager';
+                let statusLabel = b.stage.replace(/_/g, ' ');
+                if (b.stage === 'COMPLETED') { badgeClass = 'badge-completed'; statusLabel = 'APPROVED & BOOKED'; }
+                if (b.stage === 'REJECTED') { badgeClass = 'badge-rejected'; }
+                if (b.stage === 'PENDING_VENDOR') { badgeClass = 'badge-pending-vendor'; statusLabel = 'WITH TRAVEL DESK'; }
+                
+                statusBadge.className = `badge ${badgeClass}`;
+                statusBadge.innerText = statusLabel;
+
+                // Adjust workflow timelines
+                resetWorkflowTimeline();
+                if (b.stage === 'PENDING_MANAGER') {
+                    setWorkflowStepActive(2, 'In Progress');
+                } else if (b.stage === 'PENDING_VENDOR') {
+                    setWorkflowStepApproved(1, 'Approved');
+                    setWorkflowStepApproved(2, 'Approved');
+                    setWorkflowStepActive(3, 'In Progress');
+                } else if (b.stage === 'COMPLETED') {
+                    setWorkflowStepApproved(1, 'Approved');
+                    setWorkflowStepApproved(2, 'Approved');
+                    setWorkflowStepApproved(3, 'Approved');
+                    setWorkflowStepApproved(4, 'Booked');
+                } else if (b.stage === 'REJECTED') {
+                    setWorkflowStepRejected(2, 'Rejected');
+                }
+
+                // Details Setup
+                const origin = b.details?.origin || 'Mumbai';
+                document.getElementById('route-origin').innerText = origin.slice(0,3).toUpperCase();
+                document.getElementById('route-dest').innerText = dest.slice(0,3).toUpperCase();
+                document.getElementById('route-dest-city').innerText = `${dest}, In`;
+                document.getElementById('travel-date').innerText = b.details?.date || 'Future Date';
+                document.getElementById('destination-label').innerText = `${dest}, India`;
+                document.getElementById('requester-notes').innerText = b.details?.justification || 'No justification notes provided for this request.';
+
+                // Setup budget estimates dynamically
+                const cost = b.cost || 0;
+                document.getElementById('budget-total').innerText = `₹${cost.toLocaleString('en-IN')}`;
+                
+                if (b.type === 'FLIGHT') {
+                    document.getElementById('travel-type-label').innerText = 'Outbound Flight';
+                    document.getElementById('travel-icon').innerText = 'flight_takeoff';
+                    document.getElementById('travel-mid-icon').innerText = 'flight';
+                    document.getElementById('travel-provider').innerText = 'IndiGo (6E-454)';
+                    document.getElementById('route-duration').innerText = '2h 15m';
+
+                    document.getElementById('budget-airfare').innerText = `₹${Math.round(cost * 0.65).toLocaleString('en-IN')}`;
+                    document.getElementById('budget-hotel').innerText = `₹${Math.round(cost * 0.35).toLocaleString('en-IN')}`;
+                } else if (b.type === 'TRAIN') {
+                    document.getElementById('travel-type-label').innerText = 'Outbound Train';
+                    document.getElementById('travel-icon').innerText = 'train';
+                    document.getElementById('travel-mid-icon').innerText = 'train';
+                    document.getElementById('travel-provider').innerText = 'IRCTC Rajdhani (12951)';
+                    document.getElementById('route-duration').innerText = '15h 30m';
+
+                    document.getElementById('budget-airfare').innerText = `₹${Math.round(cost * 0.25).toLocaleString('en-IN')} (Train)`;
+                    document.getElementById('budget-hotel').innerText = `₹${Math.round(cost * 0.75).toLocaleString('en-IN')}`;
+                } else {
+                    document.getElementById('travel-type-label').innerText = 'Hotel Lodging';
+                    document.getElementById('travel-icon').innerText = 'hotel';
+                    document.getElementById('travel-mid-icon').innerText = 'hotel';
+                    document.getElementById('travel-provider').innerText = 'Standard Lodging';
+                    document.getElementById('route-duration').innerText = 'Duration Stay';
+
+                    document.getElementById('budget-airfare').innerText = `₹0`;
+                    document.getElementById('budget-hotel').innerText = `₹${cost.toLocaleString('en-IN')}`;
+                }
+
+                // Show contact manager
+                if (b.employee?.manager?.name) {
+                    document.getElementById('contact-manager').innerText = b.employee.manager.name;
+                }
+
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function resetWorkflowTimeline() {
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`wf-${i}`);
+                if (!el) continue;
+                el.className = 'wf-step';
+                const circle = document.getElementById(`wf-${i}-circle`);
+                if (circle) circle.innerText = i;
+            }
+        }
+        function setWorkflowStepApproved(num, text) {
+            const el = document.getElementById(`wf-${num}`);
+            if (el) {
+                el.classList.add('approved');
+                const circle = document.getElementById(`wf-${num}-circle`) || el.querySelector('.wf-circle');
+                if (circle) circle.innerHTML = '✓';
+                const dateEl = document.getElementById(`wf-${num}-date`);
+                if (dateEl) dateEl.innerText = text;
+            }
+        }
+        function setWorkflowStepActive(num, text) {
+            const el = document.getElementById(`wf-${num}`);
+            if (el) {
+                el.classList.add('active');
+                const dateEl = document.getElementById(`wf-${num}-date`);
+                if (dateEl) dateEl.innerText = text;
+            }
+        }
+        function setWorkflowStepRejected(num, text) {
+            const el = document.getElementById(`wf-${num}`);
+            if (el) {
+                el.classList.add('rejected');
+                const circle = document.getElementById(`wf-${num}-circle`) || el.querySelector('.wf-circle');
+                if (circle) circle.innerHTML = '×';
+                const dateEl = document.getElementById(`wf-${num}-date`);
+                if (dateEl) dateEl.innerText = text;
+            }
+        }
+
+        async function cancelRequest() {
+            if (!confirm('Are you sure you want to cancel this travel request?')) return;
+            const btn = document.getElementById('cancel-btn');
+            btn.disabled = true; btn.textContent = 'Cancelling…';
+            try {
+                await apiRequest(`/bookings/${bookingId}`, { method: 'DELETE' });
+                showToast('Travel request successfully cancelled.', 'success');
+                setTimeout(() => { window.location.href = 'employee.html'; }, 1500);
+            } catch (err) {
+                showToast(err.message, 'error');
+                btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">close</span>Cancel Trip';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -4,438 +4,441 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TripFlow | Sign In</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             min-height: 100vh;
-            display: flex;
-            background: #0e1117;
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-            color: #e8eaf0;
-            overflow: hidden;
-        }
-
-        /* ── Left Editorial Panel ── */
-        .panel-left {
-            flex: 1;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 3rem 3.5rem;
-            overflow: hidden;
-            background: #0b0e14;
-        }
-
-        /* Grid lines */
-        .panel-left::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(212,168,83,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(212,168,83,0.04) 1px, transparent 1px);
-            background-size: 60px 60px;
-            pointer-events: none;
-        }
-
-        /* Large ambient glow */
-        .panel-left::after {
-            content: '';
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(212,168,83,0.08) 0%, transparent 70%);
-            bottom: -100px;
-            left: -100px;
-            pointer-events: none;
-        }
-
-        .brand {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #d4a853;
-            letter-spacing: 0.04em;
-            position: relative;
-            z-index: 1;
-        }
-
-        .panel-left-center {
-            position: relative;
-            z-index: 1;
-        }
-
-        .tagline-label {
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: #d4a853;
-            margin-bottom: 1.25rem;
+            background: #f5f0e8; /* Warm aged paper */
+            font-family: 'Inter', system-ui, sans-serif;
+            color: #1a1a1a;
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            justify-content: center;
+            padding: 1.5rem;
         }
 
-        .tagline-label::before {
-            content: '';
-            display: block;
-            width: 24px;
-            height: 1px;
-            background: #d4a853;
+        main {
+            width: 100%;
+            max-width: 460px;
+            position: relative;
         }
 
-        h1.hero {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: clamp(2.4rem, 4vw, 3.6rem);
-            font-weight: 600;
-            color: #e8eaf0;
-            line-height: 1.15;
+        /* ── Header / Brand ── */
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        .brand-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: -0.04em;
+            color: #1a1a1a;
+            line-height: 0.9;
+        }
+        .brand-tag {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: #ffcc00;
+            padding: 0.2rem 0.5rem;
+            border: 2px solid #1a1a1a;
+            box-shadow: 2px 2px 0px #1a1a1a;
+        }
+
+        /* ── Brutalist Card ── */
+        .brutalist-card {
+            background: #ffffff;
+            border: 3px solid #1a1a1a;
+            box-shadow: 6px 6px 0px #1a1a1a;
+            padding: 2.5rem 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-head {
+            margin-bottom: 2rem;
+            border-bottom: 3px solid #1a1a1a;
+            padding-bottom: 1rem;
+        }
+        .card-head h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-transform: uppercase;
             letter-spacing: -0.02em;
+        }
+
+        /* ── Fields ── */
+        .field {
             margin-bottom: 1.5rem;
         }
-
-        h1.hero em {
-            font-style: italic;
-            color: #d4a853;
-        }
-
-        .hero-sub {
-            font-size: 0.925rem;
-            color: #5a6478;
-            line-height: 1.7;
-            max-width: 380px;
-            font-weight: 400;
-        }
-
-        /* Feature list */
-        .features {
-            position: relative;
-            z-index: 1;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .feat {
+        .field-row {
             display: flex;
-            align-items: flex-start;
-            gap: 0.6rem;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.5rem;
         }
-
-        .feat-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #d4a853;
-            margin-top: 0.45rem;
-            flex-shrink: 0;
-        }
-
-        .feat-text {
-            font-size: 0.8rem;
-            color: #5a6478;
-            line-height: 1.5;
-            font-weight: 400;
-        }
-
-        .feat-text strong {
-            color: #9aa3b5;
-            font-weight: 600;
-            display: block;
-            margin-bottom: 0.1rem;
-        }
-
-        /* ── Right Sign-in Panel ── */
-        .panel-right {
-            width: 440px;
-            flex-shrink: 0;
-            background: #0e1117;
-            border-left: 1px solid rgba(255,255,255,0.06);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 3rem 3rem;
-            position: relative;
-        }
-
-        .panel-right::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(212,168,83,0.3), transparent);
-        }
-
-        .sign-in-header {
-            margin-bottom: 2.5rem;
-        }
-
-        .sign-in-header p.overline {
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: #d4a853;
-            margin-bottom: 0.6rem;
-        }
-
-        .sign-in-header h2 {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 1.75rem;
-            font-weight: 600;
-            color: #e8eaf0;
-            letter-spacing: -0.01em;
-        }
-
-        .sign-in-header .sub {
-            margin-top: 0.4rem;
-            font-size: 0.85rem;
-            color: #5a6478;
-        }
-
-        /* Form fields */
-        .field { margin-bottom: 1.15rem; }
-
         .field label {
-            display: block;
-            font-size: 0.7rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
             font-weight: 700;
-            letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: #5a6478;
-            margin-bottom: 0.45rem;
+            letter-spacing: 0.05em;
+        }
+        .field a {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #0055ff;
+            text-decoration: none;
+        }
+        .field a:hover {
+            text-decoration: underline;
         }
 
-        .field-wrap { position: relative; }
-
-        .field-wrap input {
+        .input-wrap {
+            position: relative;
+        }
+        .input-wrap input {
             width: 100%;
-            background: #161b27;
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 8px;
-            padding: 0.8rem 1rem;
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-            font-size: 0.9rem;
-            color: #e8eaf0;
-            transition: all 0.2s;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid #1a1a1a;
+            padding: 0.75rem 0.25rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #1a1a1a;
             outline: none;
+            transition: all 0.15s steps(4);
         }
-
-        .field-wrap input::placeholder { color: #3a4152; }
-
-        .field-wrap input:focus {
-            background: #1c2333;
-            border-color: rgba(212,168,83,0.4);
-            box-shadow: 0 0 0 3px rgba(212,168,83,0.07);
+        .input-wrap input::placeholder {
+            color: rgba(26,26,26,0.35);
+        }
+        .input-wrap input:focus {
+            border-bottom-color: #0055ff;
+            background: rgba(0,85,255,0.04);
         }
 
         .toggle-pw {
             position: absolute;
-            right: 0.875rem;
+            right: 0.5rem;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             cursor: pointer;
-            color: #3a4152;
-            font-size: 0.85rem;
+            color: #1a1a1a;
             padding: 0;
-            box-shadow: none;
-            transition: color 0.15s;
             display: flex;
             align-items: center;
         }
-        .toggle-pw:hover { color: #d4a853; transform: translateY(-50%) scale(1.1); background: none; box-shadow: none; }
 
-        /* Submit button */
-        .submit-btn {
-            width: 100%;
-            margin-top: 1.5rem;
-            padding: 0.875rem 1.5rem;
-            background: #d4a853;
-            color: #0e1117;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-            font-size: 0.9rem;
-            font-weight: 700;
-            letter-spacing: 0.03em;
+        /* ── Checkbox ── */
+        .remember-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        .remember-wrap input[type="checkbox"] {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #1a1a1a;
+            background: #ffffff;
             cursor: pointer;
-            transition: all 0.2s;
+            position: relative;
+            outline: none;
+            transition: all 0.1s steps(2);
+        }
+        .remember-wrap input[type="checkbox"]:checked {
+            background: #ffcc00;
+        }
+        .remember-wrap input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 900;
+            font-size: 12px;
+            color: #1a1a1a;
+        }
+        .remember-wrap label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Buttons ── */
+        .btn-primary {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            border: 3px solid #1a1a1a;
+            background: #ffcc00; /* Accent Yellow */
+            color: #1a1a1a;
+            box-shadow: 4px 4px 0px #1a1a1a;
+            transition: all 0.15s steps(4);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
         }
-
-        .submit-btn:hover:not(:disabled) {
-            background: #e8c47a;
-            box-shadow: 0 6px 24px rgba(212,168,83,0.3);
-            transform: translateY(-1px);
+        .btn-primary:hover:not(:disabled) {
+            background: #1a1a1a;
+            color: #ffcc00;
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #1a1a1a;
         }
-
-        .submit-btn:disabled {
+        .btn-primary:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px #1a1a1a;
+        }
+        .btn-primary:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
-        /* Error box */
+        .divider-or {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .divider-or::before, .divider-or::after {
+            content: '';
+            flex: 1;
+            height: 3px;
+            background: #1a1a1a;
+        }
+        .divider-or span {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #1a1a1a;
+        }
+
+        .btn-sso {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            border: 3px solid #1a1a1a;
+            background: #ffffff;
+            color: #1a1a1a;
+            box-shadow: 4px 4px 0px #1a1a1a;
+            transition: all 0.15s steps(4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-sso:hover {
+            background: #1a1a1a;
+            color: #ffffff;
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #1a1a1a;
+        }
+        .btn-sso:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px #1a1a1a;
+        }
+
+        /* ── Error Box ── */
         .error-box {
             display: none;
-            margin-top: 1rem;
-            padding: 0.75rem 1rem;
-            background: rgba(231,76,60,0.1);
-            border: 1px solid rgba(231,76,60,0.25);
-            border-radius: 8px;
-            font-size: 0.825rem;
-            color: #e74c3c;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #e63b2e;
+            color: #ffffff;
+            border: 3px solid #1a1a1a;
+            box-shadow: 4px 4px 0px #1a1a1a;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
         }
 
-        /* Bottom note */
-        .panel-right-foot {
-            position: absolute;
-            bottom: 2rem;
-            left: 3rem;
-            right: 3rem;
+        /* ── Footer ── */
+        .login-footer {
+            text-align: center;
+        }
+        .login-footer p {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .login-footer p a {
+            color: #0055ff;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .login-footer p a:hover {
+            text-decoration: underline;
+        }
+        .footer-links {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+        .footer-links a:hover {
+            color: #0055ff;
+        }
+
+        /* ── Side Info Block (Desktop Only) ── */
+        .brutalist-badge {
+            display: none;
+            position: fixed;
+            right: 2rem;
+            bottom: 2rem;
+            max-width: 320px;
+            background: #ffffff;
+            border: 3px solid #1a1a1a;
+            box-shadow: 6px 6px 0px #1a1a1a;
+            padding: 1.5rem;
+        }
+        .brutalist-badge .bb-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: #e63b2e;
+            margin-bottom: 0.5rem;
+            display: flex;
             align-items: center;
+            gap: 0.5rem;
+        }
+        .brutalist-badge p {
+            font-size: 0.85rem;
+            font-weight: 500;
+            line-height: 1.4;
         }
 
-        .panel-right-foot span {
-            font-size: 0.72rem;
-            color: #3a4152;
-        }
-
-        /* Decorative accent line on left panel */
-        .accent-rule {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 1px;
-            height: 100%;
-            background: linear-gradient(to bottom, transparent, rgba(212,168,83,0.2) 30%, rgba(212,168,83,0.2) 70%, transparent);
-        }
-
-        @media (max-width: 900px) {
-            .panel-left { display: none; }
-            .panel-right { width: 100%; border-left: none; padding: 2.5rem 2rem; }
-            .panel-right-foot { position: static; margin-top: 2rem; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
-        }
-
-        @media (max-width: 480px) {
-            body { overflow: auto; }
-            .panel-right { padding: 2rem 1.25rem; justify-content: flex-start; padding-top: 3rem; }
-            .sign-in-header { margin-bottom: 2rem; }
-            .field-wrap input { min-height: 48px; font-size: 1rem; }
-            .submit-btn { min-height: 52px; font-size: 1rem; padding: 1rem 1.5rem; }
+        @media (min-width: 1200px) {
+            .brutalist-badge { display: block; }
         }
     </style>
 </head>
 <body>
-    <!-- Left editorial panel -->
-    <div class="panel-left">
-        <div class="accent-rule"></div>
 
-        <div class="brand">TripFlow</div>
-
-        <div class="panel-left-center">
-            <div class="tagline-label">Corporate Travel Platform</div>
-            <h1 class="hero">Where every<br>journey is<br><em>deliberate.</em></h1>
-            <p class="hero-sub">AI-powered booking, multi-stage approvals, and real-time visibility — all in one platform built for how modern enterprises travel.</p>
+    <main>
+        <!-- Brand -->
+        <div class="brand-header">
+            <svg class="brand-logo" width="40" height="40" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="border: 2px solid #1a1a1a; box-shadow: 2px 2px 0px #1a1a1a; flex-shrink: 0; display: block;">
+                <!-- Black rounded box -->
+                <rect width="512" height="512" rx="96" fill="#000000"/>
+                <!-- TF Letters -->
+                <!-- Top bar of T -->
+                <rect x="128" y="128" width="224" height="96" rx="48" fill="#0055ff"/>
+                <!-- Vertical stem -->
+                <rect x="176" y="224" width="64" height="160" rx="32" fill="#0055ff"/>
+                <!-- Middle bar of F -->
+                <rect x="240" y="272" width="112" height="80" rx="40" fill="#004acc"/>
+                <!-- Light Blue Dot -->
+                <circle cx="304" cy="176" r="24" fill="#4a8ef7"/>
+            </svg>
+            <h1 class="brand-name">TripFlow</h1>
+            <span class="brand-tag">Enterprise</span>
         </div>
 
-        <div class="features">
-            <div class="feat">
-                <div class="feat-dot"></div>
-                <div class="feat-text">
-                    <strong>AI Booking</strong>
-                    Voice or chat — describe the trip, we handle the rest.
-                </div>
+        <!-- Card -->
+        <div class="brutalist-card">
+            <div class="card-head">
+                <h2>Sign In</h2>
+                <p>Corporate Travel Portal</p>
             </div>
-            <div class="feat">
-                <div class="feat-dot"></div>
-                <div class="feat-text">
-                    <strong>Approval Flows</strong>
-                    Manager → Vendor → Ticket, fully automated.
+
+            <form id="login-form" autocomplete="on">
+                <div class="field">
+                    <label for="email">Corporate Email</label>
+                    <div class="input-wrap">
+                        <input type="email" id="email" name="email" required
+                               placeholder="john.doe@company.com" autocomplete="email">
+                    </div>
                 </div>
-            </div>
-            <div class="feat">
-                <div class="feat-dot"></div>
-                <div class="feat-text">
-                    <strong>Policy Engine</strong>
-                    Spending rules enforced at the point of booking.
+
+                <div class="field">
+                    <div class="field-row">
+                        <label for="password">Password</label>
+                        <a href="#">Forgot?</a>
+                    </div>
+                    <div class="input-wrap">
+                        <input type="password" id="password" name="password" required
+                               placeholder="••••••••" autocomplete="current-password"
+                               style="padding-right: 2.5rem;">
+                        <button type="button" class="toggle-pw" id="toggle-pw" aria-label="Show password">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="feat">
-                <div class="feat-dot"></div>
-                <div class="feat-text">
-                    <strong>Full Visibility</strong>
-                    Live spend analytics across every team.
+
+                <div class="remember-wrap">
+                    <input type="checkbox" id="remember">
+                    <label for="remember">Remember Device</label>
                 </div>
-            </div>
+
+                <button type="submit" class="btn-primary" id="sign-in-btn">
+                    Sign In
+                    <span class="material-symbols-outlined" style="font-size: 20px;">arrow_forward</span>
+                </button>
+            </form>
+
+            <div class="error-box" id="error-msg"></div>
         </div>
-    </div>
+    </main>
 
-    <!-- Right sign-in panel -->
-    <div class="panel-right">
-        <div class="sign-in-header">
-            <p class="overline">Secure Access</p>
-            <h2>Sign in</h2>
-            <p class="sub">Enter your work credentials to continue.</p>
+    <!-- Side Badge -->
+    <div class="brutalist-badge">
+        <div class="bb-title">
+            <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">security</span>
+            SOC2 COMPLIANT
         </div>
-
-        <form id="login-form" autocomplete="on">
-            <div class="field">
-                <label for="email">Email address</label>
-                <div class="field-wrap">
-                    <input type="email" id="email" name="email" required
-                           placeholder="you@company.com" autocomplete="email">
-                </div>
-            </div>
-
-            <div class="field">
-                <label for="password">Password</label>
-                <div class="field-wrap">
-                    <input type="password" id="password" name="password" required
-                           placeholder="••••••••" autocomplete="current-password">
-                    <button type="button" class="toggle-pw" id="toggle-pw" tabindex="-1" aria-label="Show password">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </button>
-                </div>
-            </div>
-
-            <button type="submit" class="submit-btn" id="sign-in-btn">
-                Sign In
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-        </form>
-
-        <div class="error-box" id="error-msg"></div>
-
-        <div class="panel-right-foot">
-            <span>TripFlow by HSC &nbsp;·&nbsp; © 2026</span>
-            <span>Enterprise Travel</span>
-        </div>
+        <p>Your travel bookings and enterprise data are protected under SOC2 Type II standards and full-spectrum encryption.</p>
     </div>
 
     <script src="js/auth.js"></script>
     <script>
         checkAuth();
 
-        document.getElementById('toggle-pw').addEventListener('click', () => {
-            const pw = document.getElementById('password');
-            pw.type = pw.type === 'password' ? 'text' : 'password';
+        const toggleBtn = document.getElementById('toggle-pw');
+        const pwField   = document.getElementById('password');
+        const icon      = toggleBtn.querySelector('.material-symbols-outlined');
+        toggleBtn.addEventListener('click', () => {
+            const isHidden = pwField.type === 'password';
+            pwField.type   = isHidden ? 'text' : 'password';
+            icon.textContent = isHidden ? 'visibility_off' : 'visibility';
         });
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -447,23 +450,20 @@
 
             errorBox.style.display = 'none';
             btn.disabled    = true;
-            btn.textContent = 'Signing in…';
+            btn.innerHTML   = 'Signing in…';
 
             try {
                 const data = await login(email, password);
                 const routes = {
-                    ADMIN:    'admin.html',
-                    MANAGER:  'manager.html',
-                    VENDOR:   'vendor.html',
-                    HR:       'hr.html',
-                    EMPLOYEE: 'employee.html'
+                    ADMIN: 'admin.html', MANAGER: 'manager.html',
+                    VENDOR: 'vendor.html', HR: 'hr.html', EMPLOYEE: 'employee.html'
                 };
                 window.location.href = routes[data.role] || 'employee.html';
             } catch (err) {
-                errorBox.textContent    = err.message || 'Invalid credentials. Please try again.';
-                errorBox.style.display  = 'block';
-                btn.disabled            = false;
-                btn.innerHTML = 'Sign In <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+                errorBox.textContent   = err.message || 'Invalid credentials. Please try again.';
+                errorBox.style.display = 'block';
+                btn.disabled           = false;
+                btn.innerHTML = 'Sign In <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>';
             }
         });
     </script>
