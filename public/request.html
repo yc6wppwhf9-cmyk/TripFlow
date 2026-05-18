@@ -443,6 +443,31 @@
         }
         .show-all-btn:hover { background: var(--primary-bg); border-color: var(--primary); }
         .extra-item { display: none !important; }
+        .policy-badge {
+            display: inline-flex;
+            align-items: center;
+            font-family: var(--font-display);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.45rem;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+        .policy-badge.ok  { background: var(--success-bg); color: var(--success-text); }
+        .policy-badge.warn { background: var(--warning-bg); color: var(--warning-text); }
+        .policy-badge.over { background: #fde8e8; color: #c62828; }
+        .policy-badge.info { background: var(--info-bg); color: var(--info-text); }
+        .policy-limits-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.9);
+        }
+        .policy-limits-row:last-child { border-bottom: none; }
+        .policy-limits-row strong { color: #ffffff; font-weight: 700; }
 
         /* ── Contextual Help Cards ── */
         .help-grid {
@@ -658,11 +683,12 @@
                 <aside style="display:flex;flex-direction:column;gap:1.5rem;">
                     <!-- Policy Status Card -->
                     <div class="policy-card">
-                        <h3>Policy Check</h3>
-                        <p id="policy-text">Your requested destination and timing will align automatically with the standard enterprise booking guidelines.</p>
-                        <div style="display:flex;align-items:center;gap:0.25rem;font-family:var(--font-display);font-size:0.75rem;font-weight:700;background:#ffffff;color:var(--success-text);width:fit-content;padding:0.25rem 0.75rem;border-radius:4px;">
+                        <h3>Travel Policy · Band <span id="policy-band-label">–</span></h3>
+                        <div id="policy-limits" style="margin:0.75rem 0 0.25rem;display:none;"></div>
+                        <p id="policy-text" style="margin-bottom:1rem;">Loading your policy limits…</p>
+                        <div id="policy-status-badge" style="display:flex;align-items:center;gap:0.25rem;font-family:var(--font-display);font-size:0.75rem;font-weight:700;background:#ffffff;color:var(--success-text);width:fit-content;padding:0.25rem 0.75rem;border-radius:4px;">
                             <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">check_circle</span>
-                            POLICY COMPLIANT
+                            <span id="policy-status-text">POLICY COMPLIANT</span>
                         </div>
                     </div>
 
@@ -716,6 +742,40 @@
         let currentUser = null;
         let selectedFares = { FLIGHT: 0, HOTEL: 0, TRAIN: 0 };
         let activeStep = 1;
+        let _userMe = null;
+
+        const POLICY = {
+            hotelCaps: {
+                1: { A: 5000, B: 4500, C: 4000 },
+                2: { A: 3000, B: 2500, C: 2500 },
+                3: { A: 2000, B: 2000, C: 2000 }
+            },
+            trainEntitled: {
+                1: ['1A', 'FC'],
+                2: ['2A', '3A'],
+                3: ['3A', 'SL', 'CC']
+            },
+            trainLabel: {
+                1: '1AC / First Class',
+                2: '2AC / 3AC',
+                3: '3AC / Sleeper / Chair'
+            },
+            catACities: ['mumbai','delhi','new delhi','bangalore','bengaluru','chennai','kolkata','hyderabad'],
+            catBCities: ['jaipur','lucknow','patna','bhubaneswar','guwahati','ranchi','raipur','dehradun',
+                'shimla','gandhinagar','thiruvananthapuram','trivandrum','jammu','varanasi','agra','kanpur',
+                'meerut','faridabad','jalandhar','chandigarh','amritsar','cuttack','indore','bhopal',
+                'gwalior','pune','ahmedabad','baroda','vadodara','surat','nagpur','nashik','nasik',
+                'cochin','kochi','vijayawada'],
+            cityCategory(city) {
+                const c = (city || '').toLowerCase();
+                if (this.catACities.some(x => c.includes(x))) return 'A';
+                if (this.catBCities.some(x => c.includes(x))) return 'B';
+                return 'C';
+            },
+            cityLabel: { A: 'Metro City', B: 'State Capital / Major City', C: 'Other Town' },
+            hotelCap(band, city) { return this.hotelCaps[band]?.[this.cityCategory(city)] || 2000; },
+            advanceDays: 30
+        };
 
         function toggleSidebar() {
             document.getElementById('main-sidebar').classList.toggle('open');
@@ -733,6 +793,8 @@
         async function loadApprovers() {
             try {
                 const me = await apiRequest('/auth/me');
+                _userMe = me;
+                updatePolicyStatus();
                 const list = document.getElementById('approvers-list');
                 const initials = n => n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
                 let html = '';
@@ -825,15 +887,55 @@
         function updatePolicyStatus() {
             const fromDate = document.getElementById('req-from-date').value;
             const dest = document.getElementById('req-destination').value.trim();
+            const band = _userMe?.band || 3;
+
+            const bandLabelEl = document.getElementById('policy-band-label');
+            if (bandLabelEl) bandLabelEl.textContent = _userMe ? band : '–';
+
+            // Limits table
+            const limitsEl = document.getElementById('policy-limits');
+            if (limitsEl && _userMe) {
+                const cat = dest ? POLICY.cityCategory(dest) : null;
+                const capLine = dest
+                    ? `₹${POLICY.hotelCap(band, dest).toLocaleString('en-IN')}/night`
+                    : Object.entries(POLICY.hotelCaps[band]).map(([k,v])=>`${k}: ₹${v.toLocaleString('en-IN')}`).join(' · ');
+                const catLine = dest
+                    ? `${cat} — ${POLICY.cityLabel[cat]}`
+                    : 'Select destination';
+                limitsEl.style.display = 'block';
+                limitsEl.innerHTML = `
+                    <div class="policy-limits-row"><span>Hotel cap${dest ? ' in ' + dest : ''}</span><strong>${capLine}</strong></div>
+                    <div class="policy-limits-row"><span>City category</span><strong>${catLine}</strong></div>
+                    <div class="policy-limits-row"><span>Train entitlement</span><strong>${POLICY.trainLabel[band]}</strong></div>
+                    <div class="policy-limits-row"><span>Advance notice</span><strong>${POLICY.advanceDays} days required</strong></div>
+                    <div class="policy-limits-row"><span>Expense submission</span><strong>Within 7 days of return</strong></div>
+                `;
+            }
+
             const textEl = document.getElementById('policy-text');
+            const badgeEl = document.getElementById('policy-status-badge');
+            const badgeTextEl = document.getElementById('policy-status-text');
+            const badgeIcon = badgeEl?.querySelector('.material-symbols-outlined');
+
+            const warnings = [];
             if (fromDate) {
-                const diff = Math.ceil((new Date(fromDate) - new Date()) / 86400000);
-                if (diff < 14) {
-                    textEl.innerHTML = `⚠️ <strong style="color: #ffcc00;">URGENT TRAVEL DETECTED:</strong> Booking in less than 14 days requires Department Head approval for expedited fare overrides.`;
-                    return;
+                const daysAhead = Math.ceil((new Date(fromDate) - new Date()) / 86400000);
+                if (daysAhead < POLICY.advanceDays) {
+                    warnings.push(`Travel in ${daysAhead} day${daysAhead !== 1 ? 's' : ''} — policy requires ${POLICY.advanceDays} days notice. Manager approval required.`);
                 }
             }
-            textEl.innerText = `Your requested destination ${dest ? 'to ' + dest : ''} and timing align automatically with standard enterprise booking guidelines.`;
+
+            if (warnings.length) {
+                textEl.innerHTML = warnings.map(w => `⚠️ ${w}`).join('<br>');
+                if (badgeEl) badgeEl.style.color = 'var(--warning-text)';
+                if (badgeTextEl) badgeTextEl.textContent = 'APPROVAL REQUIRED';
+                if (badgeIcon) badgeIcon.textContent = 'warning';
+            } else {
+                textEl.textContent = dest ? `Destination confirmed. Your limits for ${dest} are shown above.` : 'Select a destination to see your hotel and accommodation limits.';
+                if (badgeEl) badgeEl.style.color = 'var(--success-text)';
+                if (badgeTextEl) badgeTextEl.textContent = 'POLICY COMPLIANT';
+                if (badgeIcon) { badgeIcon.textContent = 'check_circle'; badgeIcon.style.fontVariationSettings = "'FILL' 1"; }
+            }
         }
 
         async function goToNextStep() {
@@ -1017,12 +1119,19 @@
             // ── Trains ───────────────────────────────────────────────────────────
             const trains = Array.isArray(plan.trains) ? plan.trains : [];
             if (trains.length) {
-                html += `<div class="trip-section" data-expandable><div class="trip-section-header">🚆 Trains to ${dest}</div>`;
+                const tBand = _userMe?.band || 3;
+                const tEntitled = POLICY.trainEntitled[tBand] || [];
+                html += `<div class="trip-section" data-expandable><div class="trip-section-header">🚆 Trains to ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Entitled: ${POLICY.trainLabel[tBand]}</span></div>`;
                 trains.forEach((t, i) => {
                     const meta = [t.departure, t.arrival].filter(Boolean).join(' → ');
                     const isEstimated = t.note && t.note.toLowerCase().includes('verify');
                     const isLive = t.note && t.note.includes('Live');
                     const isExtra = i >= TRAIN_LIMIT;
+                    const classStr = (t.classes || []).join(' ').toUpperCase();
+                    const entitledAvail = tEntitled.filter(c => classStr.includes(c));
+                    const trainBadge = entitledAvail.length
+                        ? `<span class="policy-badge ok">${entitledAvail.join(' · ')} ENTITLED</span>`
+                        : (t.classes?.length ? `<span class="policy-badge warn">CHECK ${POLICY.trainLabel[tBand]}</span>` : '');
                     html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectTrainFare(this)" style="flex-direction:column;align-items:flex-start;gap:0.35rem;">
                         <div style="display:flex;justify-content:space-between;width:100%;align-items:center;gap:0.5rem;">
                             <span><strong>${t.trainNumber}</strong> · ${t.trainName}</span>
@@ -1033,6 +1142,7 @@
                             <span style="font-size:0.72rem;color:var(--secondary);">${t.classes?.join(' · ') || ''}</span>
                             ${t.runDays ? `<span style="font-size:0.65rem;color:var(--secondary);">${t.runDays}</span>` : ''}
                         </div>
+                        ${trainBadge ? `<div>${trainBadge}</div>` : ''}
                         ${isEstimated ? `<span style="font-size:0.7rem;color:var(--warning-text);font-weight:600;">Estimated — verify at IRCTC.co.in</span>` : `<span style="font-size:0.7rem;color:var(--success-text);font-weight:600;">${isLive ? 'Live data' : 'Confirmed route'} — book at IRCTC.co.in</span>`}
                     </div>`;
                 });
@@ -1053,12 +1163,21 @@
             // ── Hotels ───────────────────────────────────────────────────────────
             const hotels = Array.isArray(plan.hotels) ? plan.hotels : [];
             if (hotels.length) {
-                html += `<div class="trip-section" data-expandable><div class="trip-section-header">🏨 Top Lodging in ${dest}</div>`;
+                const hBand = _userMe?.band || 3;
+                const hCap = POLICY.hotelCap(hBand, dest);
+                html += `<div class="trip-section" data-expandable><div class="trip-section-header">🏨 Top Lodging in ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Policy cap ₹${hCap.toLocaleString('en-IN')}/night</span></div>`;
                 hotels.forEach((h, i) => {
                     const isExtra = i >= HOTEL_LIMIT;
+                    const overCap = h.pricePerNight > hCap;
+                    const hotelBadge = overCap
+                        ? `<span class="policy-badge over">₹${(h.pricePerNight - hCap).toLocaleString('en-IN')} OVER CAP</span>`
+                        : `<span class="policy-badge ok">WITHIN POLICY</span>`;
                     html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectFare(${h.pricePerNight}, 'HOTEL')">
-                        <span><strong>${h.name}</strong> · ★${h.rating || '—'}</span>
-                        <span class="price">₹${h.pricePerNight?.toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:normal;">/night</span></span>
+                        <div style="display:flex;flex-direction:column;flex:1;min-width:0;gap:0.25rem;">
+                            <span><strong>${h.name}</strong> · ★${h.rating || '—'}</span>
+                            ${hotelBadge}
+                        </div>
+                        <span class="price" style="flex-shrink:0;">₹${h.pricePerNight?.toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:normal;">/night</span></span>
                     </div>`;
                 });
                 if (hotels.length > HOTEL_LIMIT) {

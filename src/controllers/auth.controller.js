@@ -83,11 +83,14 @@ exports.me = async (req, res) => {
       }
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
+    const bandMap = { ADMIN: 1, HR: 1, MANAGER: 2, EMPLOYEE: 3 };
     res.json({
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
+      band: bandMap[user.role] || 3,
+      department: user.employee?.department || null,
       manager: user.employee?.manager?.user
         ? { name: user.employee.manager.user.name, email: user.employee.manager.user.email }
         : null
