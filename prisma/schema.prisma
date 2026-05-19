@@ -27,6 +27,7 @@ enum BookingType {
   TRAIN
   CAB
   MEAL
+  TRIP_PACKAGE
 }
 
 model User {

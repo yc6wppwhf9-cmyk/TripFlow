@@ -37,7 +37,7 @@ function getMealCapKey(days) {
 }
 
 // ── Policy enforcement ────────────────────────────────────────────────────────
-async function checkPolicyLimits(employeeId, type, cost, details = {}) {
+async function checkPolicyLimits(employeeId, type, cost, details = {}, { skipGlobalBudget = false } = {}) {
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
     include: { policy: true }
@@ -184,7 +184,7 @@ async function checkPolicyLimits(employeeId, type, cost, details = {}) {
   }
 
   // 7. Global monthly budget
-  if (rules.globalMonthlyBudget) {
+  if (!skipGlobalBudget && rules.globalMonthlyBudget) {
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
@@ -271,8 +271,43 @@ exports.createBooking = async (req, res) => {
     const canOverride = managerOverride && ['MANAGER', 'ADMIN', 'HR'].includes(req.user.role);
 
     if (!canOverride) {
-      const violation = await checkPolicyLimits(req.user.employee.id, type, parsedCost, details);
-      if (violation) return res.status(422).json(violation);
+      if (type === 'TRIP_PACKAGE') {
+        // Check travel and hotel caps independently (skip global budget in each)
+        const travelViolation = await checkPolicyLimits(
+          req.user.employee.id, details.travelType, parseFloat(details.travelCost), details,
+          { skipGlobalBudget: true }
+        );
+        if (travelViolation) return res.status(422).json({ ...travelViolation, component: 'travel' });
+
+        const hotelViolation = await checkPolicyLimits(
+          req.user.employee.id, 'HOTEL', parseFloat(details.hotelPerNight),
+          { destination: details.destination }, { skipGlobalBudget: true }
+        );
+        if (hotelViolation) return res.status(422).json({ ...hotelViolation, component: 'hotel' });
+
+        // Combined global monthly budget check
+        const emp = await prisma.employee.findUnique({
+          where: { id: req.user.employee.id }, include: { policy: true }
+        });
+        if (emp?.policy?.rules?.globalMonthlyBudget) {
+          const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0, 0, 0, 0);
+          const { _sum } = await prisma.booking.aggregate({
+            where: { employeeId: req.user.employee.id, stage: { not: 'REJECTED' }, createdAt: { gte: startOfMonth } },
+            _sum: { cost: true }
+          });
+          const spent = _sum.cost || 0;
+          if (spent + parsedCost > emp.policy.rules.globalMonthlyBudget) {
+            return res.status(422).json({
+              error: `This package would exceed your monthly budget of ₹${emp.policy.rules.globalMonthlyBudget}. Spent so far this month: ₹${spent.toFixed(2)}.`,
+              monthlyBudget: emp.policy.rules.globalMonthlyBudget,
+              spentSoFar: spent
+            });
+          }
+        }
+      } else {
+        const violation = await checkPolicyLimits(req.user.employee.id, type, parsedCost, details);
+        if (violation) return res.status(422).json(violation);
+      }
     }
 
     const booking = await prisma.booking.create({

@@ -43,6 +43,44 @@
             background: transparent !important;
         }
 
+        /* ── Fare Tabs ── */
+        .fare-tab-btn {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.82rem;
+            background: transparent;
+            color: var(--secondary);
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 0.6rem 1rem 0.55rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            position: relative;
+            bottom: -2px;
+        }
+        .fare-tab-btn:hover { color: var(--primary); }
+        .fare-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .fare-tab-count {
+            background: var(--secondary-container, #dce2f3);
+            color: var(--primary);
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 0.1rem 0.4rem;
+            border-radius: 99px;
+            min-width: 18px;
+            text-align: center;
+        }
+        .fare-tab-btn.active .fare-tab-count {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
         /* ── City Dropdown ── */
         .city-dropdown {
             position: absolute;
@@ -683,11 +721,59 @@
                             <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.8rem;">flight_takeoff</span>
                             <h2 style="font-size:1.35rem;margin:0;">Fares &amp; Preferences</h2>
                         </div>
+                        <!-- Itinerary summary bar — appears once travel or hotel is selected -->
+                        <div id="itinerary-bar" style="display:none;background:var(--primary-bg);border:1.5px solid var(--primary);border-radius:var(--radius-md);padding:1rem 1.25rem;margin-bottom:1.5rem;">
+                            <div style="font-family:var(--font-display);font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--primary);margin-bottom:0.6rem;">Your Itinerary</div>
+                            <div style="display:flex;flex-direction:column;gap:0.45rem;">
+                                <div id="itin-travel-row" style="display:none;justify-content:space-between;align-items:center;font-size:0.82rem;font-weight:600;color:var(--on-surface);">
+                                    <span id="itin-travel-label" style="display:flex;align-items:center;gap:0.4rem;"></span>
+                                    <span id="itin-travel-cost" style="font-family:var(--font-display);color:var(--primary);font-weight:700;"></span>
+                                </div>
+                                <div id="itin-hotel-row" style="display:none;justify-content:space-between;align-items:center;font-size:0.82rem;font-weight:600;color:var(--on-surface);">
+                                    <span id="itin-hotel-label" style="display:flex;align-items:center;gap:0.4rem;"></span>
+                                    <span style="display:flex;align-items:center;gap:0.5rem;">
+                                        <span id="itin-hotel-nights" style="font-size:0.72rem;color:var(--secondary);font-weight:600;"></span>
+                                        <span id="itin-hotel-cost" style="font-family:var(--font-display);color:var(--primary);font-weight:700;"></span>
+                                    </span>
+                                </div>
+                                <div id="itin-total-row" style="display:none;justify-content:space-between;align-items:center;border-top:1px dashed var(--outline-variant);padding-top:0.4rem;margin-top:0.1rem;">
+                                    <span style="font-family:var(--font-display);font-size:0.78rem;font-weight:700;color:var(--on-surface);">Package Total</span>
+                                    <span id="itin-total-cost" style="font-family:var(--font-display);font-size:1rem;font-weight:800;color:var(--primary);"></span>
+                                </div>
+                            </div>
+                            <div id="itin-hint" style="font-size:0.75rem;color:var(--secondary);font-weight:600;margin-top:0.5rem;display:none;">
+                                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px;">hotel</span>
+                                Select a hotel below to add accommodation to your booking.
+                            </div>
+                        </div>
+
                         <div id="trip-options-loader" style="display:none;text-align:center;padding:2rem;">
                             <span class="material-symbols-outlined" style="font-size:2.5rem;animation:bounce 1s infinite;color:var(--primary);">travel_explore</span>
                             <p style="font-family:var(--font-display);font-weight:600;margin-top:0.5rem;">AI AGENT ANALYZING FARES &amp; ITINERARIES…</p>
                         </div>
-                        <div id="req-planner-results"></div>
+
+                        <!-- Tab bar: Flights / Trains / Hotels -->
+                        <div id="fare-tabs" style="display:none;border-bottom:2px solid var(--outline-variant);margin-bottom:1.25rem;display:none;">
+                            <div style="display:flex;gap:0.25rem;">
+                                <button id="tab-btn-flights" class="fare-tab-btn active" onclick="switchFareTab('flights')">
+                                    <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;">flight_takeoff</span> Flights
+                                    <span id="tab-count-flights" class="fare-tab-count"></span>
+                                </button>
+                                <button id="tab-btn-trains" class="fare-tab-btn" onclick="switchFareTab('trains')">
+                                    <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;">train</span> Trains
+                                    <span id="tab-count-trains" class="fare-tab-count"></span>
+                                </button>
+                                <button id="tab-btn-hotels" class="fare-tab-btn" onclick="switchFareTab('hotels')">
+                                    <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;">hotel</span> Hotels
+                                    <span id="tab-count-hotels" class="fare-tab-count"></span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="fare-tab-flights" class="fare-tab-panel"></div>
+                        <div id="fare-tab-trains"  class="fare-tab-panel" style="display:none;"></div>
+                        <div id="fare-tab-hotels"  class="fare-tab-panel" style="display:none;"></div>
+                        <!-- Legacy container kept for backward compat (hidden) -->
+                        <div id="req-planner-results" style="display:none;"></div>
                     </div>
 
                     <!-- STEP 3 CARD (COSTS) -->
@@ -1248,47 +1334,56 @@
             if (existing) existing.replaceWith(tempDiv.firstElementChild);
         }
 
-        function renderTripFares(plan, dest, date) {
-            const container = document.getElementById('req-planner-results');
-            let html = '';
-            let hasAny = false;
-            _flightGroups = [];
+        function switchFareTab(name) {
+            ['flights','trains','hotels'].forEach(t => {
+                document.getElementById(`fare-tab-${t}`).style.display    = t === name ? 'block' : 'none';
+                document.getElementById(`tab-btn-${t}`).classList.toggle('active', t === name);
+            });
+        }
 
-            // ── Flights (Permitted only when surface journey > 12 hrs, T&E §5.1.1) ─
-            const estRailHours = plan.distanceKm ? Math.round(plan.distanceKm / 70) : null;
-            if (estRailHours !== null && estRailHours < 12) {
-                html += `
-                    <div style="background:#fffbeb;color:#b45309;border:2px solid #fef3c7;padding:1.25rem;border-radius:12px;margin-bottom:1.5rem;font-family:var(--font-display);font-size:0.85rem;font-weight:600;display:flex;flex-direction:column;gap:0.5rem;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+        function renderTripFares(plan, dest, date) {
+            _flightGroups = [];
+            const estRailHours   = plan.distanceKm ? Math.round(plan.distanceKm / 70) : null;
+            const flightPermitted = estRailHours === null || estRailHours >= 12;
+            const tBand = _userMe?.band || 3;
+
+            // ── Flights tab ─────────────────────────────────────────────────────
+            let flightHtml = '';
+            let flightCount = 0;
+            if (!flightPermitted) {
+                flightHtml = `
+                    <div style="background:#fffbeb;color:#b45309;border:2px solid #fef3c7;padding:1.25rem;border-radius:12px;margin-bottom:1rem;font-family:var(--font-display);font-size:0.85rem;font-weight:600;display:flex;flex-direction:column;gap:0.5rem;">
                         <div style="display:flex;align-items:center;gap:0.5rem;">
                             <span class="material-symbols-outlined" style="font-size:22px;color:#b45309;">warning</span>
-                            <span style="font-size:0.95rem;font-weight:800;letter-spacing:-0.01em;">AIR TRAVEL NOT PERMITTED (T&amp;E §5.1.1)</span>
+                            <span style="font-size:0.9rem;font-weight:800;">AIR TRAVEL NOT PERMITTED (T&amp;E §5.1.1)</span>
                         </div>
-                        <p style="margin:0;line-height:1.45;">
-                            Air travel is only allowed when the equivalent surface journey exceeds <strong>12 hours</strong>.
-                            Estimated rail journey from <strong>${plan.from || dest} to ${dest}</strong> is approximately <strong>~${estRailHours} hrs</strong> (${plan.distanceKm} km).
-                            Please select a compliant Train option from the list below.
+                        <p style="margin:0;line-height:1.5;">
+                            Air travel is only allowed when the surface journey exceeds <strong>12 hours</strong>.
+                            Estimated rail time: <strong>~${estRailHours} hrs</strong> (${plan.distanceKm} km).
+                            Please select a train instead.
                         </p>
-                    </div>
-                `;
-                hasAny = true;
+                    </div>`;
             } else if (plan.outboundFlights?.length) {
                 _flightGroups = plan.outboundFlights;
                 plan.outboundFlights.forEach(group => {
                     const part = renderFlightGroup(group, dest, 'all', 'price');
-                    if (part) { html += part; hasAny = true; }
+                    if (part) { flightHtml += part; flightCount += (group.results?.length || 0); }
                 });
             }
+            if (!flightHtml) flightHtml = `<p class="no-result">No flights found for this route and date.</p>`;
+            document.getElementById('fare-tab-flights').innerHTML = flightHtml;
+            document.getElementById('tab-count-flights').textContent = flightCount || '';
 
-            // ── Trains ───────────────────────────────────────────────────────────
+            // ── Trains tab ──────────────────────────────────────────────────────
+            let trainHtml = '';
+            let trainCount = 0;
             const trains = Array.isArray(plan.trains) ? plan.trains : [];
-            const flightPermitted = estRailHours === null || estRailHours >= 12;
             if (trains.length) {
-                const tBand = _userMe?.band || 3;
                 const tEntitled = POLICY.trainEntitled[tBand] || [];
-                const trainHeaderLabel = flightPermitted
-                    ? `🚆 Train Alternative to ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Budget option · Entitled: ${POLICY.trainLabel[tBand]}</span>`
-                    : `🚆 Trains to ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Entitled: ${POLICY.trainLabel[tBand]}</span>`;
-                html += `<div class="trip-section" data-expandable><div class="trip-section-header">${trainHeaderLabel}</div>`;
+                const note = flightPermitted
+                    ? `<span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Budget alternative · Entitled: ${POLICY.trainLabel[tBand]}</span>`
+                    : `<span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Entitled: ${POLICY.trainLabel[tBand]}</span>`;
+                trainHtml += `<div class="trip-section" data-expandable><div class="trip-section-header">🚆 Trains to ${dest} ${note}</div>`;
                 trains.forEach((t, i) => {
                     const meta = [t.departure, t.arrival].filter(Boolean).join(' → ');
                     const isEstimated = t.note && t.note.toLowerCase().includes('verify');
@@ -1300,7 +1395,7 @@
                         ? `<span class="policy-badge ok">${entitledAvail.join(' · ')} ENTITLED</span>`
                         : (t.classes?.length ? `<span class="policy-badge warn">CHECK ${POLICY.trainLabel[tBand]}</span>` : '');
                     const _tfd = encodeURIComponent(JSON.stringify({trainNumber:t.trainNumber,trainName:t.trainName,departure:t.departure,arrival:t.arrival,duration:t.duration,classes:t.classes||[]}));
-                    html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectTrainFare(this,JSON.parse(decodeURIComponent('${_tfd}')))" style="flex-direction:column;align-items:flex-start;gap:0.35rem;">
+                    trainHtml += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectTrainFare(this,JSON.parse(decodeURIComponent('${_tfd}')))" style="flex-direction:column;align-items:flex-start;gap:0.35rem;">
                         <div style="display:flex;justify-content:space-between;width:100%;align-items:center;gap:0.5rem;">
                             <span><strong>${t.trainNumber}</strong> · ${t.trainName}</span>
                             ${isLive ? `<span style="font-size:0.65rem;font-weight:700;background:var(--success-bg);color:var(--success-text);padding:0.15rem 0.5rem;border-radius:4px;white-space:nowrap;">LIVE</span>` : ''}
@@ -1316,57 +1411,62 @@
                 });
                 if (trains.length > TRAIN_LIMIT) {
                     const expandText = `Show all ${trains.length} trains`;
-                    html += `<button class="show-all-btn" data-expanded="false" data-expand-text="${expandText}" onclick="toggleShowAll(this)">${expandText}</button>`;
+                    trainHtml += `<button class="show-all-btn" data-expanded="false" data-expand-text="${expandText}" onclick="toggleShowAll(this)">${expandText}</button>`;
                 }
-                html += `</div>`;
-                hasAny = true;
-            } else if (plan.trainNote) {
-                html += `<div class="trip-section">
-                    <div class="trip-section-header">🚆 Trains to ${dest}</div>
-                    <p class="no-result">${plan.trainNote}</p>
-                </div>`;
-                hasAny = true;
+                trainHtml += `</div>`;
+                trainCount = trains.length;
+            } else {
+                trainHtml = `<p class="no-result">${plan.trainNote || 'No trains found for this route and date.'}</p>`;
             }
+            document.getElementById('fare-tab-trains').innerHTML = trainHtml;
+            document.getElementById('tab-count-trains').textContent = trainCount || '';
 
-            // ── Hotels (cap-compliant only) ───────────────────────────────────
+            // ── Hotels tab ──────────────────────────────────────────────────────
+            let hotelHtml = '';
             const hotels = Array.isArray(plan.hotels) ? plan.hotels : [];
-            if (hotels.length) {
-                const hBand = _userMe?.band || 3;
-                const hCap = POLICY.hotelCap(hBand, dest);
-                const compliantHotels = hotels.filter(h => h.pricePerNight <= hCap);
-                const hiddenCount = hotels.length - compliantHotels.length;
-                html += `<div class="trip-section" data-expandable><div class="trip-section-header">🏨 Lodging in ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Policy cap ₹${hCap.toLocaleString('en-IN')}/night</span></div>`;
-                if (compliantHotels.length === 0) {
-                    html += `<p class="no-result" style="color:var(--warning-text);font-weight:600;">No hotels found within your ₹${hCap.toLocaleString('en-IN')}/night policy cap for ${dest}. Contact HR for an exception.</p>`;
-                } else {
-                    compliantHotels.forEach((h, i) => {
-                        const isExtra = i >= HOTEL_LIMIT;
-                        const _hfd = encodeURIComponent(JSON.stringify({name:h.name,rating:h.rating,pricePerNight:h.pricePerNight}));
-                        html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectFare(${h.pricePerNight},'HOTEL',JSON.parse(decodeURIComponent('${_hfd}')))">
-                            <div style="display:flex;flex-direction:column;flex:1;min-width:0;gap:0.25rem;">
-                                <span><strong>${h.name}</strong> · ★${h.rating || '—'}</span>
-                                <span class="policy-badge ok">WITHIN POLICY</span>
-                            </div>
-                            <span class="price" style="flex-shrink:0;">₹${h.pricePerNight?.toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:normal;">/night</span></span>
-                        </div>`;
-                    });
-                    if (compliantHotels.length > HOTEL_LIMIT) {
-                        const expandText = `Show all ${compliantHotels.length} hotels`;
-                        html += `<button class="show-all-btn" data-expanded="false" data-expand-text="${expandText}" onclick="toggleShowAll(this)">${expandText}</button>`;
-                    }
+            const hCap = POLICY.hotelCap(tBand, dest);
+            const compliantHotels = hotels.filter(h => h.pricePerNight <= hCap);
+            const hiddenCount = hotels.length - compliantHotels.length;
+            if (compliantHotels.length === 0) {
+                hotelHtml = `<p class="no-result" style="color:var(--warning-text);font-weight:600;">
+                    No hotels within your ₹${hCap.toLocaleString('en-IN')}/night policy cap for ${dest}.
+                    ${hiddenCount > 0 ? `${hiddenCount} hotel${hiddenCount > 1 ? 's' : ''} found but above your cap.` : ''}
+                    Contact HR for an exception.</p>`;
+            } else {
+                hotelHtml += `<div class="trip-section" data-expandable><div class="trip-section-header">🏨 Lodging in ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Cap ₹${hCap.toLocaleString('en-IN')}/night · Select to add to booking</span></div>`;
+                compliantHotels.forEach((h, i) => {
+                    const isExtra = i >= HOTEL_LIMIT;
+                    const _hfd = encodeURIComponent(JSON.stringify({name:h.name,rating:h.rating,pricePerNight:h.pricePerNight}));
+                    hotelHtml += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} data-fare-type="hotel" onclick="selectFare(${h.pricePerNight},'HOTEL',JSON.parse(decodeURIComponent('${_hfd}')))">
+                        <div style="display:flex;flex-direction:column;flex:1;min-width:0;gap:0.25rem;">
+                            <span><strong>${h.name}</strong> · ★${h.rating || '—'}</span>
+                            <span class="policy-badge ok">WITHIN POLICY</span>
+                        </div>
+                        <span class="price" style="flex-shrink:0;">₹${h.pricePerNight?.toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:normal;">/night</span></span>
+                    </div>`;
+                });
+                if (compliantHotels.length > HOTEL_LIMIT) {
+                    const expandText = `Show all ${compliantHotels.length} hotels`;
+                    hotelHtml += `<button class="show-all-btn" data-expanded="false" data-expand-text="${expandText}" onclick="toggleShowAll(this)">${expandText}</button>`;
                 }
                 if (hiddenCount > 0) {
-                    html += `<p style="font-size:0.75rem;color:var(--secondary);padding:0.5rem 0.25rem 0;font-weight:600;">${hiddenCount} hotel${hiddenCount > 1 ? 's' : ''} above your ₹${hCap.toLocaleString('en-IN')}/night cap not shown.</p>`;
+                    hotelHtml += `<p style="font-size:0.75rem;color:var(--secondary);padding:0.5rem 0.25rem 0;font-weight:600;">${hiddenCount} hotel${hiddenCount > 1 ? 's' : ''} above your ₹${hCap.toLocaleString('en-IN')}/night cap not shown.</p>`;
                 }
-                html += `</div>`;
-                hasAny = true;
+                hotelHtml += `</div>`;
             }
+            document.getElementById('fare-tab-hotels').innerHTML = hotelHtml;
+            document.getElementById('tab-count-hotels').textContent = compliantHotels.length || '';
 
-            container.innerHTML = hasAny ? html : '<p class="no-result">No options found for this route and date. Try adjusting your dates.</p>';
+            // Show tab bar, default to flights (or trains if flight not permitted)
+            const fareTabsEl = document.getElementById('fare-tabs');
+            fareTabsEl.style.display = 'block';
+            switchFareTab(flightPermitted ? 'flights' : 'trains');
         }
 
         let selectedType = 'FLIGHT';
         let _selectedFare = null;
+        let _travelFare = null;
+        let _hotelFare = null;
 
         function updateStep3Summary() {
             const el = document.getElementById('step3-summary');
@@ -1386,6 +1486,39 @@
                                 <p style="font-family:var(--font-display);font-weight:800;font-size:1rem;margin:0;color:var(--on-surface);">Meal Expense — ${dest}</p>
                                 <p style="font-size:0.75rem;color:var(--secondary);margin:0.2rem 0 0;font-weight:600;">${date} · ${dur} day${dur !== '1' ? 's' : ''}</p>
                             </div>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            // TRIP_PACKAGE: both travel and hotel selected
+            if (_travelFare && _hotelFare) {
+                const nights     = _getNights();
+                const hotelTotal = _hotelFare.pricePerNight * nights;
+                const total      = _travelFare.price + hotelTotal;
+                const travelIcon = _travelFare.type === 'FLIGHT' ? 'flight_takeoff' : 'train';
+                const travelLabel = _travelFare.type === 'FLIGHT'
+                    ? (`${_travelFare.airline || ''} ${_travelFare.flightNumber || ''}`.trim() || 'Flight')
+                    : (`${_travelFare.trainNumber || ''} ${_travelFare.trainName || ''}`.trim() || 'Train');
+                document.getElementById('estimated-cost').value = total;
+                el.innerHTML = `
+                    <div style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Travel + Hotel Package:</div>
+                    <div style="display:flex;flex-direction:column;gap:0;border:2px solid var(--primary);border-radius:var(--radius-lg);overflow:hidden;">
+                        <div style="display:flex;align-items:center;gap:0.75rem;padding:1rem 1.25rem;background:var(--primary-bg);">
+                            <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.5rem;">${travelIcon}</span>
+                            <div style="flex:1;"><p style="font-family:var(--font-display);font-weight:700;font-size:0.9rem;margin:0;">${travelLabel}</p>
+                            <p style="font-size:0.72rem;color:var(--secondary);margin:0.1rem 0 0;font-weight:600;">${document.getElementById('req-origin').value.trim()} → ${document.getElementById('req-destination').value.trim()}</p></div>
+                            <span style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${_travelFare.price.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.75rem;padding:1rem 1.25rem;background:#ffffff;border-top:1px dashed var(--outline-variant);">
+                            <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.5rem;">hotel</span>
+                            <div style="flex:1;"><p style="font-family:var(--font-display);font-weight:700;font-size:0.9rem;margin:0;">${_hotelFare.name || 'Hotel'} · ★${_hotelFare.rating || '—'}</p>
+                            <p style="font-size:0.72rem;color:var(--secondary);margin:0.1rem 0 0;font-weight:600;">₹${_hotelFare.pricePerNight.toLocaleString('en-IN')}/night × ${nights} night${nights > 1 ? 's' : ''}</p></div>
+                            <span style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${hotelTotal.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding:0.75rem 1.25rem;background:var(--primary);color:#ffffff;">
+                            <span style="font-family:var(--font-display);font-weight:700;font-size:0.85rem;">Package Total</span>
+                            <span style="font-family:var(--font-display);font-weight:800;font-size:1.1rem;">₹${total.toLocaleString('en-IN')}</span>
                         </div>
                     </div>`;
                 return;
@@ -1499,75 +1632,154 @@
             }
         }
 
-        function selectFare(price, type, fareDetails) {
-            document.getElementById('estimated-cost').value = price > 0 ? price : '';
-            selectedType = type;
-            _selectedFare = Object.assign({ type, price: Number(price) }, fareDetails || {});
-            document.querySelectorAll('.trip-card').forEach(c => c.classList.remove('selected'));
-            event.currentTarget?.classList?.add('selected');
-            if (type === 'TRAIN') {
-                showToast('Train selected — enter the fare for your preferred class below.', 'info');
+        function _getNights() {
+            const from = document.getElementById('req-from-date').value;
+            const to   = document.getElementById('req-to-date').value;
+            return (from && to) ? Math.max(1, Math.ceil((new Date(to) - new Date(from)) / 86400000)) : 1;
+        }
+
+        function updateItineraryBar() {
+            const bar       = document.getElementById('itinerary-bar');
+            const tRow      = document.getElementById('itin-travel-row');
+            const hRow      = document.getElementById('itin-hotel-row');
+            const totalRow  = document.getElementById('itin-total-row');
+            const hint      = document.getElementById('itin-hint');
+            if (!bar) return;
+
+            if (!_travelFare && !_hotelFare) { bar.style.display = 'none'; return; }
+            bar.style.display = 'block';
+
+            if (_travelFare) {
+                tRow.style.display = 'flex';
+                const icon  = _travelFare.type === 'FLIGHT' ? 'flight_takeoff' : 'train';
+                const label = _travelFare.type === 'FLIGHT'
+                    ? (`${_travelFare.airline || ''} ${_travelFare.flightNumber || ''}`.trim() || 'Flight')
+                    : (`${_travelFare.trainNumber || ''} ${_travelFare.trainName || ''}`.trim() || 'Train');
+                document.getElementById('itin-travel-label').innerHTML =
+                    `<span class="material-symbols-outlined" style="font-size:16px;">${icon}</span> ${label}`;
+                document.getElementById('itin-travel-cost').textContent =
+                    `₹${(_travelFare.price || 0).toLocaleString('en-IN')}`;
             } else {
+                tRow.style.display = 'none';
+            }
+
+            if (_hotelFare) {
+                hRow.style.display = 'flex';
+                const nights = _getNights();
+                const hotelTotal = (_hotelFare.pricePerNight || 0) * nights;
+                document.getElementById('itin-hotel-label').innerHTML =
+                    `<span class="material-symbols-outlined" style="font-size:16px;">hotel</span> ${_hotelFare.name || 'Hotel'}`;
+                document.getElementById('itin-hotel-nights').textContent =
+                    `₹${(_hotelFare.pricePerNight || 0).toLocaleString('en-IN')}/night × ${nights}`;
+                document.getElementById('itin-hotel-cost').textContent =
+                    `₹${hotelTotal.toLocaleString('en-IN')}`;
+                hint.style.display = 'none';
+            } else {
+                hRow.style.display = 'none';
+                hint.style.display = _travelFare ? 'block' : 'none';
+            }
+
+            if (_travelFare && _hotelFare) {
+                const total = (_travelFare.price || 0) + (_hotelFare.pricePerNight || 0) * _getNights();
+                totalRow.style.display = 'flex';
+                document.getElementById('itin-total-cost').textContent = `₹${total.toLocaleString('en-IN')}`;
+            } else {
+                totalRow.style.display = 'none';
+            }
+        }
+
+        function selectFare(price, type, fareDetails) {
+            const fare = Object.assign({ type, price: Number(price) }, fareDetails || {});
+            if (type === 'HOTEL') {
+                _hotelFare = fare;
+                document.querySelectorAll('[data-fare-type="hotel"]').forEach(c => c.classList.remove('selected'));
+                event.currentTarget?.classList?.add('selected');
+                showToast(`Hotel added: ${fareDetails?.name || 'Hotel'} · ₹${Number(price).toLocaleString('en-IN')}/night`, 'success');
+            } else {
+                selectedType = type;
+                _travelFare = fare;
+                _selectedFare = fare;
+                document.querySelectorAll('.trip-card:not([data-fare-type="hotel"])').forEach(c => c.classList.remove('selected'));
+                event.currentTarget?.classList?.add('selected');
                 const label = type === 'FLIGHT'
                     ? (`${fareDetails?.airline || ''} ${fareDetails?.flightNumber || ''}`.trim() || 'Flight')
-                    : (fareDetails?.name || 'Hotel');
+                    : (fareDetails?.name || 'Option');
                 showToast(`Selected: ${label} · ₹${Number(price).toLocaleString('en-IN')}`, 'success');
             }
+            updateItineraryBar();
+            updateStep3Summary();
         }
 
         function selectTrainFare(el, fareDetails) {
             selectedType = 'TRAIN';
             _selectedFare = Object.assign({ type: 'TRAIN', price: 0 }, fareDetails || {});
-            
-            // Auto-populate price if classFares are available!
+            _travelFare   = _selectedFare;
+
             const defaultClass = _selectedFare.class || (_selectedFare.classes && _selectedFare.classes[0]) || '3A';
             _selectedFare.class = defaultClass;
             if (_selectedFare.classFares && _selectedFare.classFares[defaultClass]) {
                 const fareVal = _selectedFare.classFares[defaultClass];
                 _selectedFare.price = fareVal;
+                _travelFare.price   = fareVal;
                 document.getElementById('estimated-cost').value = fareVal;
             } else {
                 document.getElementById('estimated-cost').value = '';
             }
 
-            document.querySelectorAll('.trip-card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.trip-card:not([data-fare-type="hotel"])').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
             showToast('Train selected! Budget auto-calculated based on class.', 'success');
+            updateItineraryBar();
+            updateStep3Summary();
         }
 
         async function submitRequest() {
-            const cost = document.getElementById('estimated-cost').value;
             const isMeal = _bookingCategory === 'MEAL';
+            const isTripPackage = !isMeal && _travelFare && _hotelFare;
             const origin = isMeal ? null : document.getElementById('req-origin').value.trim();
             const dest = isMeal
                 ? document.getElementById('req-meal-destination').value.trim()
                 : document.getElementById('req-destination').value.trim();
-            const date = document.getElementById('req-from-date').value;
+            const date    = document.getElementById('req-from-date').value;
+            const toDate  = document.getElementById('req-to-date').value;
             const purpose = document.getElementById('req-purpose').value;
             const justification = document.getElementById('req-justification').value.trim();
             const isForeign = document.getElementById('is-foreign-travel')?.checked || false;
             const urgencyReason = document.getElementById('urgency-reason')?.value.trim() || '';
-            const trainClass = (selectedType === 'TRAIN' && _selectedFare?.class) ? _selectedFare.class : null;
             const durationDays = isMeal ? parseInt(document.getElementById('meal-duration-days')?.value) || null : null;
 
-            if (!cost || parseFloat(cost) <= 0) {
-                showToast('Please enter or select a cost.', 'warning');
-                return;
-            }
-            if (isMeal && (!durationDays || durationDays < 1)) {
-                showToast('Please enter trip duration in days for the meal claim.', 'warning');
-                return;
-            }
+            let submittedType, submittedCost, details;
 
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.textContent = 'Submitting…';
-
-            try {
-                const details = {
-                    destination: dest,
-                    date,
-                    purpose,
-                    justification,
+            if (isTripPackage) {
+                const nights     = _getNights();
+                const hotelTotal = _hotelFare.pricePerNight * nights;
+                const trainClass = (_travelFare.type === 'TRAIN' && _travelFare.class) ? _travelFare.class : null;
+                submittedType = 'TRIP_PACKAGE';
+                submittedCost = _travelFare.price + hotelTotal;
+                details = {
+                    origin, destination: dest, date, checkOut: toDate, nights,
+                    purpose, justification,
+                    travelType: _travelFare.type,
+                    travelCost: _travelFare.price,
+                    hotelPerNight: _hotelFare.pricePerNight,
+                    hotelCost: hotelTotal,
+                    selectedFare: _travelFare,
+                    hotelFare: _hotelFare,
+                    ...(trainClass ? { trainClass } : {}),
+                    ...(isForeign ? { isForeignTravel: true } : {}),
+                    ...(urgencyReason.length >= 10 ? { urgencyReason } : {})
+                };
+            } else {
+                const cost = document.getElementById('estimated-cost').value;
+                if (!cost || parseFloat(cost) <= 0) {
+                    showToast('Please enter or select a cost.', 'warning');
+                    return;
+                }
+                const trainClass = (selectedType === 'TRAIN' && _selectedFare?.class) ? _selectedFare.class : null;
+                submittedType = isMeal ? 'MEAL' : selectedType;
+                submittedCost = parseFloat(cost);
+                details = {
+                    destination: dest, date, purpose, justification,
                     ...(origin ? { origin } : {}),
                     ...(isForeign ? { isForeignTravel: true } : {}),
                     ...(urgencyReason.length >= 10 ? { urgencyReason } : {}),
@@ -1575,9 +1787,19 @@
                     ...(durationDays ? { durationDays } : {}),
                     ...(_selectedFare ? { selectedFare: _selectedFare } : {})
                 };
+                if (isMeal && (!durationDays || durationDays < 1)) {
+                    showToast('Please enter trip duration in days for the meal claim.', 'warning');
+                    return;
+                }
+            }
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true; btn.textContent = 'Submitting…';
+
+            try {
                 await apiRequest('/bookings', {
                     method: 'POST',
-                    body: { type: selectedType, details, cost: parseFloat(cost) }
+                    body: { type: submittedType, details, cost: submittedCost }
                 });
                 showToast('Travel request submitted successfully!', 'success');
                 setTimeout(() => { window.location.href = 'employee.html'; }, 1500);

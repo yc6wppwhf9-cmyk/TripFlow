@@ -16,8 +16,8 @@ router.delete('/:id',      bookingController.deleteBooking);
 
 router.post('/', role('EMPLOYEE'), [
   body('type')
-    .isIn(['FLIGHT', 'HOTEL', 'TRAIN', 'CAB', 'MEAL'])
-    .withMessage('type must be FLIGHT, HOTEL, TRAIN, CAB, or MEAL'),
+    .isIn(['FLIGHT', 'HOTEL', 'TRAIN', 'CAB', 'MEAL', 'TRIP_PACKAGE'])
+    .withMessage('type must be FLIGHT, HOTEL, TRAIN, CAB, MEAL, or TRIP_PACKAGE'),
 
   body('cost')
     .isFloat({ min: 0.01 })
@@ -31,7 +31,29 @@ router.post('/', role('EMPLOYEE'), [
   body('details.origin')
     .if(body('type').not().equals('MEAL'))
     .notEmpty()
-    .withMessage('details.origin is required for FLIGHT, HOTEL, TRAIN, and CAB bookings'),
+    .withMessage('details.origin is required for FLIGHT, HOTEL, TRAIN, CAB, and TRIP_PACKAGE bookings'),
+
+  // TRIP_PACKAGE sub-fields
+  body('details.travelType')
+    .if(body('type').equals('TRIP_PACKAGE'))
+    .notEmpty()
+    .isIn(['FLIGHT', 'TRAIN'])
+    .withMessage('details.travelType must be FLIGHT or TRAIN for TRIP_PACKAGE'),
+
+  body('details.travelCost')
+    .if(body('type').equals('TRIP_PACKAGE'))
+    .isFloat({ min: 0.01 })
+    .withMessage('details.travelCost is required for TRIP_PACKAGE'),
+
+  body('details.hotelPerNight')
+    .if(body('type').equals('TRIP_PACKAGE'))
+    .isFloat({ min: 0.01 })
+    .withMessage('details.hotelPerNight is required for TRIP_PACKAGE'),
+
+  body('details.nights')
+    .if(body('type').equals('TRIP_PACKAGE'))
+    .isInt({ min: 1 })
+    .withMessage('details.nights must be a positive integer for TRIP_PACKAGE'),
 
   body('details.date')
     .isISO8601()
