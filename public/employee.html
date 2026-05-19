@@ -1100,7 +1100,14 @@
             const q = input.value.toLowerCase().trim();
             const list = document.getElementById(listId);
             if (!q) { list.classList.remove('open'); return; }
-            const matches = CITY_LIST.filter(c => c.n.toLowerCase().includes(q) || c.s.toLowerCase().includes(q)).slice(0, 8);
+            const startsWith = [], contains = [];
+            for (const c of CITY_LIST) {
+                const name = c.n.toLowerCase();
+                const code = c.c.toLowerCase();
+                if (name.startsWith(q) || code.startsWith(q)) startsWith.push(c);
+                else if (name.includes(q) || code.includes(q)) contains.push(c);
+            }
+            const matches = [...startsWith, ...contains].slice(0, 10);
             if (!matches.length) { list.classList.remove('open'); return; }
             list.innerHTML = matches.map(c => `
                 <div class="city-option" onmousedown="selectCity('${c.n}','${listId}','${input.id}')">
