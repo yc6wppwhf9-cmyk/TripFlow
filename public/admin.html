@@ -176,9 +176,6 @@
                 <h1 style="font-size:1.25rem;font-weight:600;margin:0;color:var(--on-surface);">Admin Controls</h1>
             </div>
             <div style="display:flex;align-items:center;gap:1.5rem;">
-                <div class="mobile-hide" style="position:relative;width:240px;">
-                    <input type="text" placeholder="Search systems..." style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);font-size:0.85rem;padding:0.4rem 0.75rem;width:100%;">
-                </div>
                 <div style="display:flex;align-items:center;gap:1rem;">
                     <span id="user-name" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;border:1px solid var(--outline-variant);background:var(--surface-container-low);padding:0.25rem 0.75rem;border-radius:var(--radius-md);">SysAdmin</span>
                 </div>
@@ -196,9 +193,6 @@
                     <p style="font-size:0.9rem;font-weight:500;color:var(--secondary);max-width:600px;">Manage organizational travel parameters, employee database, and vendor supplier registrations.</p>
                 </div>
                 <div style="display:flex;gap:0.75rem;">
-                    <button class="secondary" onclick="showToast('Exporting compliance audit log...', 'info')">
-                        <span class="material-symbols-outlined" style="font-size:18px;">cloud_download</span>Export Audit Log
-                    </button>
                     <button onclick="showUserModal()" style="background:var(--primary);color:#ffffff;border-color:transparent;">
                         <span class="material-symbols-outlined" style="font-size:18px;">person_add</span>Add User
                     </button>
@@ -313,14 +307,6 @@
                         </button>
                     </div>
 
-                    <!-- Performance node status -->
-                    <div class="card" style="padding:1rem;display:flex;align-items:center;justify-content:space-between;background:#ffffff;">
-                        <div style="display:flex;align-items:center;gap:0.5rem;font-weight:600;font-size:0.8rem;color:var(--on-surface);">
-                            <span style="width:8px;height:8px;border-radius:50%;background:var(--success-text);display:inline-block;animation:pulse 1.5s infinite;"></span>
-                            System Performance
-                        </div>
-                        <strong style="font-family:var(--font-display);font-size:0.85rem;text-transform:uppercase;color:var(--success-text);">Optimal</strong>
-                    </div>
 
                 </div>
 
@@ -346,14 +332,6 @@
                     </div>
                 </div>
 
-                <div class="card" style="padding:0;overflow:hidden;position:relative;border-radius:var(--radius-lg);min-height:200px;">
-                    <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;filter:brightness(0.45);" alt="Compliance Background">
-                    <div style="position:relative;z-index:10;padding:1.5rem;color:#ffffff;height:100%;display:flex;flex-direction:column;justify-content:flex-end;">
-                        <h4 style="font-family:var(--font-display);font-size:1.2rem;font-weight:600;margin:0 0 0.25rem;color:#ffffff;">Compliance Audit</h4>
-                        <p style="font-size:0.8rem;opacity:0.9;margin-bottom:1rem;font-weight:500;color:#ffffff;">Last global GDPR compliance scan completed successfully.</p>
-                        <button onclick="showToast('Displaying compliance certificates...', 'success')" style="background:#ffffff;color:var(--primary);border-color:transparent;align-self:flex-start;padding:0.5rem 1rem;font-size:0.75rem;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">View Certificates</button>
-                    </div>
-                </div>
             </section>
 
         </div>

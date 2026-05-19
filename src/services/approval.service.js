@@ -12,13 +12,15 @@ exports.submitRequest = async (bookingId) => {
 
   // Notify Manager and HR
   const hrAdmin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
-  
-  await emailService.sendApprovalRequest(
-    booking.employee.manager.email,
-    hrAdmin ? hrAdmin.email : process.env.FROM_EMAIL,
-    booking.employee.user.name,
-    booking.details
-  );
+
+  if (booking.employee.manager) {
+    await emailService.sendApprovalRequest(
+      booking.employee.manager.email,
+      hrAdmin ? hrAdmin.email : process.env.FROM_EMAIL,
+      booking.employee.user.name,
+      booking.details
+    );
+  }
 
   return booking;
 };
@@ -33,8 +35,9 @@ exports.approve = async (bookingId, vendorId) => {
     include: { vendor: { include: { user: true } } }
   });
 
-  // Notify Vendor
-  await emailService.sendVendorRequest(booking.vendor.user.email, booking.details);
+  if (booking.vendor) {
+    await emailService.sendVendorRequest(booking.vendor.user.email, booking.details);
+  }
 
   return booking;
 };

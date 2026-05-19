@@ -183,9 +183,6 @@
                 <h1 style="font-size:1.25rem;font-weight:600;margin:0;">Fulfillment Center</h1>
             </div>
             <div style="display:flex;align-items:center;gap:1.5rem;">
-                <div class="mobile-hide" style="position:relative;width:240px;">
-                    <input type="text" placeholder="Search bookings or payments..." style="font-size:0.85rem;padding:0.4rem 0.75rem;">
-                </div>
                 <div style="display:flex;align-items:center;gap:1rem;">
                     <span id="user-name" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;border:1px solid var(--outline-variant);background:var(--surface-container-low);padding:0.25rem 0.75rem;border-radius:var(--radius-md);">Fulfillment Partner</span>
                 </div>
@@ -201,14 +198,6 @@
                     <p class="page-label" id="company-name">Vendor Desk</p>
                     <h2 style="font-size:1.85rem;line-height:1.2;margin-bottom:0.25rem;" id="welcome-heading">Welcome Partner</h2>
                     <p style="font-size:0.9rem;font-weight:400;color:var(--on-surface-variant);">Here is your performance overview for TripFlow Enterprise bookings today.</p>
-                </div>
-                <div style="display:flex;gap:0.75rem;">
-                    <button class="secondary" onclick="showToast('Exporting booking performance logs...', 'info')">
-                        <span class="material-symbols-outlined" style="font-size:18px;">download</span>Export Report
-                    </button>
-                    <button onclick="showToast('Inventory rules updated successfully!', 'success')">
-                        <span class="material-symbols-outlined" style="font-size:18px;">add</span>Update Availability
-                    </button>
                 </div>
             </div>
 
@@ -227,43 +216,12 @@
 
                 <div class="card" style="padding:1.5rem;display:flex;flex-direction:column;justify-content:space-between;height:140px;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                        <span class="page-label" style="margin:0;">Active Inventory</span>
-                        <span class="material-symbols-outlined" style="color:var(--warning-text);">meeting_room</span>
-                    </div>
-                    <div>
-                        <div style="font-family:var(--font-display);font-size:1.85rem;font-weight:700;line-height:1;" id="stat-inventory">98%</div>
-                        <div style="width:100%;height:6px;background:var(--surface-container-high);border-radius:3px;overflow:hidden;margin-top:0.35rem;margin-bottom:0.25rem;">
-                            <div id="stat-inventory-bar" style="width:98%;height:100%;background:var(--primary);border-radius:3px;"></div>
-                        </div>
-                        <span style="font-size:0.75rem;font-weight:500;color:var(--secondary);" id="stat-inventory-sub">Rooms & Seats Avail</span>
-                    </div>
-                </div>
-
-                <div class="card" style="padding:1.5rem;display:flex;flex-direction:column;justify-content:space-between;height:140px;">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                        <span class="page-label" style="margin:0;">Avg Daily Rate</span>
+                        <span class="page-label" style="margin:0;">Avg Ticket Value</span>
                         <span class="material-symbols-outlined" style="color:var(--danger-text);">payments</span>
                     </div>
                     <div>
                         <div style="font-family:var(--font-display);font-size:1.85rem;font-weight:700;line-height:1;" id="stat-rate">₹0</div>
-                        <span style="font-size:0.75rem;font-weight:500;color:var(--secondary);">Average Ticket Price</span>
-                    </div>
-                </div>
-
-                <div class="card" style="padding:1.5rem;display:flex;flex-direction:column;justify-content:space-between;height:140px;">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                        <span class="page-label" style="margin:0;">Satisfaction</span>
-                        <span class="material-symbols-outlined" style="color:var(--success-text);">grade</span>
-                    </div>
-                    <div>
-                        <div style="font-family:var(--font-display);font-size:1.85rem;font-weight:700;line-height:1;" id="stat-satisfaction">5.0 / 5.0</div>
-                        <div style="display:flex;gap:2px;color:#ff9800;margin-top:0.25rem;">
-                            <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1;">star</span>
-                            <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1;">star</span>
-                            <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1;">star</span>
-                            <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1;">star</span>
-                            <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1;">star</span>
-                        </div>
+                        <span style="font-size:0.75rem;font-weight:500;color:var(--secondary);">Per completed booking</span>
                     </div>
                 </div>
             </div>
@@ -343,71 +301,13 @@
                             </div>
                         </div>
 
-                        <button onclick="showToast('Opening payment schedule matrix...', 'info')" class="secondary" style="width:100%;margin-top:1rem;border-style:dashed;font-family:var(--font-display);font-weight:600;font-size:0.75rem;padding:0.5rem;">
-                            View Payment Schedule
-                        </button>
                     </div>
 
-                    <!-- Fleet Management abstract card -->
-                    <div class="card" style="background:var(--primary);color:#ffffff;border:1px solid transparent;padding:1.5rem;position:relative;overflow:hidden;">
-                        <div style="position:relative;z-index:10;">
-                            <h3 style="font-family:var(--font-display);font-size:1.15rem;font-weight:600;color:#ffffff;margin:0 0 0.25rem;line-height:1.2;">Fleet Management</h3>
-                            <p style="font-size:0.8rem;font-weight:400;opacity:0.85;margin-bottom:1rem;">Manage rooms, catering tables, dining capacities, and support tickets.</p>
-                            
-                            <div class="fleet-grid">
-                                <a href="#" onclick="showToast('Hotel Units is active', 'success'); return false;" class="fleet-btn">
-                                    <span class="material-symbols-outlined">hotel</span>
-                                    Units
-                                </a>
-                                <a href="#" onclick="showToast('Catering is active', 'success'); return false;" class="fleet-btn">
-                                    <span class="material-symbols-outlined">restaurant</span>
-                                    Dining
-                                </a>
-                                <a href="#" onclick="showToast('Housekeeping is active', 'success'); return false;" class="fleet-btn">
-                                    <span class="material-symbols-outlined">cleaning_services</span>
-                                    Clean
-                                </a>
-                                <a href="#" onclick="showToast('Reports summary is loaded', 'success'); return false;" class="fleet-btn">
-                                    <span class="material-symbols-outlined">analytics</span>
-                                    Reports
-                                </a>
-                            </div>
-                        </div>
-                    </div>
 
                 </div>
 
             </div>
 
-            <!-- Bottom Support Relationship Bar -->
-            <section class="card" style="padding:1.25rem 1.5rem;display:flex;justify-content:space-between;align-items:center;background:#ffffff;" class="mobile-stack">
-                <div style="display:flex;align-items:center;gap:2rem;" class="mobile-stack">
-                    <div>
-                        <span style="font-size:0.65rem;font-weight:700;text-transform:uppercase;color:var(--secondary);display:block;line-height:1;margin-bottom:0.25rem;">Support Priority</span>
-                        <strong style="font-family:var(--font-display);font-size:0.85rem;color:var(--primary);display:flex;align-items:center;gap:0.25rem;">
-                            <span class="material-symbols-outlined" style="font-size:16px;">workspace_premium</span>
-                            PLATINUM VENDOR
-                        </strong>
-                    </div>
-                    
-                    <div style="width:1px;height:32px;background:var(--outline-variant);" class="mobile-hide"></div>
-                    
-                    <div>
-                        <span style="font-size:0.65rem;font-weight:700;text-transform:uppercase;color:var(--secondary);display:block;line-height:1;margin-bottom:0.25rem;">Next Payout</span>
-                        <strong style="font-size:0.85rem;color:var(--on-surface);">October 31, 2026</strong>
-                    </div>
-                </div>
-
-                <div style="display:flex;align-items:center;gap:1.5rem;">
-                    <div style="text-align:right;" class="mobile-hide">
-                        <span style="font-size:0.65rem;font-weight:700;text-transform:uppercase;color:var(--secondary);display:block;line-height:1;margin-bottom:0.25rem;">Relationship Manager</span>
-                        <strong style="font-size:0.85rem;color:var(--on-surface);">David Sterling</strong>
-                    </div>
-                    <button onclick="showToast('Connecting with David Sterling...', 'info')" style="padding:0.5rem 1.25rem;font-size:0.8rem;">
-                        Chat Now
-                    </button>
-                </div>
-            </section>
 
         </div>
     </main>
@@ -483,19 +383,20 @@
             return '';
         }
 
+        let _pendingCount = 0;
+
         async function loadRequests() {
             try {
                 const requests = await apiRequest('/vendor/requests');
                 const badge    = document.getElementById('pending-badge');
-                
+
                 const list = document.getElementById('requests-list');
+                _pendingCount = requests.length;
                 if (!requests.length) {
-                    document.getElementById('stat-pending').innerText = "0";
                     badge.style.display = 'none';
                     list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">check_circle</div><p>No active tickets awaiting fulfillment</p></div></td></tr>'; return;
                 }
-                document.getElementById('stat-pending').innerText = requests.length;
-                badge.innerText = requests.length; 
+                badge.innerText = requests.length;
                 badge.style.display = 'inline';
 
                 list.innerHTML = requests.map(b => `
@@ -520,9 +421,7 @@
             try {
                 const completed = await apiRequest('/vendor/completed');
                 
-                // Update total bookings dynamically based on database counts
-                const pendingCount = parseInt(document.getElementById('stat-pending').innerText) || 0;
-                updateVendorMetrics(completed, pendingCount);
+                updateVendorMetrics(completed, _pendingCount);
 
                 const list = document.getElementById('completed-list');
                 if (!completed.length) {
@@ -544,14 +443,6 @@
             const total = completed.length + pendingCount;
             document.getElementById('stat-total').innerText = total.toLocaleString('en-IN');
 
-            // Inventory %
-            const invPct = total > 0 ? Math.max(75, Math.min(99, 98 - completed.length * 2)) : 98;
-            document.getElementById('stat-inventory').innerText = invPct + '%';
-            const bar = document.getElementById('stat-inventory-bar');
-            if (bar) bar.style.width = invPct + '%';
-            document.getElementById('stat-inventory-sub').innerText = `${Math.round(200 * (invPct/100))} Seats & Rooms Available`;
-
-            // Avg Daily Rate
             const avgRate = completed.length > 0 ? Math.round(completed.reduce((acc, curr) => acc + Number(curr.cost || 0), 0) / completed.length) : 0;
             document.getElementById('stat-rate').innerText = '₹' + avgRate.toLocaleString('en-IN');
 
