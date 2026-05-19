@@ -316,7 +316,6 @@
                                         <th>Hotel Limit</th>
                                         <th>Train limit</th>
                                         <th>Cab Limit</th>
-                                        <th>Monthly Limit</th>
                                     </tr>
                                 </thead>
                                 <tbody id="policy-list"></tbody>
@@ -327,7 +326,7 @@
                         <div class="card" style="padding:1.5rem;background:#ffffff;">
                             <span class="page-label" style="color:var(--primary);">AI Extraction Engine</span>
                             <h3 style="font-size:1.3rem;margin:0.25rem 0 0.5rem;font-weight:600;color:var(--on-surface);">Claude Policy Parser</h3>
-                            <p style="font-size:0.85rem;font-weight:500;margin-bottom:1rem;color:var(--secondary);">Paste a raw corporate policy document (PDF text or guidelines). Our dynamic LLM parses flight, hotel, and monthly limits automatically.</p>
+                            <p style="font-size:0.85rem;font-weight:500;margin-bottom:1rem;color:var(--secondary);">Paste a raw corporate policy document (PDF text or guidelines). Our dynamic LLM parses flight, hotel, train and cab limits automatically.</p>
                             <textarea id="policy-text" rows="5" placeholder="e.g. Sales team employees can book flights up to ₹50,000. Lodging allowances are capped at ₹10,000 per night. Train tickets have a limit of ₹4,000..." style="width:100%;border:1px solid var(--outline-variant);border-radius:var(--radius-md);padding:0.75rem;font-family:inherit;font-size:0.85rem;font-weight:500;margin-bottom:1rem;outline:none;"></textarea>
                             <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
                                 <button onclick="analyzePolicy()" id="analyze-btn" style="background:var(--primary);color:#ffffff;border-color:transparent;width:auto;padding:0.6rem 1.25rem;">
