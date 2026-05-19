@@ -1,6 +1,7 @@
 const prisma = require('../config/db');
 const approvalService = require('../services/approval.service');
 const { getDistanceKm } = require('../services/travel.service');
+const storageService = require('../services/storage.service');
 
 // ── City classification per HSCVPL T&E Policy 2026 (Section 6.1) ─────────────
 const CITY_CAT_A = new Set([
@@ -368,6 +369,32 @@ exports.deleteBooking = async (req, res) => {
     }
     await prisma.booking.delete({ where: { id: req.params.id } });
     res.json({ success: true, message: 'Booking cancelled successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.uploadReceipt = async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: 'Receipt file is required (PDF or image)' });
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: req.params.id },
+      include: { employee: true }
+    });
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (req.user.role === 'EMPLOYEE' && booking.employee.userId !== req.user.id) {
+      return res.status(403).json({ error: 'Unauthorized to add receipts to this booking' });
+    }
+    if (booking.stage === 'REJECTED') {
+      return res.status(409).json({ error: 'Cannot attach receipts to a rejected booking' });
+    }
+
+    const receiptUrl = await storageService.uploadFile(file);
+    await prisma.booking.update({ where: { id: req.params.id }, data: { receiptUrl } });
+
+    res.json({ receiptUrl, bookingId: req.params.id });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

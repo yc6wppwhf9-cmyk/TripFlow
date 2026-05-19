@@ -83,6 +83,7 @@ model Booking {
   cost            Float?
   ticketUrl       String?
   pnr             String?
+  receiptUrl      String?
   rejectionReason String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt

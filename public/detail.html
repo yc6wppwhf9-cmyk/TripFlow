@@ -415,6 +415,20 @@
                             <a id="ticket-link" href="#" target="_blank" style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;color:var(--success-text);text-decoration:none;border:1px solid var(--success-text);padding:0.3rem 0.75rem;border-radius:var(--radius-md);">View ↗</a>
                         </div>
 
+                        <!-- Receipt Upload / View -->
+                        <div id="receipt-row" style="display:none;padding:0.75rem;border:1px solid var(--outline-variant);border-radius:var(--radius-md);background:#ffffff;margin-bottom:0.75rem;align-items:center;gap:0.75rem;">
+                            <span class="material-symbols-outlined" style="color:var(--primary);font-size:20px;">receipt</span>
+                            <div style="flex:1;">
+                                <p style="font-family:var(--font-display);font-size:0.65rem;font-weight:700;text-transform:uppercase;color:var(--secondary);margin:0 0 2px;">Expense Receipt</p>
+                                <p style="font-size:0.85rem;font-weight:600;margin:0;color:var(--on-surface);" id="receipt-status">No receipt uploaded</p>
+                            </div>
+                            <a id="receipt-link" href="#" target="_blank" style="display:none;font-family:var(--font-display);font-size:0.75rem;font-weight:700;color:var(--primary);text-decoration:none;border:1px solid var(--primary);padding:0.3rem 0.75rem;border-radius:var(--radius-md);">View ↗</a>
+                            <label id="receipt-upload-label" style="display:none;cursor:pointer;">
+                                <input type="file" id="receipt-file-input" accept="application/pdf,image/*" style="display:none;" onchange="uploadReceipt(this)">
+                                <span style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;color:var(--primary);border:1px solid var(--primary);padding:0.3rem 0.75rem;border-radius:var(--radius-md);white-space:nowrap;" id="receipt-upload-btn-text">Upload</span>
+                            </label>
+                        </div>
+
                         <!-- Requester Justification -->
                         <div style="margin-bottom:0.75rem;">
                             <h4 style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;text-transform:uppercase;color:var(--secondary);margin-bottom:0.5rem;">Business Justification</h4>
@@ -678,6 +692,30 @@
                     document.getElementById('contact-manager').innerText = b.employee.manager.name;
                 }
 
+                // Receipt row — visible if EMPLOYEE owns the booking (all stages except REJECTED)
+                //   or if a receipt already exists (any role can see it)
+                const receiptRow = document.getElementById('receipt-row');
+                const isOwner = currentUser.role === 'EMPLOYEE' && b.employee?.userId === currentUser.id;
+                const hasReceipt = !!b.receiptUrl;
+                if (isOwner || hasReceipt) {
+                    receiptRow.style.display = 'flex';
+                    if (hasReceipt) {
+                        document.getElementById('receipt-status').innerText = 'Receipt attached';
+                        document.getElementById('receipt-link').href = b.receiptUrl;
+                        document.getElementById('receipt-link').style.display = '';
+                    } else {
+                        document.getElementById('receipt-status').innerText = 'No receipt uploaded';
+                    }
+                    if (isOwner && b.stage !== 'REJECTED') {
+                        document.getElementById('receipt-upload-label').style.display = '';
+                        if (hasReceipt) {
+                            document.getElementById('receipt-upload-btn-text').innerText = 'Replace';
+                        }
+                    }
+                } else {
+                    receiptRow.style.display = 'none';
+                }
+
                 // Show/hide cancel button based on stage
                 const cancelBtn = document.getElementById('cancel-btn');
                 if (cancelBtn) {
@@ -738,6 +776,37 @@
             } catch (err) {
                 showToast(err.message, 'error');
                 btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">close</span>Cancel Trip';
+            }
+        }
+
+        async function uploadReceipt(input) {
+            if (!input.files || !input.files[0]) return;
+            const btnText = document.getElementById('receipt-upload-btn-text');
+            const origText = btnText.innerText;
+            btnText.innerText = 'Uploading…';
+            input.disabled = true;
+            try {
+                const formData = new FormData();
+                formData.append('receipt', input.files[0]);
+                const token = localStorage.getItem('token');
+                const res = await fetch(`/api/bookings/${bookingId}/receipt`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Upload failed');
+                document.getElementById('receipt-status').innerText = 'Receipt attached';
+                document.getElementById('receipt-link').href = data.receiptUrl;
+                document.getElementById('receipt-link').style.display = '';
+                btnText.innerText = 'Replace';
+                showToast('Receipt uploaded successfully.', 'success');
+            } catch (err) {
+                showToast(err.message, 'error');
+                btnText.innerText = origText;
+            } finally {
+                input.disabled = false;
+                input.value = '';
             }
         }
     </script>

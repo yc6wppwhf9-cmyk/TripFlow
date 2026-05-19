@@ -1,6 +1,36 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const prisma = require('../config/db');
+const { redisClient } = require('../config/redis');
+
+const MAX_ATTEMPTS  = 5;
+const LOCKOUT_SECS  = 15 * 60; // 15 minutes
+
+async function getFailCount(email) {
+  try { return parseInt(await redisClient.get(`login:fail:${email}`)) || 0; } catch { return 0; }
+}
+async function incrementFail(email) {
+  try {
+    const n = await redisClient.incr(`login:fail:${email}`);
+    if (n === 1) await redisClient.expire(`login:fail:${email}`, LOCKOUT_SECS);
+    return n;
+  } catch { return 0; }
+}
+async function lockAccount(email) {
+  try {
+    await redisClient.set(`login:locked:${email}`, '1', { EX: LOCKOUT_SECS });
+    await redisClient.del(`login:fail:${email}`);
+  } catch { /* Redis unavailable — skip lockout */ }
+}
+async function clearFailCount(email) {
+  try {
+    await redisClient.del(`login:fail:${email}`);
+    await redisClient.del(`login:locked:${email}`);
+  } catch { /* ignore */ }
+}
+async function getLockTTL(email) {
+  try { return await redisClient.ttl(`login:locked:${email}`); } catch { return 0; }
+}
 
 exports.register = async (req, res) => {
   try {
@@ -40,14 +70,38 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Check if account is locked
+    const ttl = await getLockTTL(email);
+    if (ttl > 0) {
+      return res.status(429).json({
+        error: `Account locked due to too many failed attempts. Try again in ${Math.ceil(ttl / 60)} minute(s).`,
+        lockedForSeconds: ttl
+      });
+    }
+
     const user = await prisma.user.findUnique({
       where: { email },
       include: { employee: true, vendor: true }
     });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    const validPassword = user && await bcrypt.compare(password, user.password);
+
+    if (!user || !validPassword) {
+      const attempts = await incrementFail(email);
+      const remaining = MAX_ATTEMPTS - attempts;
+      if (remaining <= 0) {
+        await lockAccount(email);
+        return res.status(429).json({
+          error: `Too many failed attempts. Account locked for ${LOCKOUT_SECS / 60} minutes.`
+        });
+      }
+      return res.status(401).json({
+        error: 'Invalid credentials',
+        attemptsRemaining: Math.max(0, remaining)
+      });
     }
+
+    await clearFailCount(email);
 
     const token = jwt.sign(
       { id: user.id, role: user.role },

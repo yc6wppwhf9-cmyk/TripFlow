@@ -5,6 +5,7 @@ const bookingController = require('../controllers/booking.controller');
 const auth = require('../middleware/auth.middleware');
 const role = require('../middleware/role.middleware');
 const validate = require('../middleware/validate.middleware');
+const upload = require('../middleware/upload.middleware');
 
 router.use(auth);
 
@@ -13,6 +14,7 @@ router.get('/trip-plan',   bookingController.getTripPlan);
 router.get('/suggestions', bookingController.getSuggestions);
 router.get('/:id',         bookingController.getBookingById);
 router.delete('/:id',      bookingController.deleteBooking);
+router.post('/:id/receipt', upload.single('receipt'), bookingController.uploadReceipt);
 
 router.post('/', role('EMPLOYEE'), [
   body('type')

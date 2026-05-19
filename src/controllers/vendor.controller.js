@@ -43,12 +43,23 @@ exports.uploadTicket = async (req, res) => {
     const { pnr } = req.body;
     const file = req.file;
 
-    if (!file) return res.status(400).json({ error: 'Ticket file is required' });
+    if (!req.user.vendor) return res.status(400).json({ error: 'User is not a vendor' });
+    if (!file && !pnr) return res.status(400).json({ error: 'Either a ticket file or PNR reference is required' });
 
-    const ticketUrl = await storageService.uploadTicket(file);
+    const booking = await prisma.booking.findUnique({ where: { id } });
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (booking.vendorId !== req.user.vendor.id) {
+      return res.status(403).json({ error: 'This booking is not assigned to your account' });
+    }
+    if (booking.stage !== 'PENDING_VENDOR') {
+      return res.status(409).json({ error: `Booking is not awaiting vendor fulfillment (stage: ${booking.stage})` });
+    }
 
-    const booking = await approvalService.complete(id, ticketUrl, pnr);
-    res.json(booking);
+    let ticketUrl = null;
+    if (file) ticketUrl = await storageService.uploadTicket(file);
+
+    const updated = await approvalService.complete(id, ticketUrl, pnr);
+    res.json(updated);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
