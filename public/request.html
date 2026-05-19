@@ -1281,10 +1281,14 @@
 
             // ── Trains ───────────────────────────────────────────────────────────
             const trains = Array.isArray(plan.trains) ? plan.trains : [];
+            const flightPermitted = estRailHours === null || estRailHours >= 12;
             if (trains.length) {
                 const tBand = _userMe?.band || 3;
                 const tEntitled = POLICY.trainEntitled[tBand] || [];
-                html += `<div class="trip-section" data-expandable><div class="trip-section-header">🚆 Trains to ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Entitled: ${POLICY.trainLabel[tBand]}</span></div>`;
+                const trainHeaderLabel = flightPermitted
+                    ? `🚆 Train Alternative to ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Budget option · Entitled: ${POLICY.trainLabel[tBand]}</span>`
+                    : `🚆 Trains to ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Entitled: ${POLICY.trainLabel[tBand]}</span>`;
+                html += `<div class="trip-section" data-expandable><div class="trip-section-header">${trainHeaderLabel}</div>`;
                 trains.forEach((t, i) => {
                     const meta = [t.departure, t.arrival].filter(Boolean).join(' → ');
                     const isEstimated = t.note && t.note.toLowerCase().includes('verify');
@@ -1324,30 +1328,35 @@
                 hasAny = true;
             }
 
-            // ── Hotels ───────────────────────────────────────────────────────────
+            // ── Hotels (cap-compliant only) ───────────────────────────────────
             const hotels = Array.isArray(plan.hotels) ? plan.hotels : [];
             if (hotels.length) {
                 const hBand = _userMe?.band || 3;
                 const hCap = POLICY.hotelCap(hBand, dest);
-                html += `<div class="trip-section" data-expandable><div class="trip-section-header">🏨 Top Lodging in ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Policy cap ₹${hCap.toLocaleString('en-IN')}/night</span></div>`;
-                hotels.forEach((h, i) => {
-                    const isExtra = i >= HOTEL_LIMIT;
-                    const overCap = h.pricePerNight > hCap;
-                    const hotelBadge = overCap
-                        ? `<span class="policy-badge over">₹${(h.pricePerNight - hCap).toLocaleString('en-IN')} OVER CAP</span>`
-                        : `<span class="policy-badge ok">WITHIN POLICY</span>`;
-                    const _hfd = encodeURIComponent(JSON.stringify({name:h.name,rating:h.rating,pricePerNight:h.pricePerNight}));
-                    html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectFare(${h.pricePerNight},'HOTEL',JSON.parse(decodeURIComponent('${_hfd}')))">
-                        <div style="display:flex;flex-direction:column;flex:1;min-width:0;gap:0.25rem;">
-                            <span><strong>${h.name}</strong> · ★${h.rating || '—'}</span>
-                            ${hotelBadge}
-                        </div>
-                        <span class="price" style="flex-shrink:0;">₹${h.pricePerNight?.toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:normal;">/night</span></span>
-                    </div>`;
-                });
-                if (hotels.length > HOTEL_LIMIT) {
-                    const expandText = `Show all ${hotels.length} hotels`;
-                    html += `<button class="show-all-btn" data-expanded="false" data-expand-text="${expandText}" onclick="toggleShowAll(this)">${expandText}</button>`;
+                const compliantHotels = hotels.filter(h => h.pricePerNight <= hCap);
+                const hiddenCount = hotels.length - compliantHotels.length;
+                html += `<div class="trip-section" data-expandable><div class="trip-section-header">🏨 Lodging in ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Policy cap ₹${hCap.toLocaleString('en-IN')}/night</span></div>`;
+                if (compliantHotels.length === 0) {
+                    html += `<p class="no-result" style="color:var(--warning-text);font-weight:600;">No hotels found within your ₹${hCap.toLocaleString('en-IN')}/night policy cap for ${dest}. Contact HR for an exception.</p>`;
+                } else {
+                    compliantHotels.forEach((h, i) => {
+                        const isExtra = i >= HOTEL_LIMIT;
+                        const _hfd = encodeURIComponent(JSON.stringify({name:h.name,rating:h.rating,pricePerNight:h.pricePerNight}));
+                        html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectFare(${h.pricePerNight},'HOTEL',JSON.parse(decodeURIComponent('${_hfd}')))">
+                            <div style="display:flex;flex-direction:column;flex:1;min-width:0;gap:0.25rem;">
+                                <span><strong>${h.name}</strong> · ★${h.rating || '—'}</span>
+                                <span class="policy-badge ok">WITHIN POLICY</span>
+                            </div>
+                            <span class="price" style="flex-shrink:0;">₹${h.pricePerNight?.toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:normal;">/night</span></span>
+                        </div>`;
+                    });
+                    if (compliantHotels.length > HOTEL_LIMIT) {
+                        const expandText = `Show all ${compliantHotels.length} hotels`;
+                        html += `<button class="show-all-btn" data-expanded="false" data-expand-text="${expandText}" onclick="toggleShowAll(this)">${expandText}</button>`;
+                    }
+                }
+                if (hiddenCount > 0) {
+                    html += `<p style="font-size:0.75rem;color:var(--secondary);padding:0.5rem 0.25rem 0;font-weight:600;">${hiddenCount} hotel${hiddenCount > 1 ? 's' : ''} above your ₹${hCap.toLocaleString('en-IN')}/night cap not shown.</p>`;
                 }
                 html += `</div>`;
                 hasAny = true;
