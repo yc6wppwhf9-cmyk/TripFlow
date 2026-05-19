@@ -508,6 +508,21 @@
         @media (max-width: 640px) {
             .trips-grid { grid-template-columns: 1fr; }
             .top-appbar { padding: 0 1rem; }
+            .tp-grid { grid-template-columns: 1fr !important; }
+            .tp-arrow { display: none !important; }
+        }
+        @media (max-width: 480px) {
+            #ai-chat { bottom: 1rem !important; right: 1rem !important; }
+            .brutalist-chat-panel {
+                position: fixed !important;
+                bottom: 70px !important;
+                left: 0 !important; right: 0 !important;
+                width: 100vw !important;
+                border-radius: 16px 16px 0 0;
+                max-height: calc(100dvh - 70px) !important;
+                height: auto !important;
+            }
+            #chat-messages { height: auto !important; flex: 1; min-height: 180px; }
         }
     </style>
 </head>

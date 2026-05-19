@@ -508,6 +508,18 @@
         </div>
     </main>
 
+    <!-- Inline Confirm Sheet (replaces browser confirm() for iOS Safari compatibility) -->
+    <div id="confirm-sheet" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:380px;padding:1.75rem;">
+            <h3 id="confirm-title" style="font-family:var(--font-display);font-size:1.05rem;font-weight:600;margin:0 0 0.4rem;">Are you sure?</h3>
+            <p id="confirm-body" style="font-size:0.875rem;color:var(--on-surface-variant);margin:0 0 1.5rem;font-weight:400;"></p>
+            <div style="display:flex;gap:0.75rem;">
+                <button id="confirm-ok" style="flex:1;background:var(--error);color:#ffffff;border-color:transparent;">Confirm</button>
+                <button id="confirm-cancel" class="secondary" style="flex:1;" onclick="document.getElementById('confirm-sheet').style.display='none';">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- JS Hooks -->
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
@@ -765,8 +777,22 @@
             }
         }
 
+        function showConfirmSheet(title, body) {
+            return new Promise(resolve => {
+                document.getElementById('confirm-title').textContent = title;
+                document.getElementById('confirm-body').textContent = body;
+                const sheet = document.getElementById('confirm-sheet');
+                sheet.style.display = 'flex';
+                const ok = document.getElementById('confirm-ok');
+                const cancel = document.getElementById('confirm-cancel');
+                const cleanup = (val) => { sheet.style.display = 'none'; ok.onclick = null; cancel.onclick = null; resolve(val); };
+                ok.onclick = () => cleanup(true);
+                cancel.onclick = () => cleanup(false);
+            });
+        }
+
         async function cancelRequest() {
-            if (!confirm('Are you sure you want to cancel this travel request?')) return;
+            if (!await showConfirmSheet('Cancel this trip request?', 'This cannot be undone.')) return;
             const btn = document.getElementById('cancel-btn');
             btn.disabled = true; btn.textContent = 'Cancelling…';
             try {
