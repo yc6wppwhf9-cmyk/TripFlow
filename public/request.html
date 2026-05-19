@@ -1552,37 +1552,33 @@
             let hotelHtml = '';
             const hotels = Array.isArray(plan.hotels) ? plan.hotels : [];
             const hCap = POLICY.hotelCap(tBand, dest);
-            const compliantHotels = hotels.filter(h => h.pricePerNight <= hCap);
-            const hiddenCount = hotels.length - compliantHotels.length;
-            if (compliantHotels.length === 0) {
-                hotelHtml = `<p class="no-result" style="color:var(--warning-text);font-weight:600;">
-                    No hotels within your ₹${hCap.toLocaleString('en-IN')}/night policy cap for ${dest}.
-                    ${hiddenCount > 0 ? `${hiddenCount} hotel${hiddenCount > 1 ? 's' : ''} found but above your cap.` : ''}
-                    Contact HR for an exception.</p>`;
+            if (hotels.length === 0) {
+                hotelHtml = `<p class="no-result">No hotels found for ${dest}. Try searching directly on Booking.com or OYO.</p>`;
             } else {
-                hotelHtml += `<div class="trip-section" data-expandable><div class="trip-section-header">🏨 Lodging in ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Cap ₹${hCap.toLocaleString('en-IN')}/night · Select to add to booking</span></div>`;
-                compliantHotels.forEach((h, i) => {
+                hotelHtml += `<div class="trip-section" data-expandable><div class="trip-section-header">🏨 Lodging in ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Policy cap ₹${hCap.toLocaleString('en-IN')}/night · Select to add to booking</span></div>`;
+                hotels.forEach((h, i) => {
                     const isExtra = i >= HOTEL_LIMIT;
+                    const overCap = h.pricePerNight > hCap;
+                    const badge = overCap
+                        ? `<span class="policy-badge warn">₹${(h.pricePerNight - hCap).toLocaleString('en-IN')} ABOVE CAP — needs exception</span>`
+                        : `<span class="policy-badge ok">WITHIN POLICY</span>`;
                     const _hfd = encodeURIComponent(JSON.stringify({name:h.name,rating:h.rating,pricePerNight:h.pricePerNight}));
                     hotelHtml += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} data-fare-type="hotel" onclick="selectFare(${h.pricePerNight},'HOTEL',JSON.parse(decodeURIComponent('${_hfd}')))">
                         <div style="display:flex;flex-direction:column;flex:1;min-width:0;gap:0.25rem;">
                             <span><strong>${h.name}</strong> · ★${h.rating || '—'}</span>
-                            <span class="policy-badge ok">WITHIN POLICY</span>
+                            ${badge}
                         </div>
-                        <span class="price" style="flex-shrink:0;">₹${h.pricePerNight?.toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:normal;">/night</span></span>
+                        <span class="price" style="flex-shrink:0;${overCap ? 'color:var(--warning-text);' : ''}">₹${h.pricePerNight?.toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:normal;">/night</span></span>
                     </div>`;
                 });
-                if (compliantHotels.length > HOTEL_LIMIT) {
-                    const expandText = `Show all ${compliantHotels.length} hotels`;
+                if (hotels.length > HOTEL_LIMIT) {
+                    const expandText = `Show all ${hotels.length} hotels`;
                     hotelHtml += `<button class="show-all-btn" data-expanded="false" data-expand-text="${expandText}" onclick="toggleShowAll(this)">${expandText}</button>`;
-                }
-                if (hiddenCount > 0) {
-                    hotelHtml += `<p style="font-size:0.75rem;color:var(--secondary);padding:0.5rem 0.25rem 0;font-weight:600;">${hiddenCount} hotel${hiddenCount > 1 ? 's' : ''} above your ₹${hCap.toLocaleString('en-IN')}/night cap not shown.</p>`;
                 }
                 hotelHtml += `</div>`;
             }
             document.getElementById('fare-tab-hotels').innerHTML = hotelHtml;
-            document.getElementById('tab-count-hotels').textContent = compliantHotels.length || '';
+            document.getElementById('tab-count-hotels').textContent = hotels.length || '';
 
             // Show tab bar, default to flights (or trains if flight not permitted)
             const fareTabsEl = document.getElementById('fare-tabs');
