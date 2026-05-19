@@ -1648,7 +1648,7 @@
             }
 
             if (!_selectedFare) {
-                el.innerHTML = '<div style="padding:1rem;background:var(--surface-container-low);border-radius:var(--radius-md);color:var(--secondary);font-size:0.85rem;font-weight:500;">No fare selected — enter the budget manually, or go back and pick a fare.</div>';
+                el.innerHTML = '<div style="padding:1rem;background:var(--surface-container-low);border-radius:var(--radius-md);color:var(--secondary);font-size:0.85rem;font-weight:500;">No fare selected — go back to Step 2 and pick a fare from the results.</div>';
                 return;
             }
             const f = _selectedFare;
@@ -1721,7 +1721,8 @@
                     </div>`;
             }
             
-            const costVal = Number(document.getElementById('estimated-cost').value || f.price || 0);
+            if (f.price > 0) document.getElementById('estimated-cost').value = f.price;
+            const costVal = Number(document.getElementById('estimated-cost').value || 0);
             const priceStr = costVal > 0 ? `₹${costVal.toLocaleString('en-IN')}` : 'Enter fare below';
 
             el.innerHTML = `
