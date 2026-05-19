@@ -403,10 +403,6 @@
                         <label style="font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:0.75rem;display:block;margin-bottom:0.25rem;color:var(--secondary);">Cab Cap (₹)</label>
                         <input type="number" id="p-cab" placeholder="1500" min="0" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
                     </div>
-                    <div class="form-group" style="grid-column:span 2;">
-                        <label style="font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:0.75rem;display:block;margin-bottom:0.25rem;color:var(--secondary);">Global Monthly Budget (₹)</label>
-                        <input type="number" id="p-budget" placeholder="200000" min="0" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
-                    </div>
                 </div>
                 <div style="display:flex;gap:0.75rem;margin-top:1.5rem;">
                     <button type="submit" style="flex:1;background:var(--primary);color:#ffffff;border-color:transparent;">Save Policy</button>
@@ -584,7 +580,6 @@
                         <td data-label="Hotel/Night" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${(p.rules.hotelLimit || 0).toLocaleString('en-IN')}</td>
                         <td data-label="Train" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${(p.rules.trainLimit || 0).toLocaleString('en-IN')}</td>
                         <td data-label="Cab" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${(p.rules.cabLimit || 0).toLocaleString('en-IN')}</td>
-                        <td data-label="Monthly Budget" style="font-family:var(--font-display);font-weight:700;color:var(--danger-text);">₹${(p.rules.globalMonthlyBudget || 0).toLocaleString('en-IN')}</td>
                     </tr>`).join('');
             } catch(e) { console.error(e); }
         }
@@ -603,7 +598,6 @@
                     hotelLimit:  document.getElementById('p-hotel').value,
                     trainLimit:  document.getElementById('p-train').value,
                     cabLimit:    document.getElementById('p-cab').value,
-                    globalMonthlyBudget: document.getElementById('p-budget').value
                 }});
                 hideModal('policy-modal');
                 e.target.reset();
@@ -634,8 +628,7 @@
                             ['Flights Cap','flightLimit'],
                             ['Hotels / Night','hotelLimit'],
                             ['Trains Cap','trainLimit'],
-                            ['Cabs Cap','cabLimit'],
-                            ['Monthly Budget','globalMonthlyBudget']
+                            ['Cabs Cap','cabLimit']
                         ].map(([label,key]) => `
                         <div style="padding:0.75rem;background:var(--surface-container-low);border:var(--border-thin);border-radius:var(--radius-md);box-shadow:var(--shadow-level-1);">
                             <p style="font-family:var(--font-display);font-size:0.6rem;font-weight:700;text-transform:uppercase;color:var(--secondary);margin:0 0 0.25rem;">${label}</p>

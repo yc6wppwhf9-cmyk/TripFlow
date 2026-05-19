@@ -664,7 +664,6 @@ input[type="checkbox"] {
   inset: 0;
   background: rgba(25,27,35,0.35);
   z-index: 199;
-  backdrop-filter: blur(2px);
 }
 .sidebar-backdrop.open { display: block; }
 

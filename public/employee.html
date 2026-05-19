@@ -604,14 +604,11 @@
 
                 <!-- Stats Bento Block -->
                 <div class="bento-card-stats">
-                    <!-- Q4 Budget Progress -->
+                    <!-- Monthly Spend -->
                     <div class="budget-card" id="budget-progress-card">
-                        <span class="page-label">Q4 Travel Budget</span>
+                        <span class="page-label">Monthly Travel Spend</span>
                         <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.2;">₹0</div>
-                        <div class="budget-progress-container">
-                            <div class="budget-progress-bar" style="width: 0%;"></div>
-                        </div>
-                        <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">0% of quarterly allowance used</span>
+                        <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">This month's non-rejected bookings</span>
                     </div>
 
                     <!-- Active Requests Box -->
@@ -875,18 +872,10 @@
                 const monthlySpend = bookings
                     .filter(b => b.stage !== 'REJECTED' && new Date(b.createdAt) >= startOfMonth)
                     .reduce((acc, curr) => acc + Number(curr.cost || 0), 0);
-                const policyLimit = _userMe?.policyRules?.globalMonthlyBudget || null;
-                const percentage = policyLimit ? Math.min(100, Math.round((monthlySpend / policyLimit) * 100)) : null;
-                const barColor = percentage >= 90 ? 'var(--danger-text)' : percentage >= 70 ? 'var(--warning-text)' : 'var(--primary)';
                 document.getElementById('budget-progress-card').innerHTML = `
                     <span class="page-label">Monthly Travel Spend</span>
                     <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.2;color:var(--on-surface);">₹${monthlySpend.toLocaleString('en-IN')}</div>
-                    ${policyLimit ? `
-                    <div class="budget-progress-container">
-                        <div class="budget-progress-bar" style="width:${percentage}%;background:${barColor};"></div>
-                    </div>
-                    <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">${percentage}% of ₹${policyLimit.toLocaleString('en-IN')} monthly budget used</span>
-                    ` : `<span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">This month's non-rejected bookings</span>`}
+                    <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">This month's non-rejected bookings</span>
                 `;
 
                 // 2. Greeting Badges: Flight & Lodging

@@ -75,7 +75,7 @@ exports.getPolicies = async (req, res) => {
 
 exports.createPolicy = async (req, res) => {
   try {
-    const { name, flightLimit, hotelLimit, cabLimit, trainLimit, globalMonthlyBudget } = req.body;
+    const { name, flightLimit, hotelLimit, cabLimit, trainLimit } = req.body;
     const policy = await prisma.policy.create({
       data: {
         name,
@@ -83,8 +83,7 @@ exports.createPolicy = async (req, res) => {
           flightLimit: parseFloat(flightLimit) || null,
           hotelLimit: parseFloat(hotelLimit) || null,
           cabLimit: parseFloat(cabLimit) || null,
-          trainLimit: parseFloat(trainLimit) || null,
-          globalMonthlyBudget: parseFloat(globalMonthlyBudget) || null
+          trainLimit: parseFloat(trainLimit) || null
         }
       }
     });
