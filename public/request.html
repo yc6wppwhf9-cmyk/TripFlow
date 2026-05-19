@@ -583,7 +583,31 @@
                         </div>
 
                         <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+                            <!-- Booking Type selector -->
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+                                <div class="field-group">
+                                    <label for="req-booking-category">Booking Type</label>
+                                    <select id="req-booking-category" class="brutalist-input" style="height:44px;font-weight:600;background:#ffffff;" onchange="onBookingCategoryChange(this.value)">
+                                        <option value="TRIP">Trip — Flight / Train / Hotel</option>
+                                        <option value="MEAL">Meal Expense Claim</option>
+                                    </select>
+                                </div>
+                                <div class="field-group">
+                                    <label for="req-purpose">Trip Purpose</label>
+                                    <select id="req-purpose" class="brutalist-input" style="height:44px;font-weight:600;background:#ffffff;">
+                                        <option>Client Meeting</option>
+                                        <option>Conference</option>
+                                        <option>Internal Workshop</option>
+                                        <option>Project Kick-off</option>
+                                        <option>Sales Visit</option>
+                                        <option>Training</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Origin + Destination (hidden for MEAL) -->
+                            <div id="origin-dest-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
                                 <div class="field-group" style="position:relative;">
                                     <label for="req-origin">Origin City</label>
                                     <input id="req-origin" class="brutalist-input" placeholder="e.g. Mumbai" autocomplete="off"
@@ -601,15 +625,20 @@
                                     <div id="req-dest-list" class="city-dropdown"></div>
                                 </div>
                             </div>
-                            <div style="display:grid;grid-template-columns:1fr;gap:1.5rem;">
+
+                            <!-- Destination only row (MEAL) -->
+                            <div id="meal-dest-row" style="display:none;grid-template-columns:1fr 1fr;gap:1.5rem;">
+                                <div class="field-group" style="position:relative;">
+                                    <label for="req-meal-destination">City (where meals incurred)</label>
+                                    <input id="req-meal-destination" class="brutalist-input" placeholder="e.g. Delhi" autocomplete="off"
+                                        oninput="showCitySuggestions(this,'req-meal-dest-list')"
+                                        onfocus="showCitySuggestions(this,'req-meal-dest-list')"
+                                        onblur="setTimeout(()=>hideCityList('req-meal-dest-list'),200)">
+                                    <div id="req-meal-dest-list" class="city-dropdown"></div>
+                                </div>
                                 <div class="field-group">
-                                    <label for="req-purpose">Trip Purpose</label>
-                                    <select id="req-purpose" class="brutalist-input" style="height:44px;font-weight:600;background:#ffffff;">
-                                        <option>Client Meeting</option>
-                                        <option>Conference</option>
-                                        <option>Internal Workshop</option>
-                                        <option>Project Kick-off</option>
-                                    </select>
+                                    <label for="meal-duration-days">Duration (days, 1–20)</label>
+                                    <input type="number" id="meal-duration-days" class="brutalist-input" placeholder="e.g. 3" min="1" max="20" style="height:44px;">
                                 </div>
                             </div>
 
@@ -619,14 +648,30 @@
                                     <input id="req-from-date" class="brutalist-input" readonly placeholder="YYYY-MM-DD" style="background:#ffffff;cursor:pointer;">
                                 </div>
                                 <div class="field-group">
-                                    <label for="req-to-date">Return Date</label>
+                                    <label for="req-to-date" id="return-date-label">Return Date</label>
                                     <input id="req-to-date" class="brutalist-input" readonly placeholder="YYYY-MM-DD" style="background:#ffffff;cursor:pointer;">
                                 </div>
                             </div>
 
+                            <!-- International travel flag -->
+                            <label style="display:flex;align-items:center;gap:0.65rem;cursor:pointer;font-family:var(--font-display);font-size:0.82rem;font-weight:600;color:var(--on-surface);padding:0.6rem 0.75rem;border:1px solid var(--outline-variant);border-radius:var(--radius-md);background:#ffffff;">
+                                <input type="checkbox" id="is-foreign-travel" onchange="updatePolicyStatus()" style="width:16px;height:16px;accent-color:var(--primary);flex-shrink:0;">
+                                International / Foreign Travel &nbsp;<span style="font-weight:400;color:var(--secondary);">(45-day advance notice required)</span>
+                            </label>
+
+                            <!-- Urgent reason (shown when travel date is within required advance days) -->
+                            <div id="urgency-reason-group" style="display:none;background:var(--warning-bg);border:1px solid var(--warning-text);border-radius:var(--radius-md);padding:1rem 1.25rem;display:none;flex-direction:column;gap:0.5rem;">
+                                <label for="urgency-reason" style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--warning-text);display:flex;align-items:center;gap:0.4rem;">
+                                    <span class="material-symbols-outlined" style="font-size:16px;">warning</span>
+                                    Urgent Travel Justification (required to bypass advance notice rule)
+                                </label>
+                                <textarea id="urgency-reason" class="brutalist-input" placeholder="Explain the business urgency — why this trip cannot wait for the standard booking window (minimum 10 characters)..." rows="3" style="resize:none;border-color:var(--warning-text);"></textarea>
+                                <span style="font-size:0.75rem;font-weight:600;color:var(--warning-text);">Your manager will review this reason. This uses one of your monthly urgent booking allowances.</span>
+                            </div>
+
                             <div class="field-group">
                                 <label for="req-justification">Business Justification</label>
-                                <textarea id="req-justification" class="brutalist-input" placeholder="Describe why this travel is necessary..." rows="4" style="resize:none;" oninput="updateCharCount(this)"></textarea>
+                                <textarea id="req-justification" class="brutalist-input" placeholder="Describe why this travel is necessary..." rows="3" style="resize:none;" oninput="updateCharCount(this)"></textarea>
                                 <span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;align-self:flex-end;color:var(--secondary);" id="char-counter">0 / 500 characters</span>
                             </div>
                         </div>
@@ -711,24 +756,24 @@
             <!-- Contextual Help Grid -->
             <div class="help-grid">
                 <div class="help-card">
-                    <span class="material-symbols-outlined icon">lightbulb</span>
+                    <span class="material-symbols-outlined icon">schedule</span>
                     <div>
-                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Early Booking Tip</p>
-                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">Booking 14 days in advance secures ~20% lower travel rates.</p>
+                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Advance Booking Rule</p>
+                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">Domestic trips require 30 days advance notice; international trips require 45 days. Urgent travel needs a written justification.</p>
                     </div>
                 </div>
                 <div class="help-card">
-                    <span class="material-symbols-outlined icon">hotel</span>
+                    <span class="material-symbols-outlined icon">receipt_long</span>
                     <div>
-                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Preferred Lodgings</p>
-                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">Check partner directories for faster automated approvals.</p>
+                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Expense Submission</p>
+                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">All receipts must be submitted within 7 days of returning. Meal claims must include trip duration (days) for cap calculation.</p>
                     </div>
                 </div>
                 <div class="help-card">
-                    <span class="material-symbols-outlined icon">support_agent</span>
+                    <span class="material-symbols-outlined icon">info</span>
                     <div>
-                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Concierge Desk</p>
-                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">Our enterprise support desk is available 24/7 for travelers.</p>
+                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Hotel City Caps (T&amp;E §6.2)</p>
+                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">Hotel limits vary by city category. Metro cities (Cat A) have the highest cap; other towns (Cat C) the lowest. Caps shown in the policy card.</p>
                     </div>
                 </div>
             </div>
@@ -744,7 +789,9 @@
         let selectedFares = { FLIGHT: 0, HOTEL: 0, TRAIN: 0 };
         let activeStep = 1;
         let _userMe = null;
+        let _bookingCategory = 'TRIP'; // 'TRIP' or 'MEAL'
 
+        // Default policy limits — overridden by backend data in loadApprovers()
         const POLICY = {
             hotelCaps: {
                 1: { A: 5000, B: 4500, C: 4000 },
@@ -774,9 +821,27 @@
                 return 'C';
             },
             cityLabel: { A: 'Metro City', B: 'State Capital / Major City', C: 'Other Town' },
-            hotelCap(band, city) { return this.hotelCaps[band]?.[this.cityCategory(city)] || 2000; },
-            advanceDays: 30
+            hotelCap(band, city) {
+                const caps = this.hotelCaps[band] || this.hotelCaps[3];
+                return caps[this.cityCategory(city)] || 2000;
+            },
+            advanceDays: 30,
+            foreignAdvanceDays: 45
         };
+
+        function onBookingCategoryChange(val) {
+            _bookingCategory = val;
+            const isMeal = val === 'MEAL';
+            document.getElementById('origin-dest-row').style.display = isMeal ? 'none' : 'grid';
+            document.getElementById('meal-dest-row').style.display   = isMeal ? 'grid' : 'none';
+            document.getElementById('return-date-label').textContent  = isMeal ? 'End Date (optional)' : 'Return Date';
+            // MEAL skips Step 2 (trip planner)
+            const nextBtn = document.getElementById('next-btn');
+            if (nextBtn) nextBtn.innerHTML = isMeal
+                ? 'Next: Enter Cost <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>'
+                : 'Next: Preferences <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>';
+            updatePolicyStatus();
+        }
 
         function toggleSidebar() {
             document.getElementById('main-sidebar').classList.toggle('open');
@@ -806,6 +871,28 @@
             try {
                 const me = await apiRequest('/auth/me');
                 _userMe = me;
+
+                // Override POLICY from backend data if available
+                if (me.policyRules) {
+                    const r = me.policyRules;
+                    if (r.hotelCapsByCity) {
+                        const band = me.band || 3;
+                        POLICY.hotelCaps[band] = r.hotelCapsByCity;
+                    }
+                    if (r.trainClassEntitlement) {
+                        const band = me.band || 3;
+                        const cls = r.trainClassEntitlement.toUpperCase();
+                        // Build entitled list: everything at or below this class rank
+                        const rank = { '1A':1,'FC':1,'2A':2,'3A':3,'SL':4,'CC':4,'2S':5 };
+                        const myRank = rank[cls] || 3;
+                        POLICY.trainEntitled[band] = Object.keys(rank).filter(k => rank[k] >= myRank);
+                        const labels = { 1:'1AC / First Class', 2:'2AC / 3AC', 3:'3AC / Sleeper / Chair', 4:'Sleeper / Chair Car', 5:'Second Class' };
+                        POLICY.trainLabel[band] = labels[myRank] || cls;
+                    }
+                    if (r.advanceBookingDays) POLICY.advanceDays = r.advanceBookingDays;
+                    if (r.foreignTravelAdvanceDays) POLICY.foreignAdvanceDays = r.foreignTravelAdvanceDays;
+                }
+
                 updatePolicyStatus();
                 const list = document.getElementById('approvers-list');
                 const initials = n => n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
@@ -898,8 +985,12 @@
 
         function updatePolicyStatus() {
             const fromDate = document.getElementById('req-from-date').value;
-            const dest = document.getElementById('req-destination').value.trim();
+            const isForeign = document.getElementById('is-foreign-travel')?.checked || false;
+            const dest = _bookingCategory === 'MEAL'
+                ? document.getElementById('req-meal-destination')?.value.trim()
+                : document.getElementById('req-destination').value.trim();
             const band = _userMe?.band || 3;
+            const requiredDays = isForeign ? (POLICY.foreignAdvanceDays || 45) : (POLICY.advanceDays || 30);
 
             const bandLabelEl = document.getElementById('policy-band-label');
             if (bandLabelEl) bandLabelEl.textContent = _userMe ? band : '–';
@@ -910,18 +1001,28 @@
                 const cat = dest ? POLICY.cityCategory(dest) : null;
                 const capLine = dest
                     ? `₹${POLICY.hotelCap(band, dest).toLocaleString('en-IN')}/night`
-                    : Object.entries(POLICY.hotelCaps[band]).map(([k,v])=>`${k}: ₹${v.toLocaleString('en-IN')}`).join(' · ');
-                const catLine = dest
-                    ? `${cat} — ${POLICY.cityLabel[cat]}`
-                    : 'Select destination';
+                    : Object.entries(POLICY.hotelCaps[band] || {}).map(([k,v])=>`${k}: ₹${v.toLocaleString('en-IN')}`).join(' · ') || '—';
+                const catLine = dest ? `${cat} — ${POLICY.cityLabel[cat]}` : 'Select destination';
                 limitsEl.style.display = 'block';
                 limitsEl.innerHTML = `
-                    <div class="policy-limits-row"><span>Hotel cap${dest ? ' in ' + dest : ''}</span><strong>${capLine}</strong></div>
+                    <div class="policy-limits-row"><span>Hotel cap${dest ? ' (' + dest + ')' : ''}</span><strong>${capLine}</strong></div>
                     <div class="policy-limits-row"><span>City category</span><strong>${catLine}</strong></div>
-                    <div class="policy-limits-row"><span>Train entitlement</span><strong>${POLICY.trainLabel[band]}</strong></div>
-                    <div class="policy-limits-row"><span>Advance notice</span><strong>${POLICY.advanceDays} days required</strong></div>
+                    <div class="policy-limits-row"><span>Train entitlement</span><strong>${POLICY.trainLabel[band] || '3AC / Sleeper'}</strong></div>
+                    <div class="policy-limits-row"><span>Advance notice</span><strong>${requiredDays} days ${isForeign ? '(intl)' : ''}</strong></div>
                     <div class="policy-limits-row"><span>Expense submission</span><strong>Within 7 days of return</strong></div>
                 `;
+            }
+
+            // Urgency reason field: show when departure is within required advance window
+            const urgencyGroup = document.getElementById('urgency-reason-group');
+            let daysAhead = null;
+            let tooSoon = false;
+            if (fromDate) {
+                daysAhead = Math.ceil((new Date(fromDate) - new Date()) / 86400000);
+                tooSoon = daysAhead < requiredDays;
+            }
+            if (urgencyGroup) {
+                urgencyGroup.style.display = tooSoon ? 'flex' : 'none';
             }
 
             const textEl = document.getElementById('policy-text');
@@ -929,21 +1030,19 @@
             const badgeTextEl = document.getElementById('policy-status-text');
             const badgeIcon = badgeEl?.querySelector('.material-symbols-outlined');
 
-            const warnings = [];
-            if (fromDate) {
-                const daysAhead = Math.ceil((new Date(fromDate) - new Date()) / 86400000);
-                if (daysAhead < POLICY.advanceDays) {
-                    warnings.push(`Travel in ${daysAhead} day${daysAhead !== 1 ? 's' : ''} — policy requires ${POLICY.advanceDays} days notice. Manager approval required.`);
-                }
-            }
-
-            if (warnings.length) {
-                textEl.innerHTML = warnings.map(w => `⚠️ ${w}`).join('<br>');
+            if (tooSoon) {
+                const dayWord = daysAhead === 1 ? 'day' : 'days';
+                textEl.innerHTML = `⚠️ Travel in ${daysAhead} ${dayWord} — policy requires ${requiredDays} days notice. Fill in the <strong>Urgent Travel Justification</strong> above to continue. Your manager will review.`;
                 if (badgeEl) badgeEl.style.color = 'var(--warning-text)';
-                if (badgeTextEl) badgeTextEl.textContent = 'APPROVAL REQUIRED';
+                if (badgeTextEl) badgeTextEl.textContent = 'URGENCY REASON REQUIRED';
                 if (badgeIcon) badgeIcon.textContent = 'warning';
+            } else if (isForeign) {
+                textEl.textContent = 'International travel confirmed. 45-day advance notice rule applies.';
+                if (badgeEl) badgeEl.style.color = 'var(--info-text)';
+                if (badgeTextEl) badgeTextEl.textContent = 'INTERNATIONAL TRIP';
+                if (badgeIcon) badgeIcon.textContent = 'flight_takeoff';
             } else {
-                textEl.textContent = dest ? `Destination confirmed. Your limits for ${dest} are shown above.` : 'Select a destination to see your hotel and accommodation limits.';
+                textEl.textContent = dest ? `Destination confirmed. Your limits for ${dest} are shown above.` : 'Select a destination to see your hotel and travel limits.';
                 if (badgeEl) badgeEl.style.color = 'var(--success-text)';
                 if (badgeTextEl) badgeTextEl.textContent = 'POLICY COMPLIANT';
                 if (badgeIcon) { badgeIcon.textContent = 'check_circle'; badgeIcon.style.fontVariationSettings = "'FILL' 1"; }
@@ -952,46 +1051,80 @@
 
         async function goToNextStep() {
             if (activeStep === 1) {
-                const origin = document.getElementById('req-origin').value.trim();
-                const dest = document.getElementById('req-destination').value.trim();
+                const isMeal = _bookingCategory === 'MEAL';
+                const origin = isMeal ? null : document.getElementById('req-origin').value.trim();
+                const dest = isMeal
+                    ? document.getElementById('req-meal-destination').value.trim()
+                    : document.getElementById('req-destination').value.trim();
                 const fromDate = document.getElementById('req-from-date').value;
-                if (!origin || !dest || !fromDate) {
-                    showToast('Please fill in Origin City, Destination City, and Departure Date.', 'warning');
+
+                if (!dest || !fromDate) {
+                    showToast('Please fill in Destination City and Departure Date.', 'warning');
                     return;
                 }
+                if (!isMeal && !origin) {
+                    showToast('Please fill in Origin City.', 'warning');
+                    return;
+                }
+                if (isMeal) {
+                    const dur = parseInt(document.getElementById('meal-duration-days').value);
+                    if (!dur || dur < 1 || dur > 20) {
+                        showToast('Please enter trip duration in days (1–20) for the meal claim.', 'warning');
+                        return;
+                    }
+                }
 
-                // Change indicators
+                // Check urgency: if short notice, urgencyReason must be filled
+                const isForeign = document.getElementById('is-foreign-travel')?.checked || false;
+                const requiredDays = isForeign ? (POLICY.foreignAdvanceDays || 45) : (POLICY.advanceDays || 30);
+                const daysAhead = Math.ceil((new Date(fromDate) - new Date()) / 86400000);
+                if (daysAhead < requiredDays) {
+                    const urgency = document.getElementById('urgency-reason')?.value.trim() || '';
+                    if (urgency.length < 10) {
+                        showToast(`Travel in ${daysAhead} days — you need to fill the Urgent Travel Justification (min 10 characters) to proceed.`, 'warning');
+                        document.getElementById('urgency-reason')?.focus();
+                        return;
+                    }
+                }
+
                 document.getElementById('step-1-indicator').classList.remove('active');
                 document.getElementById('step-1-indicator').classList.add('completed');
-                document.getElementById('step-2-indicator').classList.add('active');
 
-                // Toggle views
-                document.getElementById('step-1-card').style.display = 'none';
-                document.getElementById('step-2-card').style.display = 'block';
-                document.getElementById('trip-options-loader').style.display = 'block';
+                if (isMeal) {
+                    // MEAL skips Step 2 — jump straight to Step 3
+                    document.getElementById('step-2-indicator').classList.add('completed');
+                    document.getElementById('step-3-indicator').classList.add('active');
+                    document.getElementById('step-1-card').style.display = 'none';
+                    document.getElementById('step-3-card').style.display = 'block';
+                    activeStep = 3;
+                    document.getElementById('next-btn').style.display = 'none';
+                    document.getElementById('submit-btn').style.display = 'flex';
+                    selectedType = 'MEAL';
+                    updateStep3Summary();
+                } else {
+                    document.getElementById('step-2-indicator').classList.add('active');
+                    document.getElementById('step-1-card').style.display = 'none';
+                    document.getElementById('step-2-card').style.display = 'block';
+                    document.getElementById('trip-options-loader').style.display = 'block';
+                    activeStep = 2;
+                    document.getElementById('next-btn').innerHTML = 'Next: Submit Costs <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>';
 
-                activeStep = 2;
-                document.getElementById('next-btn').innerHTML = 'Next: Submit Costs <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>';
-
-                try {
-                    const params = new URLSearchParams({ from: origin, to: dest, fromDate });
-                    const plan = await apiRequest(`/bookings/trip-plan?${params}`);
-                    renderTripFares(plan, dest, fromDate);
-                } catch (err) {
-                    document.getElementById('req-planner-results').innerHTML = `<p style="color:var(--accent-red);font-weight:700;">Could not load fares: ${err.message}</p>`;
-                } finally {
-                    document.getElementById('trip-options-loader').style.display = 'none';
+                    try {
+                        const params = new URLSearchParams({ from: origin, to: dest, fromDate });
+                        const plan = await apiRequest(`/bookings/trip-plan?${params}`);
+                        renderTripFares(plan, dest, fromDate);
+                    } catch (err) {
+                        document.getElementById('req-planner-results').innerHTML = `<p style="color:var(--accent-red);font-weight:700;">Could not load fares: ${err.message}</p>`;
+                    } finally {
+                        document.getElementById('trip-options-loader').style.display = 'none';
+                    }
                 }
             } else if (activeStep === 2) {
-                // Change indicators
                 document.getElementById('step-2-indicator').classList.remove('active');
                 document.getElementById('step-2-indicator').classList.add('completed');
                 document.getElementById('step-3-indicator').classList.add('active');
-
-                // View transition
                 document.getElementById('step-2-card').style.display = 'none';
                 document.getElementById('step-3-card').style.display = 'block';
-
                 activeStep = 3;
                 document.getElementById('next-btn').style.display = 'none';
                 document.getElementById('submit-btn').style.display = 'flex';
@@ -1121,18 +1254,19 @@
             let hasAny = false;
             _flightGroups = [];
 
-            // ── Flights (Permitted only for routes >= 500 km) ─────────────────────
-            if (plan.distanceKm !== undefined && plan.distanceKm < 500) {
+            // ── Flights (Permitted only when surface journey > 12 hrs, T&E §5.1.1) ─
+            const estRailHours = plan.distanceKm ? Math.round(plan.distanceKm / 70) : null;
+            if (estRailHours !== null && estRailHours < 12) {
                 html += `
                     <div style="background:#fffbeb;color:#b45309;border:2px solid #fef3c7;padding:1.25rem;border-radius:12px;margin-bottom:1.5rem;font-family:var(--font-display);font-size:0.85rem;font-weight:600;display:flex;flex-direction:column;gap:0.5rem;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
                         <div style="display:flex;align-items:center;gap:0.5rem;">
                             <span class="material-symbols-outlined" style="font-size:22px;color:#b45309;">warning</span>
-                            <span style="font-size:0.95rem;font-weight:800;letter-spacing:-0.01em;">AIR TRAVEL POLICY ENFORCEMENT</span>
+                            <span style="font-size:0.95rem;font-weight:800;letter-spacing:-0.01em;">AIR TRAVEL NOT PERMITTED (T&amp;E §5.1.1)</span>
                         </div>
                         <p style="margin:0;line-height:1.45;">
-                            Corporate guidelines restrict air travel for flights under <strong>500 km</strong>. 
-                            The route distance from <strong>${plan.from} to ${dest}</strong> is <strong>${plan.distanceKm} km</strong>. 
-                            Flight selection is restricted. Please request a compliant Train option from the list below.
+                            Air travel is only allowed when the equivalent surface journey exceeds <strong>12 hours</strong>.
+                            Estimated rail journey from <strong>${plan.from || dest} to ${dest}</strong> is approximately <strong>~${estRailHours} hrs</strong> (${plan.distanceKm} km).
+                            Please select a compliant Train option from the list below.
                         </p>
                     </div>
                 `;
@@ -1228,6 +1362,26 @@
         function updateStep3Summary() {
             const el = document.getElementById('step3-summary');
             if (!el) return;
+
+            // MEAL type: no fare to select — show simplified summary
+            if (_bookingCategory === 'MEAL') {
+                const dest = document.getElementById('req-meal-destination')?.value.trim() || '—';
+                const dur  = document.getElementById('meal-duration-days')?.value || '—';
+                const date = document.getElementById('req-from-date').value || '—';
+                el.innerHTML = `
+                    <div style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Meal Expense Claim:</div>
+                    <div style="display:flex;flex-direction:column;padding:1.25rem;background:var(--primary-bg);border:2px solid var(--primary);border-radius:var(--radius-lg);">
+                        <div style="display:flex;align-items:center;gap:0.75rem;">
+                            <span class="material-symbols-outlined" style="color:var(--primary);font-size:2rem;background:#ffffff;border:2px solid var(--primary);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">restaurant</span>
+                            <div style="flex:1;">
+                                <p style="font-family:var(--font-display);font-weight:800;font-size:1rem;margin:0;color:var(--on-surface);">Meal Expense — ${dest}</p>
+                                <p style="font-size:0.75rem;color:var(--secondary);margin:0.2rem 0 0;font-weight:600;">${date} · ${dur} day${dur !== '1' ? 's' : ''}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                return;
+            }
+
             if (!_selectedFare) {
                 el.innerHTML = '<div style="padding:1rem;background:var(--surface-container-low);border-radius:var(--radius-md);color:var(--secondary);font-size:0.85rem;font-weight:500;">No fare selected — enter the budget manually, or go back and pick a fare.</div>';
                 return;
@@ -1374,14 +1528,25 @@
 
         async function submitRequest() {
             const cost = document.getElementById('estimated-cost').value;
-            const origin = document.getElementById('req-origin').value.trim();
-            const dest = document.getElementById('req-destination').value.trim();
+            const isMeal = _bookingCategory === 'MEAL';
+            const origin = isMeal ? null : document.getElementById('req-origin').value.trim();
+            const dest = isMeal
+                ? document.getElementById('req-meal-destination').value.trim()
+                : document.getElementById('req-destination').value.trim();
             const date = document.getElementById('req-from-date').value;
             const purpose = document.getElementById('req-purpose').value;
             const justification = document.getElementById('req-justification').value.trim();
+            const isForeign = document.getElementById('is-foreign-travel')?.checked || false;
+            const urgencyReason = document.getElementById('urgency-reason')?.value.trim() || '';
+            const trainClass = (selectedType === 'TRAIN' && _selectedFare?.class) ? _selectedFare.class : null;
+            const durationDays = isMeal ? parseInt(document.getElementById('meal-duration-days')?.value) || null : null;
 
-            if (!cost || cost <= 0) {
+            if (!cost || parseFloat(cost) <= 0) {
                 showToast('Please enter or select a cost.', 'warning');
+                return;
+            }
+            if (isMeal && (!durationDays || durationDays < 1)) {
+                showToast('Please enter trip duration in days for the meal claim.', 'warning');
                 return;
             }
 
@@ -1389,28 +1554,28 @@
             btn.disabled = true; btn.textContent = 'Submitting…';
 
             try {
+                const details = {
+                    destination: dest,
+                    date,
+                    purpose,
+                    justification,
+                    ...(origin ? { origin } : {}),
+                    ...(isForeign ? { isForeignTravel: true } : {}),
+                    ...(urgencyReason.length >= 10 ? { urgencyReason } : {}),
+                    ...(trainClass ? { trainClass } : {}),
+                    ...(durationDays ? { durationDays } : {}),
+                    ...(_selectedFare ? { selectedFare: _selectedFare } : {})
+                };
                 await apiRequest('/bookings', {
                     method: 'POST',
-                    body: {
-                        type: selectedType,
-                        details: {
-                            origin,
-                            destination: dest,
-                            date,
-                            purpose,
-                            justification,
-                            ...(_selectedFare ? { selectedFare: _selectedFare } : {})
-                        },
-                        cost
-                    }
+                    body: { type: selectedType, details, cost: parseFloat(cost) }
                 });
                 showToast('Travel request submitted successfully!', 'success');
-                setTimeout(() => {
-                    window.location.href = 'employee.html';
-                }, 1500);
+                setTimeout(() => { window.location.href = 'employee.html'; }, 1500);
             } catch (err) {
                 showToast(err.message, 'error');
-                btn.disabled = false; btn.textContent = 'Submit Request';
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Request <span class="material-symbols-outlined" style="font-size:18px;">send</span>';
             }
         }
     </script>

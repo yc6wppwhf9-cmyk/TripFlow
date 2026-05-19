@@ -558,13 +558,8 @@
                 </button>
                 <h1 style="font-size:1.25rem;font-weight:600;margin:0;">Dashboard</h1>
             </div>
-            <div style="display:flex;align-items:center;gap:1.5rem;">
-                <div class="mobile-hide" style="position:relative;width:240px;">
-                    <input type="text" placeholder="Search trips..." style="font-size:0.85rem;padding:0.4rem 0.75rem;">
-                </div>
-                <div style="display:flex;align-items:center;gap:1rem;">
-                    <span id="user-name" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;border:1px solid var(--outline-variant);background:var(--surface-container-low);padding:0.25rem 0.75rem;border-radius:var(--radius-md);">Employee</span>
-                </div>
+            <div style="display:flex;align-items:center;gap:1rem;">
+                <span id="user-name" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;border:1px solid var(--outline-variant);background:var(--surface-container-low);padding:0.25rem 0.75rem;border-radius:var(--radius-md);">Employee</span>
             </div>
         </header>
 
@@ -787,6 +782,7 @@
         let currentUser = null;
         let chatMessages = [];
         let _selectedFare = null;
+        let _userMe = null;
 
         function toggleSidebar() {
             document.getElementById('main-sidebar').classList.toggle('open');
@@ -799,6 +795,7 @@
             if (!currentUser) return;
             document.getElementById('user-name').innerText = currentUser.name.toUpperCase();
             showTableSkeleton('bookings-list', 6);
+            try { _userMe = await apiRequest('/auth/me'); } catch (_) {}
             await loadBookings();
             await loadNotifications();
         }
@@ -871,17 +868,23 @@
                 const list = document.getElementById('bookings-list');
                 document.getElementById('active-req-count').innerText = bookings.filter(b => b.stage === 'PENDING_MANAGER' || b.stage === 'PENDING_VENDOR').length.toString().padStart(2, '0');
                 
-                // 1. Calculate and update Q4 Budget card
-                const totalCost = bookings.filter(b => b.stage === 'COMPLETED').reduce((acc, curr) => acc + Number(curr.cost || 0), 0);
-                const limit = 500000;
-                const percentage = Math.min(100, Math.round((totalCost / limit) * 100));
+                // 1. Calculate and update monthly spend card
+                const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0,0,0,0);
+                const monthlySpend = bookings
+                    .filter(b => b.stage !== 'REJECTED' && new Date(b.createdAt) >= startOfMonth)
+                    .reduce((acc, curr) => acc + Number(curr.cost || 0), 0);
+                const policyLimit = _userMe?.policyRules?.globalMonthlyBudget || null;
+                const percentage = policyLimit ? Math.min(100, Math.round((monthlySpend / policyLimit) * 100)) : null;
+                const barColor = percentage >= 90 ? 'var(--danger-text)' : percentage >= 70 ? 'var(--warning-text)' : 'var(--primary)';
                 document.getElementById('budget-progress-card').innerHTML = `
-                    <span class="page-label">Q4 Travel Budget</span>
-                    <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.2;color:var(--on-surface);">₹${totalCost.toLocaleString('en-IN')}</div>
+                    <span class="page-label">Monthly Travel Spend</span>
+                    <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.2;color:var(--on-surface);">₹${monthlySpend.toLocaleString('en-IN')}</div>
+                    ${policyLimit ? `
                     <div class="budget-progress-container">
-                        <div class="budget-progress-bar" style="width: ${percentage}%;"></div>
+                        <div class="budget-progress-bar" style="width:${percentage}%;background:${barColor};"></div>
                     </div>
-                    <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">${percentage}% of quarterly allowance used</span>
+                    <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">${percentage}% of ₹${policyLimit.toLocaleString('en-IN')} monthly budget used</span>
+                    ` : `<span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">This month's non-rejected bookings</span>`}
                 `;
 
                 // 2. Greeting Badges: Flight & Lodging
@@ -920,31 +923,38 @@
                         </tr>`).join('');
                 }
 
-                // 4. Upcoming Trip Summary Grid (up to 2 cards + plan-new-card)
-                const upcomingTrips = bookings.filter(b => b.stage === 'COMPLETED').slice(0, 2);
-                let tripHtml = upcomingTrips.map((b, idx) => {
-                    const daysLabel = idx === 0 ? 'Next Trip' : 'Upcoming';
+                // 4. Upcoming Trip Summary Grid — show in-progress and pending trips (future travel)
+                const today = new Date().toISOString().slice(0, 10);
+                const upcomingTrips = bookings
+                    .filter(b => ['PENDING_MANAGER','PENDING_VENDOR'].includes(b.stage) || (b.stage === 'COMPLETED' && b.details?.date >= today))
+                    .slice(0, 3);
+                const stageLabel = { PENDING_MANAGER: 'AWAITING APPROVAL', PENDING_VENDOR: 'WITH TRAVEL DESK', COMPLETED: 'CONFIRMED' };
+                const stageBg    = { PENDING_MANAGER: 'var(--warning-bg)', PENDING_VENDOR: 'var(--info-bg)', COMPLETED: 'var(--success-bg)' };
+                const stageColor = { PENDING_MANAGER: 'var(--warning-text)', PENDING_VENDOR: 'var(--info-text)', COMPLETED: 'var(--success-text)' };
+                let tripHtml = upcomingTrips.map(b => {
+                    const dest = b.details?.destination || '—';
                     return `
-                        <div class="trip-item-card">
-                            <div class="img-wrap">
-                                <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=400&q=80" alt="${b.details.destination}">
-                                <span class="days-badge">${daysLabel}</span>
+                        <div class="trip-item-card" onclick="window.location.href='detail.html?id=${b.id}'" style="cursor:pointer;">
+                            <div class="img-wrap" style="background:var(--surface-container-low);display:flex;align-items:center;justify-content:center;">
+                                <span class="material-symbols-outlined" style="font-size:48px;color:var(--primary);opacity:0.25;">${b.type === 'FLIGHT' ? 'flight_takeoff' : b.type === 'TRAIN' ? 'train' : b.type === 'HOTEL' ? 'hotel' : 'restaurant'}</span>
+                                <span class="days-badge" style="background:${stageBg[b.stage]};color:${stageColor[b.stage]};border-color:transparent;">${stageLabel[b.stage] || b.stage}</span>
                             </div>
                             <div class="content">
-                                <div style="margin-bottom:0.75rem;">
-                                    <h4 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin:0;">${b.details.destination} Visit</h4>
-                                    <span style="font-size:0.75rem;font-weight:500;color:var(--secondary);">${b.details.origin} → ${b.details.destination}</span>
+                                <div style="margin-bottom:0.5rem;">
+                                    <h4 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;margin:0 0 0.15rem;">${dest}</h4>
+                                    <span style="font-size:0.72rem;font-weight:500;color:var(--secondary);">${b.details?.origin ? b.details.origin + ' → ' : ''}${dest}</span>
                                 </div>
-                                <span style="font-size:0.8rem;font-weight:700;display:flex;align-items:center;gap:0.25rem;color:var(--primary);"><span class="material-symbols-outlined" style="font-size:16px;">calendar_today</span> ${b.details.date || 'Arranged'}</span>
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-size:0.75rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:14px;">calendar_today</span>${b.details?.date || 'Arranged'}</span>
+                                    <span style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--on-surface);">₹${Number(b.cost||0).toLocaleString('en-IN')}</span>
+                                </div>
                             </div>
                         </div>`;
                 }).join('');
 
                 tripHtml += `
-                    <div class="plan-new-card" onclick="window.location.href='request.html'" style="grid-column: span 4; min-height: 160px;">
-                        <div class="icon-box">
-                            <span class="material-symbols-outlined">add_location_alt</span>
-                        </div>
+                    <div class="plan-new-card" onclick="window.location.href='request.html'" style="${upcomingTrips.length === 0 ? 'grid-column:span 4;' : ''} min-height: 160px;">
+                        <div class="icon-box"><span class="material-symbols-outlined">add_location_alt</span></div>
                         <span style="font-family:var(--font-display);font-size:0.9rem;font-weight:700;text-transform:uppercase;">Plan New Trip</span>
                     </div>`;
                 document.getElementById('upcoming-trips-grid').innerHTML = tripHtml;
@@ -1043,17 +1053,17 @@
                 ${apInfo?`<br><span style="color:rgba(26,26,26,0.6);margin-top:0.3rem;display:block;font-size:0.75rem;">NEAREST AIRPORTS: ${apInfo}</span>`:''}
             </div>`;
 
-            if (plan.distanceKm !== undefined && plan.distanceKm < 500) {
+            const _estHrs = plan.distanceKm ? Math.round(plan.distanceKm / 70) : null;
+            if (_estHrs !== null && _estHrs < 12) {
                 html += `
                     <div style="background:#fffbeb;color:#b45309;border:2px solid #fef3c7;padding:1rem;margin-bottom:1.5rem;font-size:0.8rem;font-weight:700;display:flex;flex-direction:column;gap:0.4rem;box-shadow:0 2px 4px rgba(0,0,0,0.05);border-radius:4px;">
                         <div style="display:flex;align-items:center;gap:0.5rem;">
                             <span class="material-symbols-outlined" style="font-size:20px;color:#b45309;">warning</span>
-                            <span style="font-size:0.85rem;font-weight:800;letter-spacing:-0.01em;">AIR TRAVEL POLICY RESTRICTION</span>
+                            <span style="font-size:0.85rem;font-weight:800;letter-spacing:-0.01em;">AIR TRAVEL NOT PERMITTED (T&amp;E §5.1.1)</span>
                         </div>
                         <p style="margin:0;line-height:1.4;font-weight:600;color:rgba(180,83,9,0.9);">
-                            Flights are only permitted for routes over <strong>500 km</strong>. 
-                            Calculated distance: <strong>${plan.distanceKm} km</strong>. 
-                            Air selection is disabled. Please select from the compliant Train options below.
+                            Air travel is only permitted when the equivalent rail journey exceeds <strong>12 hours</strong>.
+                            Estimated rail time: <strong>~${_estHrs} hrs</strong> (${plan.distanceKm} km). Please select a compliant Train option below.
                         </p>
                     </div>
                 `;
@@ -1177,27 +1187,27 @@
         }
 
         async function submitTripBooking() {
-            const cost   = document.getElementById('estimated-cost').value;
-            const type   = document.getElementById('travel-type').value || 'FLIGHT';
-            const origin = document.getElementById('origin').value;
+            const cost        = document.getElementById('estimated-cost').value;
+            const type        = document.getElementById('travel-type').value || 'FLIGHT';
+            const origin      = document.getElementById('origin').value;
             const destination = document.getElementById('destination').value;
-            const date   = document.getElementById('travel-date').value;
-            if (!cost || cost <= 0) { showToast('Please select an option or enter a cost.', 'warning'); return; }
+            const date        = document.getElementById('travel-date').value;
+            const trainClass  = (type === 'TRAIN' && _selectedFare?.class) ? _selectedFare.class : null;
+
+            if (!cost || parseFloat(cost) <= 0) { showToast('Please select an option or enter a cost.', 'warning'); return; }
             const btn = event.currentTarget;
             btn.disabled = true; btn.textContent = 'Submitting…';
             try {
+                const details = {
+                    origin,
+                    destination,
+                    date,
+                    ...(trainClass ? { trainClass } : {}),
+                    ...(_selectedFare ? { selectedFare: _selectedFare } : {})
+                };
                 await apiRequest('/bookings', {
                     method: 'POST',
-                    body: {
-                        type,
-                        details: {
-                            origin,
-                            destination,
-                            date,
-                            ...(_selectedFare ? { selectedFare: _selectedFare } : {})
-                        },
-                        cost
-                    }
+                    body: { type, details, cost: parseFloat(cost) }
                 });
                 hideBookingModal();
                 showToast('Trip request submitted! Your manager will review it shortly.', 'success', 5000);

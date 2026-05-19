@@ -728,4 +728,4 @@ async function planTrip(from, to, fromDate, toDate) {
   };
 }
 
-module.exports = { searchFlights, searchTrains, searchHotels, planTrip, resolveIATA, resolveStation };
+module.exports = { searchFlights, searchTrains, searchHotels, planTrip, resolveIATA, resolveStation, getDistanceKm };

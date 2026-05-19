@@ -78,22 +78,28 @@ exports.me = async (req, res) => {
       where: { id: req.user.id },
       include: {
         employee: {
-          include: { manager: { include: { user: true } } }
+          include: {
+            manager: { include: { user: true } },
+            policy: true
+          }
         }
       }
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
     const bandMap = { ADMIN: 1, HR: 1, MANAGER: 2, EMPLOYEE: 3 };
+    const policyRules = user.employee?.policy?.rules || {};
+    const band = policyRules.band || bandMap[user.role] || 3;
     res.json({
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
-      band: bandMap[user.role] || 3,
+      band,
       department: user.employee?.department || null,
       manager: user.employee?.manager?.user
         ? { name: user.employee.manager.user.name, email: user.employee.manager.user.email }
-        : null
+        : null,
+      policyRules: Object.keys(policyRules).length ? policyRules : null
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
