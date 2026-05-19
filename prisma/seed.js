@@ -26,19 +26,31 @@ async function main() {
 
   const hashedPassword = await bcrypt.hash('Welcome@123', 12);
 
-  // 1. HR Admin
+  // 1. System Admin
   const admin = await prisma.user.upsert({
+    where: { email: 'admin@tripflow.com' },
+    update: {},
+    create: {
+      email: 'admin@tripflow.com',
+      password: hashedPassword,
+      name: 'System Admin',
+      role: 'ADMIN',
+    },
+  });
+
+  // 2. HR Officer
+  const hr = await prisma.user.upsert({
     where: { email: 'hr@tripflow.com' },
     update: {},
     create: {
       email: 'hr@tripflow.com',
       password: hashedPassword,
-      name: 'Sarah Admin',
-      role: 'ADMIN',
+      name: 'HR Officer',
+      role: 'HR',
     },
   });
 
-  // 2. Manager
+  // 3. Manager
   const manager = await prisma.user.upsert({
     where: { email: 'manager@tripflow.com' },
     update: {},
@@ -50,7 +62,7 @@ async function main() {
     },
   });
 
-  // 3. Employees
+  // 4. Employees
   const emp1 = await prisma.user.upsert({
     where: { email: 'alice@tripflow.com' },
     update: {},
@@ -89,7 +101,7 @@ async function main() {
     include: { employee: true }
   });
 
-  // 4. Vendor
+  // 5. Vendor
   const vendorUser = await prisma.user.upsert({
     where: { email: 'vendor@travel.com' },
     update: {},
@@ -108,7 +120,7 @@ async function main() {
     include: { vendor: true }
   });
 
-  // 5. Sample Policy
+  // 6. Sample Policy
   const policy = await prisma.policy.create({
     data: {
       name: 'Standard Policy 2026',
