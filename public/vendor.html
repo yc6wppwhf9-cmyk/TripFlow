@@ -351,7 +351,7 @@
             if (!user) return;
             document.getElementById('user-name').innerText = user.name;
             
-            const companyName = user.vendor?.companyName || "Grand Metropolitan Hotel";
+            const companyName = user.vendor?.companyName || user.name || "Vendor Partner";
             document.getElementById('company-name').innerText = companyName.toUpperCase() + " PARTNER";
             document.getElementById('welcome-heading').innerText = "Welcome, " + companyName;
 

@@ -487,9 +487,9 @@
                         <h3 style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;text-transform:uppercase;color:var(--secondary);margin-bottom:0.75rem;letter-spacing:0.05em;">Related Contacts</h3>
                         <div style="display:flex;flex-direction:column;gap:0.25rem;">
                             <div class="contact-item">
-                                <div class="contact-avatar">SJ</div>
+                                <div class="contact-avatar" id="contact-manager-avatar">—</div>
                                 <div style="flex:1;">
-                                    <p style="font-size:0.8rem;font-weight:600;margin:0;" id="contact-manager">Sarah Jenkins</p>
+                                    <p style="font-size:0.8rem;font-weight:600;margin:0;" id="contact-manager">—</p>
                                     <p style="font-size:0.7rem;font-weight:500;color:var(--secondary);margin:0;">Direct Manager</p>
                                 </div>
                             </div>
@@ -701,7 +701,10 @@
 
                 // Manager contact
                 if (b.employee?.manager?.name) {
-                    document.getElementById('contact-manager').innerText = b.employee.manager.name;
+                    const mName = b.employee.manager.name;
+                    document.getElementById('contact-manager').innerText = mName;
+                    const initials = mName.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+                    document.getElementById('contact-manager-avatar').innerText = initials;
                 }
 
                 // Receipt row — visible if EMPLOYEE owns the booking (all stages except REJECTED)
