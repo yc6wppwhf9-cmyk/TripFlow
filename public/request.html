@@ -566,9 +566,13 @@
                 <span class="material-symbols-outlined">dashboard</span>
                 Dashboard
             </a>
+            <a href="mytrips.html">
+                <span class="material-symbols-outlined">luggage</span>
+                My Trips
+            </a>
             <a href="#" class="active">
                 <span class="material-symbols-outlined">flight_takeoff</span>
-                Plan Trip
+                New Request
             </a>
         </nav>
 
@@ -598,7 +602,7 @@
         <div class="container" style="padding-top:2rem;">
             <!-- Breadcrumbs -->
             <nav style="display:flex;align-items:center;gap:0.25rem;font-size:0.8rem;font-weight:600;text-transform:uppercase;color:var(--secondary);margin-bottom:1.5rem;">
-                <a href="employee.html" style="text-decoration:none;color:inherit;">My Requests</a>
+                <a href="mytrips.html" style="text-decoration:none;color:inherit;">My Trips</a>
                 <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
                 <span style="color:var(--on-surface);">New Travel Request</span>
             </nav>
@@ -803,7 +807,7 @@
 
                     <!-- Actions -->
                     <div style="display:flex;justify-content:space-between;align-items:center;padding-top:1.5rem;border-top:1px solid var(--outline-variant);">
-                        <button class="secondary" type="button" onclick="window.location.href='employee.html'">
+                        <button class="secondary" type="button" onclick="window.location.href='mytrips.html'">
                             <span class="material-symbols-outlined" style="font-size:16px;">close</span>Cancel
                         </button>
                         <div style="display:flex;gap:0.75rem;">
@@ -1947,7 +1951,7 @@
                     body: { type: submittedType, details, cost: submittedCost }
                 });
                 showToast('Travel request submitted successfully!', 'success');
-                setTimeout(() => { window.location.href = 'employee.html'; }, 1500);
+                setTimeout(() => { window.location.href = 'mytrips.html'; }, 1500);
             } catch (err) {
                 showToast(err.message, 'error');
                 btn.disabled = false;
