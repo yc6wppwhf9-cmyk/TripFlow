@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         /* ── Sidebar Navigation ── */
         .sidebar {
@@ -320,13 +321,24 @@
                 <input type="hidden" id="booking-id">
                 
                 <div class="form-group">
-                    <label style="font-family:var(--font-display);font-weight:600;font-size:0.8rem;display:block;margin-bottom:0.35rem;">PNR / Booking Reference</label>
-                    <input type="text" id="pnr" required placeholder="e.g. TF876X or BOM982" style="width:100%;font-weight:500;">
+                    <label style="font-family:var(--font-display);font-weight:600;font-size:0.8rem;display:block;margin-bottom:0.35rem;">Boarding Pass / E-Ticket PDF</label>
+                    <label id="file-drop-zone" style="display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1rem;border:1.5px dashed var(--outline-variant);border-radius:10px;cursor:pointer;background:#f8f9ff;transition:all 0.2s ease;">
+                        <span class="material-symbols-outlined" style="font-size:22px;color:var(--primary);flex-shrink:0;" id="file-icon">upload_file</span>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:0.85rem;font-weight:600;color:var(--on-surface);" id="file-label">Click to choose a PDF or image</div>
+                            <div style="font-size:0.72rem;color:var(--secondary);font-weight:500;margin-top:0.1rem;">PDF files are scanned for PNR automatically</div>
+                        </div>
+                        <input type="file" id="ticket-file" required accept=".pdf,image/*" style="display:none;">
+                    </label>
                 </div>
-                
+
                 <div class="form-group">
-                    <label style="font-family:var(--font-display);font-weight:600;font-size:0.8rem;display:block;margin-bottom:0.35rem;">Boarding Pass / E-Ticket File</label>
-                    <input type="file" id="ticket-file" required accept=".pdf,image/*" style="width:100%;background:#ffffff;padding:0.5rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;">
+                        <label style="font-family:var(--font-display);font-weight:600;font-size:0.8rem;">PNR / Booking Reference</label>
+                        <span id="pnr-auto-tag" style="display:none;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;background:var(--success-bg);color:var(--success-text);padding:0.15rem 0.5rem;border-radius:4px;">Auto-filled from PDF</span>
+                    </div>
+                    <input type="text" id="pnr" required placeholder="e.g. TF876X or BOM982 — or upload PDF above" style="width:100%;font-weight:600;font-family:monospace;font-size:0.95rem;">
+                    <div id="pnr-scan-status" style="display:none;margin-top:0.5rem;font-size:0.78rem;font-weight:600;color:var(--secondary);display:flex;align-items:center;gap:0.4rem;"></div>
                 </div>
 
                 <div id="upload-progress" style="display:none;padding:0.75rem;background:var(--warning-bg);color:var(--warning-text);font-size:0.8rem;font-weight:600;border-radius:var(--radius-md);">
@@ -478,10 +490,127 @@
                 </div>`).join('');
         }
 
+        // ── PDF.js worker setup ──────────────────────────────────────
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // ── PNR extraction patterns (priority order) ─────────────────
+        const PNR_PATTERNS = [
+            // Labeled: "PNR No: 1234567890" or "PNR: ABC123"
+            /PNR\s*(?:No\.?|Num(?:ber)?|#)?\s*[:\-]?\s*([A-Z0-9]{5,10})/gi,
+            // Indian Railways 10-digit PNR
+            /\bPNR\b[^\d]*(\d{10})\b/gi,
+            // Booking Reference / Confirmation Code
+            /(?:Booking\s*(?:Ref(?:erence)?|Code|ID)|Confirmation\s*(?:No\.?|Code|Num(?:ber)?)|Record\s*Locator)\s*[:\-]?\s*([A-Z0-9]{5,8})/gi,
+            // E-ticket number patterns
+            /E[\-\s]?Ticket\s*(?:No\.?|#|Number)?\s*[:\-]?\s*([A-Z0-9]{6,12})/gi,
+            // Standalone 10-digit number on a line that follows "PNR" nearby
+            /(?:^|\n)\s*(\d{10})\s*(?:\n|$)/gm,
+        ];
+
+        function extractPNRFromText(text) {
+            const upper = text.toUpperCase();
+            for (const pattern of PNR_PATTERNS) {
+                pattern.lastIndex = 0;
+                const match = pattern.exec(upper);
+                if (match && match[1]) {
+                    const candidate = match[1].trim();
+                    // Filter out obviously non-PNR sequences (all zeros, too long)
+                    if (candidate !== '0000000000' && candidate.length >= 5) {
+                        return candidate;
+                    }
+                }
+            }
+            return null;
+        }
+
+        async function extractPNRFromPDF(file) {
+            const statusEl = document.getElementById('pnr-scan-status');
+            const autoTag  = document.getElementById('pnr-auto-tag');
+
+            statusEl.style.display = 'flex';
+            statusEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;animation:spinLoad 0.8s linear infinite;display:inline-block;">progress_activity</span> Scanning PDF for PNR…';
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let fullText = '';
+                for (let i = 1; i <= Math.min(pdf.numPages, 4); i++) {
+                    const page    = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    fullText += content.items.map(item => item.str).join(' ') + '\n';
+                }
+
+                const found = extractPNRFromText(fullText);
+                if (found) {
+                    document.getElementById('pnr').value = found;
+                    autoTag.style.display  = 'inline';
+                    statusEl.style.display = 'none';
+                    return;
+                }
+                // Not found — let vendor type it manually
+                statusEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;color:var(--warning-text);">info</span> PNR not detected — please enter it manually.';
+                statusEl.style.color = 'var(--warning-text)';
+            } catch (err) {
+                statusEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;color:var(--secondary);">info</span> Could not read PDF — please enter PNR manually.';
+                statusEl.style.color = 'var(--secondary)';
+            }
+        }
+
+        // ── File input → custom label + auto-PNR ────────────────────
+        document.getElementById('ticket-file').addEventListener('change', async function () {
+            const file    = this.files[0];
+            const label   = document.getElementById('file-label');
+            const icon    = document.getElementById('file-icon');
+            const autoTag = document.getElementById('pnr-auto-tag');
+            const statusEl= document.getElementById('pnr-scan-status');
+
+            if (!file) return;
+
+            label.textContent = file.name;
+            icon.textContent  = 'description';
+            icon.style.color  = 'var(--success-text)';
+
+            // Reset PNR auto state for fresh upload
+            autoTag.style.display   = 'none';
+            statusEl.style.display  = 'none';
+            statusEl.style.color    = 'var(--secondary)';
+
+            if (file.type === 'application/pdf') {
+                await extractPNRFromPDF(file);
+            }
+        });
+
+        // ── File drop zone hover styling ─────────────────────────────
+        document.getElementById('file-drop-zone').addEventListener('dragover', e => {
+            e.preventDefault();
+            e.currentTarget.style.borderColor  = 'var(--primary)';
+            e.currentTarget.style.background   = '#eef1ff';
+        });
+        document.getElementById('file-drop-zone').addEventListener('dragleave', e => {
+            e.currentTarget.style.borderColor  = 'var(--outline-variant)';
+            e.currentTarget.style.background   = '#f8f9ff';
+        });
+        document.getElementById('file-drop-zone').addEventListener('drop', async e => {
+            e.preventDefault();
+            e.currentTarget.style.borderColor  = 'var(--outline-variant)';
+            e.currentTarget.style.background   = '#f8f9ff';
+            const file = e.dataTransfer.files[0];
+            if (!file) return;
+            const dt = new DataTransfer(); dt.items.add(file);
+            document.getElementById('ticket-file').files = dt.files;
+            document.getElementById('ticket-file').dispatchEvent(new Event('change'));
+        });
+
         function showUploadModal(id) {
             document.getElementById('booking-id').value = id;
             document.getElementById('pnr').value = '';
             document.getElementById('ticket-file').value = '';
+            document.getElementById('file-label').textContent = 'Click to choose a PDF or image';
+            document.getElementById('file-icon').textContent  = 'upload_file';
+            document.getElementById('file-icon').style.color  = 'var(--primary)';
+            document.getElementById('pnr-auto-tag').style.display  = 'none';
+            document.getElementById('pnr-scan-status').style.display = 'none';
             document.getElementById('upload-progress').style.display = 'none';
             document.getElementById('upload-modal').style.display = 'flex';
         }
