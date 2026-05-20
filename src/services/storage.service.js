@@ -1,13 +1,23 @@
-const { UTApi } = require('uploadthing/server');
+const { createClient } = require('@supabase/supabase-js');
 
-const utapi = new UTApi({ token: process.env.UPLOADTHING_TOKEN });
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 async function uploadFile(file) {
-  const utFile = new File([file.buffer], file.originalname, { type: file.mimetype });
-  const { data, error } = await utapi.uploadFiles(utFile);
+  const ext  = file.originalname.split('.').pop();
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from('tickets')
+    .upload(path, file.buffer, { contentType: file.mimetype });
+
   if (error) throw new Error(`Upload failed: ${error.message}`);
-  return data.url;
+
+  const { data } = supabase.storage.from('tickets').getPublicUrl(path);
+  return data.publicUrl;
 }
 
 exports.uploadFile   = uploadFile;
-exports.uploadTicket = uploadFile; // alias kept for existing vendor upload calls
+exports.uploadTicket = uploadFile;
