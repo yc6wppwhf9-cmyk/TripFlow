@@ -224,17 +224,24 @@
         }
 
         @media (max-width: 1024px) {
-            .sidebar { display: none; }
             .main-wrapper { margin-left: 0; }
             .details-grid { grid-template-columns: 1fr; }
             .itinerary-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            [style*="grid-template-columns: 1fr 1fr"],
+            [style*="grid-template-columns:1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
         }
     </style>
 </head>
 <body class="bg-background text-on-surface">
 
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="main-sidebar">
         <div class="sidebar-brand">
             <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
                 <img src="images/Logo.png" alt="TripFlow" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; flex-shrink: 0;">
@@ -270,6 +277,9 @@
         <!-- Top App Bar -->
         <header class="top-appbar">
             <div style="display:flex;align-items:center;gap:0.75rem;">
+                <button class="sidebar-mobile-btn" onclick="toggleSidebar()" aria-label="Open menu">
+                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                </button>
                 <span class="mobile-hide" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;text-transform:uppercase;color:var(--secondary);">Requests / <span id="bar-id">TR-XXXX</span> / Details</span>
             </div>
             <div style="display:flex;align-items:center;gap:1.5rem;">
@@ -524,6 +534,11 @@
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
+        function toggleSidebar() {
+            document.getElementById('main-sidebar').classList.toggle('open');
+            document.getElementById('sidebar-backdrop').classList.toggle('open');
+        }
+
         let currentUser = null;
         let bookingId = null;
 

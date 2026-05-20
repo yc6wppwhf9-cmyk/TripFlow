@@ -125,11 +125,13 @@ async function main() {
     data: {
       name: 'Standard Policy 2026',
       rules: {
-        flightLimit: 1000,
-        hotelLimit: 200,
-        cabLimit: 50,
-        trainLimit: 100,
-        globalMonthlyBudget: 5000,
+        flightLimit: 15000,
+        hotelLimit: 5000,
+        cabLimit: 1500,
+        trainLimit: 3000,
+        advanceBookingDays: 30,
+        foreignTravelAdvanceDays: 45,
+        trainClassEntitlement: '3A',
       },
     },
   });

@@ -54,6 +54,7 @@
 
 /* ── Reset ── */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+img, video, svg { max-width: 100%; height: auto; }
 
 /* ── Base ── */
 body {
@@ -63,6 +64,7 @@ body {
   line-height: 1.5;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 .material-symbols-outlined {
@@ -640,7 +642,18 @@ input[type="checkbox"] {
   .section-header { flex-direction: column; align-items: stretch; gap: 0.75rem; }
   .section-header select, .section-header button { width: 100%; }
 
+  /* Utility: any grid with class="mobile-stack" collapses to 1 column */
+  .mobile-stack { grid-template-columns: 1fr !important; }
+
   .analytics-grid { grid-template-columns: 1fr; }
+
+  /* Collapse inline 1fr 1fr / 2fr 1fr grids inside modals on mobile */
+  .modal-content [style*="grid-template-columns: 1fr 1fr"],
+  .modal-content [style*="grid-template-columns:1fr 1fr"],
+  .modal-content [style*="grid-template-columns: 2fr 1fr"],
+  .modal-content [style*="grid-template-columns:2fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
 
   .modal { align-items: flex-end; padding: 0; }
   .modal-content {

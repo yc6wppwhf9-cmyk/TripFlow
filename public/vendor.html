@@ -143,7 +143,6 @@
         }
 
         @media (max-width: 1024px) {
-            .sidebar { display: none; }
             .main-wrapper { margin-left: 0; }
             .analytics-grid { grid-template-columns: 1fr; }
         }
@@ -151,8 +150,10 @@
 </head>
 <body class="bg-background text-on-surface">
 
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="main-sidebar">
         <div class="sidebar-brand">
             <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
                 <img src="images/Logo.png" alt="TripFlow" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; flex-shrink: 0;">
@@ -180,6 +181,9 @@
         <!-- Top App Bar -->
         <header class="top-appbar">
             <div style="display:flex;align-items:center;gap:0.75rem;">
+                <button class="sidebar-mobile-btn" onclick="toggleSidebar()" aria-label="Open menu">
+                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                </button>
                 <h1 style="font-size:1.25rem;font-weight:600;margin:0;">Fulfillment Center</h1>
             </div>
             <div style="display:flex;align-items:center;gap:1.5rem;">
@@ -346,6 +350,11 @@
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
+        function toggleSidebar() {
+            document.getElementById('main-sidebar').classList.toggle('open');
+            document.getElementById('sidebar-backdrop').classList.toggle('open');
+        }
+
         async function init() {
             const user = checkAuth();
             if (!user) return;

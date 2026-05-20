@@ -1206,7 +1206,7 @@
             const requiredDays = isForeign ? (POLICY.foreignAdvanceDays || 45) : (POLICY.advanceDays || 30);
 
             const bandLabelEl = document.getElementById('policy-band-label');
-            if (bandLabelEl) bandLabelEl.textContent = _userMe ? band : '–';
+            if (bandLabelEl) bandLabelEl.textContent = band;
 
             // Limits table
             const limitsEl = document.getElementById('policy-limits');
@@ -1243,12 +1243,26 @@
             const badgeTextEl = document.getElementById('policy-status-text');
             const badgeIcon = badgeEl?.querySelector('.material-symbols-outlined');
 
+            // Check selected fare against per-type policy limits from backend
+            const pr = _userMe?.policyRules || {};
+            const fareTypeKey = { FLIGHT: 'flightLimit', CAB: 'cabLimit', TRAIN: 'trainLimit' };
+            const activeFare = _travelFare || _selectedFare;
+            const fareOverLimit = activeFare && fareTypeKey[activeFare.type]
+                && pr[fareTypeKey[activeFare.type]]
+                && activeFare.price > pr[fareTypeKey[activeFare.type]];
+
             if (tooSoon) {
                 const dayWord = daysAhead === 1 ? 'day' : 'days';
                 textEl.innerHTML = `⚠️ Travel in ${daysAhead} ${dayWord} — policy requires ${requiredDays} days notice. Fill in the <strong>Urgent Travel Justification</strong> above to continue. Your manager will review.`;
                 if (badgeEl) badgeEl.style.color = 'var(--warning-text)';
                 if (badgeTextEl) badgeTextEl.textContent = 'URGENCY REASON REQUIRED';
                 if (badgeIcon) badgeIcon.textContent = 'warning';
+            } else if (fareOverLimit) {
+                const lKey = fareTypeKey[activeFare.type];
+                textEl.innerHTML = `⚠️ Selected ${activeFare.type.toLowerCase()} fare ₹${activeFare.price.toLocaleString('en-IN')} exceeds your policy limit of ₹${pr[lKey].toLocaleString('en-IN')}. Manager approval required.`;
+                if (badgeEl) badgeEl.style.color = 'var(--warning-text)';
+                if (badgeTextEl) badgeTextEl.textContent = 'EXCEEDS POLICY LIMIT';
+                if (badgeIcon) { badgeIcon.textContent = 'warning'; badgeIcon.style.fontVariationSettings = "'FILL' 1"; }
             } else if (isForeign) {
                 textEl.textContent = 'International travel confirmed. 45-day advance notice rule applies.';
                 if (badgeEl) badgeEl.style.color = 'var(--info-text)';
@@ -1832,6 +1846,7 @@
             }
             updateItineraryBar();
             updateStep3Summary();
+            updatePolicyStatus();
         }
 
         function selectTrainFare(el, fareDetails) {
@@ -1855,6 +1870,7 @@
             showToast('Train selected! Budget auto-calculated based on class.', 'success');
             updateItineraryBar();
             updateStep3Summary();
+            updatePolicyStatus();
         }
 
         async function submitRequest() {
