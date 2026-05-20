@@ -14,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files
 app.use(express.static(path.join(__dirname, '../public')));
 
+
 // API Routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/bookings', require('./routes/booking.routes'));

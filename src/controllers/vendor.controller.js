@@ -1,4 +1,5 @@
 const prisma = require('../config/db');
+const { userSelect } = require('../config/selects');
 const approvalService = require('../services/approval.service');
 const storageService = require('../services/storage.service');
 
@@ -13,7 +14,7 @@ exports.getVendorRequests = async (req, res) => {
       },
       include: {
         employee: {
-          include: { user: true }
+          include: { user: userSelect }
         }
       }
     });
@@ -28,7 +29,7 @@ exports.getCompletedBookings = async (req, res) => {
     if (!req.user.vendor) return res.status(400).json({ error: 'User is not a vendor' });
     const bookings = await prisma.booking.findMany({
       where: { vendorId: req.user.vendor.id, stage: 'COMPLETED' },
-      include: { employee: { include: { user: true } } },
+      include: { employee: { include: { user: userSelect } } },
       orderBy: { updatedAt: 'desc' }
     });
     res.json(bookings);

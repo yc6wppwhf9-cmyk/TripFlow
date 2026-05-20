@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const prisma = require('../config/db');
+const { userSelect } = require('../config/selects');
 const { redisClient } = require('../config/redis');
 
 const MAX_ATTEMPTS  = 5;
@@ -133,7 +134,7 @@ exports.me = async (req, res) => {
       include: {
         employee: {
           include: {
-            manager: { include: { user: true } },
+            manager: { include: { user: userSelect } },
             policy: true
           }
         }

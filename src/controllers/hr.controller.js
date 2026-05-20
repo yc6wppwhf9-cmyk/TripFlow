@@ -1,11 +1,12 @@
 const prisma = require('../config/db');
+const { userSelect } = require('../config/selects');
 
 exports.getAllBookings = async (req, res) => {
   try {
     const bookings = await prisma.booking.findMany({
       include: {
-        employee: { include: { user: true, policy: true } },
-        vendor: { include: { user: true } }
+        employee: { include: { user: userSelect, policy: true } },
+        vendor: { include: { user: userSelect } }
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -19,7 +20,7 @@ exports.getDeptSpend = async (req, res) => {
   try {
     const employees = await prisma.employee.findMany({
       include: {
-        user: true,
+        user: userSelect,
         bookings: { where: { stage: { not: 'REJECTED' } } },
         policy: true
       }

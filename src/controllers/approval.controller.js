@@ -1,9 +1,10 @@
 const prisma = require('../config/db');
+const { userSelect } = require('../config/selects');
 const approvalService = require('../services/approval.service');
 
 exports.getVendors = async (req, res) => {
   try {
-    const vendors = await prisma.vendor.findMany({ include: { user: true } });
+    const vendors = await prisma.vendor.findMany({ include: { user: userSelect } });
     res.json(vendors);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -21,7 +22,7 @@ exports.getPendingApprovals = async (req, res) => {
       },
       include: {
         employee: {
-          include: { user: true, policy: true }
+          include: { user: userSelect, policy: true }
         }
       }
     });
@@ -38,8 +39,8 @@ exports.getTeamBookings = async (req, res) => {
         employee: { managerId: req.user.id }
       },
       include: {
-        employee: { include: { user: true } },
-        vendor: { include: { user: true } }
+        employee: { include: { user: userSelect } },
+        vendor: { include: { user: userSelect } }
       },
       orderBy: { createdAt: 'desc' }
     });

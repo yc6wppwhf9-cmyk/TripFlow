@@ -1,4 +1,5 @@
 const prisma = require('../config/db');
+const { userSelect } = require('../config/selects');
 const claudeService = require('../services/claude.service');
 const bcrypt = require('bcryptjs');
 
@@ -6,7 +7,7 @@ exports.getAllBookings = async (req, res) => {
   try {
     const bookings = await prisma.booking.findMany({
       include: {
-        employee: { include: { user: true } },
+        employee: { include: { user: userSelect } },
         vendor: true
       },
       orderBy: { createdAt: 'desc' }
@@ -47,7 +48,7 @@ exports.getAllUsers = async (req, res) => {
 exports.getEmployees = async (req, res) => {
   try {
     const employees = await prisma.employee.findMany({
-      include: { user: true, manager: true }
+      include: { user: userSelect, manager: true }
     });
     res.json(employees);
   } catch (error) {
@@ -57,7 +58,7 @@ exports.getEmployees = async (req, res) => {
 
 exports.getVendors = async (req, res) => {
   try {
-    const vendors = await prisma.vendor.findMany({ include: { user: true } });
+    const vendors = await prisma.vendor.findMany({ include: { user: userSelect } });
     res.json(vendors);
   } catch (error) {
     res.status(500).json({ error: error.message });

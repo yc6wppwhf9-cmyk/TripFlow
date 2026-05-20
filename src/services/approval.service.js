@@ -1,11 +1,12 @@
 const prisma = require('../config/db');
+const { userSelect } = require('../config/selects');
 const emailService = require('./email.service');
 const whatsappService = require('./whatsapp.service');
 
 exports.submitRequest = async (bookingId) => {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
-    include: { employee: { include: { user: true, manager: true } } }
+    include: { employee: { include: { user: userSelect, manager: true } } }
   });
 
   if (!booking) throw new Error('Booking not found');
@@ -32,7 +33,7 @@ exports.approve = async (bookingId, vendorId) => {
       stage: 'PENDING_VENDOR',
       vendorId: vendorId
     },
-    include: { vendor: { include: { user: true } } }
+    include: { vendor: { include: { user: userSelect } } }
   });
 
   if (booking.vendor) {
@@ -49,7 +50,7 @@ exports.reject = async (bookingId, reason) => {
       stage: 'REJECTED',
       rejectionReason: reason
     },
-    include: { employee: { include: { user: true } } }
+    include: { employee: { include: { user: userSelect } } }
   });
 
   // Notify Employee
@@ -66,7 +67,7 @@ exports.complete = async (bookingId, ticketUrl, pnr) => {
       ticketUrl: ticketUrl,
       pnr: pnr
     },
-    include: { employee: { include: { user: true } } }
+    include: { employee: { include: { user: userSelect } } }
   });
 
   const hrAdmin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
