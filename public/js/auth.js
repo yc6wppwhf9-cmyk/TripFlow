@@ -13,26 +13,48 @@ async function login(email, password) {
 
 function checkAuth() {
   const token = localStorage.getItem('tripflow_token');
-  const user = JSON.parse(localStorage.getItem('tripflow_user'));
-  
+  const user  = JSON.parse(localStorage.getItem('tripflow_user'));
+
+  const roleHome = {
+    EMPLOYEE: '/employee.html',
+    MANAGER:  '/manager.html',
+    VENDOR:   '/vendor.html',
+    ADMIN:    '/admin.html',
+    HR:       '/hr.html'
+  };
+
   if (!token || !user) {
-    if (window.location.pathname !== '/index.html' && window.location.pathname !== '/') {
+    const path = window.location.pathname;
+    if (path !== '/index.html' && path !== '/') {
       window.location.href = '/index.html';
     }
     return null;
   }
 
-  // Role based redirection
-  const rolePages = {
-    'EMPLOYEE': '/employee.html',
-    'MANAGER': '/manager.html',
-    'VENDOR': '/vendor.html',
-    'ADMIN': '/admin.html',
-    'HR': '/hr.html'
+  const path = window.location.pathname;
+
+  // Redirect already-logged-in users away from the login page
+  if (path === '/index.html' || path === '/') {
+    window.location.href = roleHome[user.role] || '/employee.html';
+    return user;
+  }
+
+  // Page access control — maps each page to the roles that may view it
+  const pageAccess = {
+    '/employee.html': ['EMPLOYEE', 'MANAGER', 'ADMIN'],
+    '/manager.html':  ['MANAGER', 'ADMIN'],
+    '/hr.html':       ['HR', 'ADMIN'],
+    '/admin.html':    ['ADMIN'],
+    '/vendor.html':   ['VENDOR', 'ADMIN'],
+    '/request.html':  ['EMPLOYEE', 'MANAGER', 'ADMIN'],
+    '/detail.html':   ['EMPLOYEE', 'MANAGER', 'HR', 'ADMIN', 'VENDOR'],
   };
 
-  if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
-    window.location.href = rolePages[user.role];
+  const allowed = pageAccess[path];
+  if (allowed && !allowed.includes(user.role)) {
+    // User is on a page they don't have access to — send them home
+    window.location.href = roleHome[user.role] || '/employee.html';
+    return null;
   }
 
   return user;
