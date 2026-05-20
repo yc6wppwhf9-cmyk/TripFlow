@@ -31,8 +31,10 @@
             min-height: 100vh;
             font-family: 'Inter', system-ui, sans-serif;
             color: var(--text-primary);
-            display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
             -webkit-font-smoothing: antialiased;
         }
 
@@ -198,8 +200,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 3rem 3.5rem;
-            min-height: 100vh;
+            padding: 3rem 1.5rem;
+            width: 100%;
             position: relative;
         }
 
@@ -434,26 +436,11 @@
 <body>
 
     <!-- ══════════════════════════════
-         LEFT — Brand Panel
+         LEFT — Brand Panel (removed)
     ══════════════════════════════ -->
-    <div class="brand-panel">
-
-        <div class="brand-top">
-            <img src="images/Logo.png" alt="TripFlow">
-            <span class="name">TripFlow</span>
-            <span class="tag">Enterprise</span>
-        </div>
-
-        <div class="brand-body">
-            <h1 class="brand-headline">
-                Corporate travel,<br><span class="soft">simplified.</span>
-            </h1>
-            <p class="brand-sub">
-                From booking requests to real-time approvals — manage your entire corporate travel program in one intelligent platform.
-            </p>
-
-            <!-- SVG Illustration -->
-            <div class="illustration-wrap">
+    <!-- SVG dead code kept as comment for reference -->
+    <div style="display:none">
+        <div class="illustration-wrap">
                 <svg viewBox="0 0 420 260" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <!-- Background globe rings -->
                     <ellipse cx="210" cy="130" rx="195" ry="118" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
@@ -522,34 +509,10 @@
                 </svg>
             </div>
 
-            <!-- Feature highlights -->
-            <div class="feature-list">
-                <div class="feat">
-                    <div class="feat-icon">
-                        <span class="material-symbols-outlined">flight_takeoff</span>
-                    </div>
-                    <span class="feat-text">Book flights, trains, hotels & cabs in minutes</span>
-                </div>
-                <div class="feat">
-                    <div class="feat-icon">
-                        <span class="material-symbols-outlined">verified_user</span>
-                    </div>
-                    <span class="feat-text">Policy-compliant approvals with manager oversight</span>
-                </div>
-                <div class="feat">
-                    <div class="feat-icon">
-                        <span class="material-symbols-outlined">bar_chart</span>
-                    </div>
-                    <span class="feat-text">Real-time spend analytics across your team</span>
-                </div>
-            </div>
-        </div>
-
-        <p class="brand-footer">© 2025 TripFlow Enterprise · All rights reserved</p>
     </div>
 
     <!-- ══════════════════════════════
-         RIGHT — Form Panel
+         Form Panel
     ══════════════════════════════ -->
     <div class="form-panel">
         <div class="form-inner">
