@@ -205,6 +205,7 @@
                     <span id="pending-count" style="background:var(--danger-bg);color:var(--danger-text);padding:0.15rem 0.45rem;border-radius:9999px;font-size:0.7rem;margin-left:0.35rem;display:none;font-weight:800;"></span>
                 </button>
                 <button class="tab-btn" id="tab-btn-team" onclick="switchTab('team',this)">My Team Registry</button>
+                <button class="tab-btn" id="tab-btn-mytrips" onclick="switchTab('mytrips',this)">My Trips</button>
             </div>
 
             <!-- Tab 1: Analytics -->
@@ -282,6 +283,31 @@
                 </div>
             </div>
 
+            <!-- Tab 4: My Trips -->
+            <div id="tab-mytrips" class="tab-content">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                    <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:600;">My Travel Requests</h3>
+                    <a href="request.html" style="text-decoration:none;">
+                        <button style="font-size:0.78rem;padding:0.4rem 0.9rem;background:var(--primary);color:#fff;border-color:transparent;width:auto;">+ New Request</button>
+                    </a>
+                </div>
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Route</th>
+                                <th>Date</th>
+                                <th>Cost</th>
+                                <th>Stage</th>
+                                <th>PNR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mytrips-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -354,10 +380,12 @@
             document.getElementById('user-name').innerText = user.name.toUpperCase();
             showTableSkeleton('approvals-list', 5);
             showTableSkeleton('team-list', 6);
+            showTableSkeleton('mytrips-list', 4);
             loadApprovals();
             loadVendors();
             loadTeamBookings();
             loadStats();
+            loadMyTrips();
         }
         init();
 
@@ -550,6 +578,29 @@
                 btn.disabled = false; btn.innerText = 'Confirm Approval';
             }
         });
+
+        async function loadMyTrips() {
+            try {
+                const bookings = await apiRequest('/bookings/mine');
+                const list = document.getElementById('mytrips-list');
+                if (!bookings.length) {
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✈️</div><p>No travel requests yet. <a href="request.html" style="color:var(--primary);font-weight:700;">Book your first trip</a></p></div></td></tr>'; return;
+                }
+                list.innerHTML = bookings.map(b => `
+                    <tr>
+                        <td data-label="Type"><span class="badge badge-pending-manager">${b.type}</span></td>
+                        <td data-label="Route">
+                            <a href="detail.html?id=${b.id}" style="text-decoration:none;color:inherit;">
+                                <div style="font-weight:700;color:var(--on-surface);text-decoration:underline;text-underline-offset:2px;">${b.details?.origin || '—'} → ${b.details?.destination || '—'}</div>
+                            </a>
+                        </td>
+                        <td data-label="Date" style="color:var(--secondary);font-size:0.8rem;font-weight:600;">${b.details?.date ? new Date(b.details.date).toLocaleDateString('en-IN') : '—'}</td>
+                        <td data-label="Cost" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                        <td data-label="Stage"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
+                        <td data-label="PNR" style="font-family:var(--font-display);font-weight:700;color:var(--on-surface);">${b.pnr || '—'}</td>
+                    </tr>`).join('');
+            } catch(err) { console.error(err.message); }
+        }
 
         document.getElementById('rejection-form').addEventListener('submit', async (e) => {
             e.preventDefault();
