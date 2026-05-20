@@ -9,6 +9,65 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <style>
+        /* ── Sidebar layout ── */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 240px;
+            background: #ffffff;
+            border-right: 1px solid var(--outline-variant);
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            padding: 1.5rem 1rem;
+        }
+        .sidebar-brand {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--outline-variant);
+        }
+        .sidebar-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+        }
+        .sidebar-nav-links a {
+            text-decoration: none;
+            color: var(--secondary);
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+        }
+        .sidebar-nav-links a:hover { background: var(--surface-container-low); color: var(--on-surface); }
+        .sidebar-nav-links a.active { background: var(--secondary-container, #dce2f3); color: var(--primary); }
+        .main-wrapper { margin-left: 240px; min-height: 100vh; }
+        .top-appbar {
+            height: 70px;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border-bottom: 1px solid var(--outline-variant);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            box-shadow: var(--shadow-level-1);
+        }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+            .sidebar.open { transform: translateX(0); }
+            .main-wrapper { margin-left: 0; }
+        }
+
+        /* ── City cards ── */
         .upcoming-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -210,9 +269,9 @@
 
         // ── City landmark images (Unsplash) ──────────────────────────
         const CITY_IMAGES = {
-            'Mumbai':       'https://images.unsplash.com/photo-1567157577867-05993eb926d3?auto=format&fit=crop&w=480&h=200&q=80',
-            'Delhi':        'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=480&h=200&q=80',
-            'New Delhi':    'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=480&h=200&q=80',
+            'Mumbai':       'https://images.unsplash.com/photo-1529253355930-ddbe423a2ac7?auto=format&fit=crop&w=480&h=200&q=80',
+            'Delhi':        'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&h=200&q=80',
+            'New Delhi':    'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&h=200&q=80',
             'Bangalore':    'https://images.unsplash.com/photo-1596516109370-a06d0dd7cd03?auto=format&fit=crop&w=480&h=200&q=80',
             'Bengaluru':    'https://images.unsplash.com/photo-1596516109370-a06d0dd7cd03?auto=format&fit=crop&w=480&h=200&q=80',
             'Hyderabad':    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=480&h=200&q=80',
@@ -232,7 +291,7 @@
             'Chandigarh':   'https://images.unsplash.com/photo-1572445219728-59f4f21fd0e7?auto=format&fit=crop&w=480&h=200&q=80',
             'Srinagar':     'https://images.unsplash.com/photo-1548605710-a99a0bedfab8?auto=format&fit=crop&w=480&h=200&q=80',
             'Leh':          'https://images.unsplash.com/photo-1605649461784-eee8f6b0e3d3?auto=format&fit=crop&w=480&h=200&q=80',
-            'Muzaffarpur':  'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=480&h=200&q=80',
+            'Muzaffarpur':  'https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=480&h=200&q=80',
         };
         const DEFAULT_IMG = 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=480&h=200&q=80';
 
