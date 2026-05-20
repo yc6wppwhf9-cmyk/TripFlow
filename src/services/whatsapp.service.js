@@ -1,4 +1,6 @@
-const { whatsappQueue } = require('../config/redis');
+const axios = require('axios');
+
+const INTERAKT_API_URL = 'https://api.interakt.ai/v1/public/message/';
 
 const parsePhone = (phone) => {
   const digits = phone.replace(/\D/g, '');
@@ -8,17 +10,37 @@ const parsePhone = (phone) => {
       phoneNumber: digits.slice(-10),
     };
   }
-  // Default to India (+91) if no country code provided
   return { countryCode: '+91', phoneNumber: digits };
 };
 
 exports.sendWhatsApp = async (to, message) => {
-  if (!whatsappQueue) {
-    console.log(`WhatsApp Queue not available. Would have sent to ${to}: ${message}`);
+  const apiKey = process.env.INTERAKT_API_KEY;
+  if (!apiKey) {
+    console.log(`WhatsApp not configured. Would have sent to ${to}: ${message}`);
     return;
   }
-  const { countryCode, phoneNumber } = parsePhone(to);
-  await whatsappQueue.add({ countryCode, phoneNumber, message });
+  try {
+    const { countryCode, phoneNumber } = parsePhone(to);
+    await axios.post(
+      INTERAKT_API_URL,
+      {
+        countryCode,
+        phoneNumber,
+        callbackData: 'TripFlow Notification',
+        type: 'Text',
+        data: { message },
+      },
+      {
+        headers: {
+          Authorization: `Basic ${Buffer.from(apiKey).toString('base64')}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log(`WhatsApp sent to ${countryCode}${phoneNumber}`);
+  } catch (err) {
+    console.error(`Failed to send WhatsApp to ${to}:`, err.message);
+  }
 };
 
 exports.sendBookingConfirmed = async (phoneNumber, pnr) => {

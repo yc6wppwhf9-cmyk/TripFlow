@@ -1,16 +1,24 @@
 const { Resend } = require('resend');
-const { emailQueue } = require('../config/redis');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
 exports.resend = resend;
 
 exports.sendEmail = async (to, subject, text) => {
-  if (!emailQueue) {
-    console.log(`Email Queue not available. Would have sent to ${to}: ${subject}`);
+  if (!process.env.RESEND_API_KEY) {
+    console.log(`Email not configured. Would have sent to ${to}: ${subject}`);
     return;
   }
-  await emailQueue.add({ to, subject, text, from: process.env.FROM_EMAIL });
+  try {
+    await resend.emails.send({
+      from: process.env.FROM_EMAIL,
+      to,
+      subject,
+      text,
+    });
+    console.log(`Email sent to ${to}`);
+  } catch (err) {
+    console.error(`Failed to send email to ${to}:`, err.message);
+  }
 };
 
 exports.sendApprovalRequest = async (managerEmail, hrEmail, employeeName, bookingDetails) => {
