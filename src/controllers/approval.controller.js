@@ -21,7 +21,7 @@ exports.getPendingApprovals = async (req, res) => {
       },
       include: {
         employee: {
-          include: { user: true }
+          include: { user: true, policy: true }
         }
       }
     });

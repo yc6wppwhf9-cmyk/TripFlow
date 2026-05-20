@@ -463,7 +463,19 @@
                             <div style="font-size:0.78rem;color:var(--secondary);font-weight:600;margin-top:0.15rem;">${b.details.date}</div>
                             ${b.details.selectedFare ? `<div style="font-size:0.72rem;color:var(--primary);font-weight:600;margin-top:0.15rem;">${fareLabel(b.details.selectedFare)}</div>` : ''}
                         </td>
-                        <td data-label="Est. Cost" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                        <td data-label="Est. Cost">
+                            <div style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</div>
+                            ${(() => {
+                                const typeKey = { FLIGHT:'flightLimit', TRAIN:'trainLimit', CAB:'cabLimit', HOTEL:'hotelLimit' };
+                                const key = typeKey[b.type];
+                                const limit = key && b.employee?.policy?.rules?.[key];
+                                if (!limit) return '<div style="font-size:0.72rem;color:var(--secondary);font-weight:600;">No policy set</div>';
+                                const over = b.cost > limit;
+                                return `<div style="font-size:0.72rem;font-weight:700;color:${over ? 'var(--danger-text)' : '#16a34a'};">
+                                    ${over ? '⚠ Exceeds' : '✓ Within'} limit ₹${Number(limit).toLocaleString('en-IN')}
+                                </div>`;
+                            })()}
+                        </td>
                         <td data-label="Actions">
                             <div style="display:flex;gap:0.5rem;">
                                 <button onclick="showApproveModal('${b.id}')" style="font-size:0.78rem;padding:0.4rem 0.8rem;flex:1;">Approve</button>
