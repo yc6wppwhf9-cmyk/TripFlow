@@ -8,6 +8,97 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        .upcoming-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+        .city-card {
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--surface);
+            box-shadow: var(--shadow-level-1);
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            border: 1px solid var(--outline-variant);
+        }
+        .city-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-level-2);
+        }
+        .city-card-img {
+            position: relative;
+            height: 148px;
+            overflow: hidden;
+            background: var(--surface-container-low);
+        }
+        .city-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.35s ease;
+        }
+        .city-card:hover .city-card-img img {
+            transform: scale(1.06);
+        }
+        .city-card-img-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e8edf8 0%, #d0d9f0 100%);
+        }
+        .city-stage-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 0.22rem 0.6rem;
+            border-radius: 6px;
+        }
+        .city-card-body {
+            padding: 0.9rem 1rem;
+        }
+        .city-card-dest {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--on-surface);
+            margin-bottom: 0.15rem;
+        }
+        .city-card-route {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--secondary);
+            margin-bottom: 0.65rem;
+        }
+        .city-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .city-card-date {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .city-card-cost {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--on-surface);
+        }
+    </style>
 </head>
 <body>
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
@@ -58,9 +149,20 @@
         </header>
 
         <div class="container" style="padding-top:2rem;">
+
+            <!-- Upcoming Trips Cards -->
+            <section id="upcoming-section" style="display:none;flex-direction:column;gap:1rem;margin-bottom:2rem;">
+                <div class="section-title-bar">
+                    <h3>Upcoming</h3>
+                    <div class="stb-line"></div>
+                </div>
+                <div class="upcoming-grid" id="upcoming-grid"></div>
+            </section>
+
+            <!-- All Trips Table -->
             <section style="display:flex;flex-direction:column;gap:1rem;">
                 <div class="section-title-bar">
-                    <h3>My Trips</h3>
+                    <h3>All Trips</h3>
                     <div class="stb-line"></div>
                     <button onclick="window.location.href='request.html'" style="padding:0.45rem 1rem;font-size:0.8rem;white-space:nowrap;">
                         <span class="material-symbols-outlined" style="font-size:16px;">add</span> New
@@ -106,6 +208,40 @@
             document.getElementById('sidebar-backdrop').classList.toggle('open');
         }
 
+        // ── City landmark images (Unsplash) ──────────────────────────
+        const CITY_IMAGES = {
+            'Mumbai':       'https://images.unsplash.com/photo-1567157577867-05993eb926d3?auto=format&fit=crop&w=480&h=200&q=80',
+            'Delhi':        'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=480&h=200&q=80',
+            'New Delhi':    'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=480&h=200&q=80',
+            'Bangalore':    'https://images.unsplash.com/photo-1596516109370-a06d0dd7cd03?auto=format&fit=crop&w=480&h=200&q=80',
+            'Bengaluru':    'https://images.unsplash.com/photo-1596516109370-a06d0dd7cd03?auto=format&fit=crop&w=480&h=200&q=80',
+            'Hyderabad':    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=480&h=200&q=80',
+            'Chennai':      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=480&h=200&q=80',
+            'Kolkata':      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=480&h=200&q=80',
+            'Jaipur':       'https://images.unsplash.com/photo-1477587458883-47145ed31672?auto=format&fit=crop&w=480&h=200&q=80',
+            'Goa':          'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=480&h=200&q=80',
+            'Agra':         'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&h=200&q=80',
+            'Varanasi':     'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=480&h=200&q=80',
+            'Pune':         'https://images.unsplash.com/photo-1590123715937-9b8c8b6cd2e4?auto=format&fit=crop&w=480&h=200&q=80',
+            'Ahmedabad':    'https://images.unsplash.com/photo-1597040663342-45b6af3d91a5?auto=format&fit=crop&w=480&h=200&q=80',
+            'Lucknow':      'https://images.unsplash.com/photo-1586183189334-1cb3a044f96c?auto=format&fit=crop&w=480&h=200&q=80',
+            'Amritsar':     'https://images.unsplash.com/photo-1588416936097-41850ab3d86d?auto=format&fit=crop&w=480&h=200&q=80',
+            'Kochi':        'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=480&h=200&q=80',
+            'Udaipur':      'https://images.unsplash.com/photo-1568695133990-d46c44b9d5e1?auto=format&fit=crop&w=480&h=200&q=80',
+            'Jodhpur':      'https://images.unsplash.com/photo-1524909600633-50fb4a1cc56e?auto=format&fit=crop&w=480&h=200&q=80',
+            'Chandigarh':   'https://images.unsplash.com/photo-1572445219728-59f4f21fd0e7?auto=format&fit=crop&w=480&h=200&q=80',
+            'Srinagar':     'https://images.unsplash.com/photo-1548605710-a99a0bedfab8?auto=format&fit=crop&w=480&h=200&q=80',
+            'Leh':          'https://images.unsplash.com/photo-1605649461784-eee8f6b0e3d3?auto=format&fit=crop&w=480&h=200&q=80',
+            'Muzaffarpur':  'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=480&h=200&q=80',
+        };
+        const DEFAULT_IMG = 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=480&h=200&q=80';
+
+        function cityImg(name) {
+            if (!name) return DEFAULT_IMG;
+            const key = Object.keys(CITY_IMAGES).find(k => name.toLowerCase().includes(k.toLowerCase()));
+            return key ? CITY_IMAGES[key] : DEFAULT_IMG;
+        }
+
         function fmtDate(str) {
             if (!str) return '';
             const d = new Date(str);
@@ -138,6 +274,10 @@
             return '';
         }
 
+        const STAGE_LABEL = { PENDING_MANAGER: 'AWAITING APPROVAL', PENDING_VENDOR: 'WITH TRAVEL DESK', COMPLETED: 'CONFIRMED' };
+        const STAGE_BG    = { PENDING_MANAGER: 'var(--warning-bg)', PENDING_VENDOR: 'var(--info-bg)', COMPLETED: 'var(--success-bg)' };
+        const STAGE_COLOR = { PENDING_MANAGER: 'var(--warning-text)', PENDING_VENDOR: 'var(--info-text)', COMPLETED: 'var(--success-text)' };
+
         async function init() {
             if (!currentUser) return;
             document.getElementById('user-name').innerText = currentUser.name.toUpperCase();
@@ -147,6 +287,51 @@
         async function loadBookings() {
             try {
                 const bookings = await apiRequest('/bookings/mine');
+
+                // ── Upcoming cards ───────────────────────────────────
+                const today   = new Date().toISOString().slice(0, 10);
+                const upcoming = bookings.filter(b =>
+                    ['PENDING_MANAGER', 'PENDING_VENDOR'].includes(b.stage) ||
+                    (b.stage === 'COMPLETED' && (b.details?.date || '') >= today)
+                );
+                const upcomingSection = document.getElementById('upcoming-section');
+                if (upcoming.length) {
+                    document.getElementById('upcoming-grid').innerHTML = upcoming.map(b => {
+                        const dest = b.details?.destination || '—';
+                        const img  = cityImg(dest);
+                        return `
+                        <div class="city-card" onclick="window.location.href='detail.html?id=${b.id}'">
+                            <div class="city-card-img">
+                                <img src="${img}" alt="${dest}" loading="lazy"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <div class="city-card-img-fallback" style="display:none;">
+                                    <span class="material-symbols-outlined" style="font-size:40px;color:var(--primary);opacity:0.25;">
+                                        ${b.type === 'FLIGHT' ? 'flight_takeoff' : b.type === 'TRAIN' ? 'train' : 'hotel'}
+                                    </span>
+                                </div>
+                                <span class="city-stage-badge" style="background:${STAGE_BG[b.stage]};color:${STAGE_COLOR[b.stage]};">
+                                    ${STAGE_LABEL[b.stage] || b.stage}
+                                </span>
+                            </div>
+                            <div class="city-card-body">
+                                <div class="city-card-dest">${dest}</div>
+                                <div class="city-card-route">${b.details?.origin ? b.details.origin + ' → ' : ''}${dest}</div>
+                                <div class="city-card-footer">
+                                    <span class="city-card-date">
+                                        <span class="material-symbols-outlined" style="font-size:14px;">calendar_today</span>
+                                        ${fmtDate(b.details?.date) || 'TBA'}
+                                    </span>
+                                    <span class="city-card-cost">₹${Number(b.cost || 0).toLocaleString('en-IN')}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    upcomingSection.style.display = 'flex';
+                } else {
+                    upcomingSection.style.display = 'none';
+                }
+
+                // ── All trips table ──────────────────────────────────
                 const list = document.getElementById('bookings-list');
                 if (!bookings.length) {
                     list.innerHTML = `<tr><td colspan="6">
