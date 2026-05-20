@@ -529,7 +529,7 @@
                 <span class="material-symbols-outlined">dashboard</span>
                 Dashboard
             </a>
-            <a href="#bookings-section" onclick="document.getElementById('bookings-section').scrollIntoView({behavior:'smooth'});return false;">
+            <a href="mytrips.html">
                 <span class="material-symbols-outlined">luggage</span>
                 My Trips
             </a>
@@ -592,52 +592,6 @@
                 </div>
             </div>
 
-            <!-- Main Sections Grid -->
-            <div class="dashboard-sections" style="grid-template-columns:1fr;">
-                <!-- Bookings Table -->
-                <section id="bookings-section" style="display:flex;flex-direction:column;gap:1rem;">
-                    <div class="section-title-bar">
-                        <h3>My Trips</h3>
-                        <div class="stb-line"></div>
-                        <button onclick="window.location.href='request.html'" style="padding:0.45rem 1rem;font-size:0.8rem;white-space:nowrap;">
-                            <span class="material-symbols-outlined" style="font-size:16px;">add</span> New
-                        </button>
-                    </div>
-                    <div class="table-card">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Type</th>
-                                    <th>Route</th>
-                                    <th>Status</th>
-                                    <th>Cost</th>
-                                    <th>PNR</th>
-                                    <th>Ticket</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bookings-list">
-                                <tr><td colspan="6">
-                                    <div class="empty-state">
-                                        <div class="empty-state-icon"><span class="material-symbols-outlined">flight_takeoff</span></div>
-                                        <h4>No trips yet</h4>
-                                        <p>Your upcoming and past bookings will appear here.</p>
-                                        <button onclick="window.location.href='request.html'">
-                                            <span class="material-symbols-outlined" style="font-size:16px;">add</span> Plan a Trip
-                                        </button>
-                                    </div>
-                                </td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-            </div>
-
-            <!-- Upcoming Trips Summary (hidden when empty) -->
-            <section id="upcoming-trips-section" style="display:none;flex-direction:column;gap:1rem;">
-                <h2>Upcoming Trip Summary</h2>
-                <div class="trips-grid" id="upcoming-trips-grid"></div>
-            </section>
         </div>
     </main>
 
@@ -827,86 +781,17 @@
         async function loadBookings() {
             try {
                 const bookings = await apiRequest('/bookings/mine');
-                const list = document.getElementById('bookings-list');
-
                 const activeCount    = bookings.filter(b => b.stage === 'PENDING_MANAGER' || b.stage === 'PENDING_VENDOR').length;
                 const completedCount = bookings.filter(b => b.stage === 'COMPLETED').length;
                 const rejectedCount  = bookings.filter(b => b.stage === 'REJECTED').length;
                 document.getElementById('active-req-count').innerText = activeCount;
                 document.getElementById('stat-completed').innerText   = completedCount;
                 document.getElementById('stat-rejected').innerText    = rejectedCount;
-
                 const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0,0,0,0);
                 const monthlySpend = bookings
                     .filter(b => b.stage !== 'REJECTED' && new Date(b.createdAt) >= startOfMonth)
                     .reduce((acc, curr) => acc + Number(curr.cost || 0), 0);
                 document.getElementById('stat-spend').innerText = '₹' + monthlySpend.toLocaleString('en-IN');
-
-                if (!bookings.length) {
-                    list.innerHTML = `<tr><td colspan="6">
-                        <div class="empty-state">
-                            <div class="empty-state-icon"><span class="material-symbols-outlined">flight_takeoff</span></div>
-                            <h4>No trips yet</h4>
-                            <p>Your upcoming and past bookings will appear here.</p>
-                            <button onclick="window.location.href='request.html'">
-                                <span class="material-symbols-outlined" style="font-size:16px;">add</span> Plan a Trip
-                            </button>
-                        </div>
-                    </td></tr>`;
-                } else {
-                    list.innerHTML = bookings.map(b => `
-                        <tr>
-                            <td data-label="Type"><span class="role-badge role-VENDOR">${b.type}</span></td>
-                            <td data-label="Route">
-                                <a href="detail.html?id=${b.id}" style="text-decoration:none;color:inherit;display:block;">
-                                    <div style="font-weight:700;color:var(--on-surface);text-decoration:underline;text-underline-offset:2px;">${b.details.origin || '—'} → ${b.details.destination || '—'}</div>
-                                    ${b.details.selectedFare ? `<div style="font-size:0.72rem;font-weight:600;color:var(--primary);margin-top:0.1rem;">${fareLabel(b.details.selectedFare)}</div>` : ''}
-                                    <div style="font-size:0.75rem;font-weight:500;color:var(--secondary);margin-top:0.1rem;">${fmtDate(b.details.date)}</div>
-                                </a>
-                            </td>
-                            <td data-label="Status"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
-                            <td data-label="Cost" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">${b.cost ? '₹' + Number(b.cost).toLocaleString('en-IN') : '—'}</td>
-                            <td data-label="PNR" style="font-family:monospace;font-size:0.85rem;color:var(--on-surface);font-weight:600;">${b.pnr || '—'}</td>
-                            <td data-label="Ticket">${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color:var(--primary);font-weight:600;text-decoration:none;font-size:0.82rem;">View ↗</a>` : '<span style="color:var(--outline);">—</span>'}</td>
-                        </tr>`).join('');
-                }
-
-                // 4. Upcoming Trip Summary Grid — show in-progress and pending trips (future travel)
-                const today = new Date().toISOString().slice(0, 10);
-                const upcomingTrips = bookings
-                    .filter(b => ['PENDING_MANAGER','PENDING_VENDOR'].includes(b.stage) || (b.stage === 'COMPLETED' && b.details?.date >= today))
-                    .slice(0, 3);
-                const stageLabel = { PENDING_MANAGER: 'AWAITING APPROVAL', PENDING_VENDOR: 'WITH TRAVEL DESK', COMPLETED: 'CONFIRMED' };
-                const stageBg    = { PENDING_MANAGER: 'var(--warning-bg)', PENDING_VENDOR: 'var(--info-bg)', COMPLETED: 'var(--success-bg)' };
-                const stageColor = { PENDING_MANAGER: 'var(--warning-text)', PENDING_VENDOR: 'var(--info-text)', COMPLETED: 'var(--success-text)' };
-                const upcomingSection = document.getElementById('upcoming-trips-section');
-                if (upcomingTrips.length > 0) {
-                    const tripHtml = upcomingTrips.map(b => {
-                        const dest = b.details?.destination || '—';
-                        return `
-                            <div class="trip-item-card" onclick="window.location.href='detail.html?id=${b.id}'" style="cursor:pointer;">
-                                <div class="img-wrap" style="background:var(--surface-container-low);display:flex;align-items:center;justify-content:center;">
-                                    <span class="material-symbols-outlined" style="font-size:48px;color:var(--primary);opacity:0.25;">${b.type === 'FLIGHT' ? 'flight_takeoff' : b.type === 'TRAIN' ? 'train' : b.type === 'HOTEL' ? 'hotel' : 'restaurant'}</span>
-                                    <span class="days-badge" style="background:${stageBg[b.stage]};color:${stageColor[b.stage]};border-color:transparent;">${stageLabel[b.stage] || b.stage}</span>
-                                </div>
-                                <div class="content">
-                                    <div style="margin-bottom:0.5rem;">
-                                        <h4 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;margin:0 0 0.15rem;">${dest}</h4>
-                                        <span style="font-size:0.72rem;font-weight:500;color:var(--secondary);">${b.details?.origin ? b.details.origin + ' → ' : ''}${dest}</span>
-                                    </div>
-                                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                                        <span style="font-size:0.75rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:14px;">calendar_today</span>${fmtDate(b.details?.date) || 'Arranged'}</span>
-                                        <span style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--on-surface);">₹${Number(b.cost||0).toLocaleString('en-IN')}</span>
-                                    </div>
-                                </div>
-                            </div>`;
-                    }).join('');
-                    document.getElementById('upcoming-trips-grid').innerHTML = tripHtml;
-                    upcomingSection.style.display = 'flex';
-                } else {
-                    upcomingSection.style.display = 'none';
-                }
-
             } catch (err) {
                 console.error(err.message);
             }
