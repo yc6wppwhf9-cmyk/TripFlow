@@ -530,8 +530,8 @@
                 Dashboard
             </a>
             <a href="request.html">
-                <span class="material-symbols-outlined">flight_takeoff</span>
-                Plan Trip
+                <span class="material-symbols-outlined">luggage</span>
+                My Trips
             </a>
         </nav>
 
@@ -559,27 +559,6 @@
 
         <!-- Content Body -->
         <div class="container" style="padding-top:2rem;">
-
-            <!-- Greeting Banner -->
-            <div class="greeting-banner animate-fadein" style="margin-bottom:1.75rem;">
-                <div class="gb-inner">
-                    <div class="gb-text">
-                        <div class="gb-eyebrow" id="greeting-eyebrow">Good morning</div>
-                        <div class="gb-name" id="greeting-name">Welcome back</div>
-                        <div class="gb-role" id="greeting-role">Corporate Traveler · Employee</div>
-                    </div>
-                    <div class="gb-action">
-                        <button class="gb-btn primary" onclick="window.location.href='request.html'">
-                            <span class="material-symbols-outlined" style="font-size:17px;">add</span>
-                            New Request
-                        </button>
-                        <button class="gb-btn white" onclick="document.getElementById('bookings-section').scrollIntoView({behavior:'smooth'})">
-                            <span class="material-symbols-outlined" style="font-size:17px;">travel_explore</span>
-                            My Trips
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             <!-- Stats Row -->
             <div class="stats-grid-4 stagger animate-fadein" style="margin-bottom:2rem;">
@@ -614,11 +593,11 @@
             </div>
 
             <!-- Main Sections Grid -->
-            <div class="dashboard-sections">
+            <div class="dashboard-sections" style="grid-template-columns:1fr;">
                 <!-- Bookings Table -->
                 <section id="bookings-section" style="display:flex;flex-direction:column;gap:1rem;">
                     <div class="section-title-bar">
-                        <h3>My Travel Requests</h3>
+                        <h3>My Trips</h3>
                         <div class="stb-line"></div>
                         <button onclick="window.location.href='request.html'" style="padding:0.45rem 1rem;font-size:0.8rem;white-space:nowrap;">
                             <span class="material-symbols-outlined" style="font-size:16px;">add</span> New
@@ -652,20 +631,6 @@
                     </div>
                 </section>
 
-                <!-- Activity Feed & Live Service -->
-                <aside style="display:flex;flex-direction:column;gap:2rem;">
-                    <div>
-                        <h2 style="margin-bottom:1rem;">Recent Activity</h2>
-                        <div class="card" style="padding:1.5rem 1.25rem;">
-                            <div class="activity-feed" id="activity-feed-container">
-                                <div style="text-align:center;padding:1.5rem;color:var(--secondary);font-size:0.85rem;font-weight:500;">
-                                    No recent activity.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </aside>
             </div>
 
             <!-- Upcoming Trips Summary (hidden when empty) -->
