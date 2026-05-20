@@ -457,45 +457,33 @@
             text-transform: uppercase;
         }
 
-        /* ── AI Chat Widget ── */
-        #chat-panel {
-            display: none;
-            flex-direction: column;
+        /* ── AI Orb Assistant ── */
+        @keyframes orb-spin  { to { filter: hue-rotate(360deg); } }
+        @keyframes orb-float { 0%,100%{transform:scale(1) translateY(0);} 50%{transform:scale(1.05) translateY(-5px);} }
+        @keyframes orb-listen{ 0%,100%{box-shadow:0 0 0 0 rgba(161,140,209,.7),0 8px 30px rgba(161,140,209,.4);} 70%{box-shadow:0 0 0 22px rgba(161,140,209,0),0 8px 30px rgba(161,140,209,.4);} }
+        @keyframes orb-think { 0%,100%{opacity:.65;transform:scale(.96);} 50%{opacity:1;transform:scale(1);} }
+        .orb-blob {
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 32%, #ffecd2 0%, #fd79a8 22%, #a18cd1 50%, #2193b0 75%, #6dd5ed 100%);
+            animation: orb-spin 6s linear infinite, orb-float 3s ease-in-out infinite;
+            box-shadow: 0 8px 30px rgba(161,140,209,.45);
+            cursor: pointer; flex-shrink: 0;
         }
-        #chat-panel.open {
-            display: flex;
+        .orb-blob.listening { animation: orb-spin 2s linear infinite, orb-listen 1.2s ease-out infinite; }
+        .orb-blob.thinking  { animation: orb-spin 10s linear infinite, orb-think 1.5s ease-in-out infinite; }
+        .ai-action-btn {
+            padding: .45rem 1.1rem;
+            background: rgba(255,255,255,.1);
+            border: 1px solid rgba(255,255,255,.22);
+            border-radius: 20px;
+            color: #fff;
+            font-family: var(--font-display);
+            font-size: .8rem; font-weight: 600;
+            cursor: pointer;
+            transition: background .2s, border-color .2s;
+            backdrop-filter: blur(4px);
         }
-        .brutalist-chat-panel {
-            position: absolute;
-            bottom: 70px; right: 0;
-            width: 360px;
-            height: 520px;
-            background: #ffffff;
-            border: 1px solid var(--outline-variant);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-level-2);
-            overflow: hidden;
-        }
-        .brutalist-chat-bubble {
-            max-width: 85%;
-            padding: 0.75rem 1rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            line-height: 1.4;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--outline-variant);
-        }
-        .chat-bubble-user {
-            background: var(--info-bg);
-            color: var(--info-text);
-            align-self: flex-end;
-            border-color: transparent;
-        }
-        .chat-bubble-assistant {
-            background: var(--surface-container-low);
-            color: var(--on-surface);
-            align-self: flex-start;
-        }
+        .ai-action-btn:hover { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.4); }
 
         /* ── Responsive ── */
         @media (max-width: 1024px) {
@@ -512,16 +500,7 @@
             .tp-arrow { display: none !important; }
         }
         @media (max-width: 480px) {
-            #ai-chat { bottom: 1rem !important; right: 1rem !important; }
-            .brutalist-chat-panel {
-                position: fixed !important;
-                bottom: 70px !important;
-                left: 0 !important; right: 0 !important;
-                width: 100vw !important;
-                border-radius: 16px 16px 0 0;
-                max-height: calc(100dvh - 70px) !important;
-                height: auto !important;
-            }
+            #ai-orb-fab { bottom: 1rem !important; right: 1rem !important; }
             #chat-messages { height: auto !important; flex: 1; min-height: 180px; }
         }
     </style>
@@ -742,31 +721,47 @@
         </div>
     </div>
 
-    <!-- AI Chat Widget -->
-    <div id="ai-chat" style="position:fixed;bottom:2rem;right:2rem;z-index:1000;">
-        <!-- Chat Panel -->
-        <div id="chat-panel" class="brutalist-chat-panel">
-            <!-- Header -->
-            <div style="padding:1rem 1.25rem;background:#ffcc00;border-bottom:3px solid #1a1a1a;display:flex;align-items:center;gap:0.75rem;">
-                <div style="width:34px;height:34px;background:#1a1a1a;color:#ffffff;border:2px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;">✈</div>
-                <div style="flex:1;">
-                    <div style="font-family:var(--font-display);font-weight:700;font-size:0.9rem;color:#1a1a1a;text-transform:uppercase;">TripFlow AI</div>
-                    <div style="font-size:0.7rem;font-weight:700;color:rgba(26,26,26,0.6);text-transform:uppercase;">Assistant</div>
+    <!-- AI Orb FAB -->
+    <div id="ai-orb-fab" style="position:fixed;bottom:2rem;right:2rem;z-index:1000;">
+        <div class="orb-blob" onclick="openAssistant()" title="TripFlow AI" style="width:58px;height:58px;"></div>
+    </div>
+
+    <!-- AI Assistant Overlay -->
+    <div id="ai-assistant-overlay" onclick="handleOverlayClick(event)" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(8,8,18,.78);backdrop-filter:blur(12px);align-items:flex-end;justify-content:center;">
+        <div onclick="event.stopPropagation()" style="width:100%;max-width:520px;background:linear-gradient(170deg,#13131f 0%,#0d0d18 100%);border-radius:28px 28px 0 0;padding:1.25rem 1.5rem 3rem;display:flex;flex-direction:column;align-items:center;gap:1rem;">
+            <!-- Handle -->
+            <div style="width:40px;height:4px;background:rgba(255,255,255,.18);border-radius:2px;"></div>
+            <!-- Top bar -->
+            <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="color:#fff;font-family:var(--font-display);font-weight:700;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase;">TripFlow AI</div>
+                    <div style="color:rgba(255,255,255,.35);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Travel Assistant</div>
                 </div>
-                <button onclick="toggleChat()" style="background:#ffffff;border:2px solid #1a1a1a;color:#1a1a1a;width:26px;height:26px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:none;font-weight:700;">×</button>
+                <button onclick="closeAssistant()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.7);width:32px;height:32px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
             </div>
-            <!-- Messages -->
-            <div id="chat-messages" style="flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:0.75rem;height:380px;background:#f5f0e8;"></div>
-            <!-- Input -->
-            <div style="padding:0.75rem 1rem;border-top:3px solid #1a1a1a;display:flex;gap:0.5rem;background:#ffffff;align-items:center;">
-                <input id="chat-input" placeholder="Describe your travel need…" style="flex:1;background:transparent;border:none;border-bottom:2px solid #1a1a1a;padding:0.5rem;font-size:0.875rem;outline:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
-                <button id="voice-btn" onclick="toggleVoice()" title="Voice input" style="width:36px;height:36px;border:2px solid #1a1a1a;background:#ffffff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;transition:var(--transition);box-shadow:2px 2px 0px #1a1a1a;padding:0;color:#1a1a1a;">🎤</button>
-                <button onclick="sendChat()" id="chat-send" style="padding:0.5rem 1rem;border:2px solid #1a1a1a;">Send</button>
+            <!-- Reply -->
+            <div id="assistant-reply" style="display:none;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:.875rem 1rem;color:rgba(255,255,255,.85);font-size:.875rem;line-height:1.6;max-height:110px;overflow-y:auto;"></div>
+            <!-- Action buttons -->
+            <div id="assistant-actions" style="display:flex;flex-wrap:wrap;gap:.5rem;width:100%;justify-content:center;min-height:4px;"></div>
+            <!-- Orb -->
+            <div id="assistant-orb" class="orb-blob" onclick="toggleVoice()" style="width:130px;height:130px;margin:.5rem 0;"></div>
+            <!-- Status -->
+            <div id="assistant-status" style="color:rgba(255,255,255,.55);font-family:var(--font-display);font-size:.875rem;font-weight:500;letter-spacing:.03em;">Tap to speak</div>
+            <!-- Text input -->
+            <div id="assistant-input-row" style="display:none;width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:.6rem .875rem;align-items:center;gap:.5rem;">
+                <input id="assistant-text" placeholder="Type your travel request…" style="flex:1;background:none;border:none;color:#fff;font-size:.875rem;outline:none;font-family:var(--font-display);" onkeydown="if(event.key==='Enter')sendAssistantChat();">
+                <button onclick="sendAssistantChat()" style="background:var(--primary);border:none;color:#fff;padding:.35rem .75rem;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;">Send</button>
+            </div>
+            <!-- Controls -->
+            <div style="display:flex;gap:4rem;align-items:center;margin-top:.25rem;">
+                <button id="ai-mic-btn" onclick="toggleVoice()" style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;">
+                    <span class="material-symbols-outlined" style="font-size:26px;">mic</span>
+                </button>
+                <button id="ai-keyboard-btn" onclick="toggleAssistantKeyboard()" style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:26px;">keyboard</span>
+                </button>
             </div>
         </div>
-
-        <!-- Toggle Button -->
-        <button id="chat-btn" onclick="toggleChat()" style="width:56px;height:56px;border-radius:0px;background:#ffcc00;border:3px solid #1a1a1a;cursor:pointer;box-shadow:var(--shadow-offset);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#1a1a1a;position:relative;z-index:1;">✈</button>
     </div>
 
     <!-- JS Scripts -->
@@ -783,7 +778,7 @@
             document.getElementById('main-sidebar').classList.toggle('open');
             document.getElementById('sidebar-backdrop').classList.toggle('open');
         }
-        let chatOpen = false;
+        let keyboardOpen = false;
 
         async function init() {
             currentUser = checkAuth();
@@ -1335,103 +1330,118 @@
             }
         }
 
-        // AI Chat
-        function toggleChat() {
-            chatOpen = !chatOpen;
-            document.getElementById('chat-panel').classList.toggle('open', chatOpen);
-            if (chatOpen && chatMessages.length === 0) {
-                const name = currentUser?.name?.split(' ')[0] || 'there';
-                addBubble('assistant', `Hi ${name}! I'm your TripFlow travel assistant.\n\nTell me where you need to go and I'll handle the booking.\n\n_Example: "I need to fly from Mumbai to Delhi on June 20"_`);
+        // ── AI Orb Assistant ──
+        function openAssistant() {
+            document.getElementById('ai-assistant-overlay').style.display = 'flex';
+            document.getElementById('ai-orb-fab').style.display = 'none';
+            setTimeout(toggleVoice, 400);
+        }
+        function closeAssistant() {
+            if (voiceActive) voiceRecognition?.stop();
+            document.getElementById('ai-assistant-overlay').style.display = 'none';
+            document.getElementById('ai-orb-fab').style.display = 'block';
+            setOrbState('idle');
+        }
+        function handleOverlayClick(e) {
+            if (e.target === document.getElementById('ai-assistant-overlay')) closeAssistant();
+        }
+        function setOrbState(state) {
+            const orb = document.getElementById('assistant-orb');
+            const status = document.getElementById('assistant-status');
+            const mic = document.getElementById('ai-mic-btn');
+            orb.className = 'orb-blob';
+            orb.style.width = '130px'; orb.style.height = '130px'; orb.style.margin = '.5rem 0';
+            if (state === 'listening') {
+                orb.classList.add('listening');
+                status.textContent = 'Listening…';
+                mic.style.background = 'rgba(253,121,168,.25)';
+                mic.style.borderColor = '#fd79a8';
+            } else if (state === 'thinking') {
+                orb.classList.add('thinking');
+                status.textContent = 'Thinking…';
+                mic.style.background = 'rgba(255,255,255,.1)';
+                mic.style.borderColor = 'rgba(255,255,255,.15)';
+            } else {
+                status.textContent = 'Tap to speak';
+                mic.style.background = 'rgba(255,255,255,.1)';
+                mic.style.borderColor = 'rgba(255,255,255,.15)';
             }
-            if (chatOpen) setTimeout(() => document.getElementById('chat-input').focus(), 100);
         }
-
-        function addBubble(role, text) {
-            const isUser = role === 'user';
-            const wrap = document.createElement('div');
-            wrap.className = 'chat-bubble';
-            wrap.style.cssText = `display:flex;justify-content:${isUser?'flex-end':'flex-start'};margin-bottom:0.75rem;`;
-            const bubble = document.createElement('div');
-            bubble.className = `brutalist-chat-bubble ${isUser ? 'chat-bubble-user' : 'chat-bubble-assistant'}`;
-            bubble.innerHTML = text
-                .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g,'<em>$1</em>')
-                .replace(/_(.*?)_/g,'<em>$1</em>');
-            wrap.appendChild(bubble);
-            const msgs = document.getElementById('chat-messages');
-            msgs.appendChild(wrap);
-            msgs.scrollTop = msgs.scrollHeight;
+        function toggleAssistantKeyboard() {
+            keyboardOpen = !keyboardOpen;
+            const row = document.getElementById('assistant-input-row');
+            row.style.display = keyboardOpen ? 'flex' : 'none';
+            const kb = document.getElementById('ai-keyboard-btn');
+            kb.style.background = keyboardOpen ? 'rgba(33,147,176,.35)' : 'rgba(255,255,255,.1)';
+            if (keyboardOpen) setTimeout(() => document.getElementById('assistant-text').focus(), 100);
         }
-
-        function showTyping() {
-            const el = document.createElement('div');
-            el.id = 'typing-dot';
-            el.style.cssText = 'display:flex;justify-content:flex-start;margin-bottom:0.75rem;';
-            el.innerHTML = `<div class="brutalist-chat-bubble chat-bubble-assistant" style="display:flex;gap:4px;align-items:center;">
-                <span style="width:6px;height:6px;background:#1a1a1a;border-radius:50%;animation:bounce 0.9s infinite;display:block;opacity:0.7;"></span>
-                <span style="width:6px;height:6px;background:#1a1a1a;border-radius:50%;animation:bounce 0.9s 0.18s infinite;display:block;opacity:0.7;"></span>
-                <span style="width:6px;height:6px;background:#1a1a1a;border-radius:50%;animation:bounce 0.9s 0.36s infinite;display:block;opacity:0.7;"></span>
-            </div>`;
-            const msgs = document.getElementById('chat-messages');
-            msgs.appendChild(el); msgs.scrollTop = msgs.scrollHeight;
+        function showAssistantActions(reply) {
+            const lower = reply.toLowerCase();
+            const actions = [];
+            if (/trip|flight|train|hotel|travel|book|destination/.test(lower))
+                actions.push({ label: 'Plan Trip', fn: () => window.location.href = 'request.html' });
+            if (/booking|request|status|pending|approved|rejected/.test(lower))
+                actions.push({ label: 'My Bookings', fn: () => { closeAssistant(); document.getElementById('tab-btn-trips')?.click(); } });
+            if (/policy|limit|allowance|eligible|class|entitle/.test(lower))
+                actions.push({ label: 'View Policy', fn: () => closeAssistant() });
+            window._aiActions = actions;
+            document.getElementById('assistant-actions').innerHTML = actions
+                .map((a,i) => `<button class="ai-action-btn" onclick="window._aiActions[${i}].fn()">${a.label}</button>`)
+                .join('');
         }
 
         let voiceRecognition = null, voiceActive = false;
         function toggleVoice() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) { showToast('Voice input not supported. Try Chrome or Edge.', 'warning'); return; }
-            const btn = document.getElementById('voice-btn');
+            if (!SR) { showToast('Voice not supported. Try Chrome.', 'warning'); return; }
             if (voiceActive) { voiceRecognition?.stop(); return; }
             voiceRecognition = new SR();
             voiceRecognition.lang = 'en-IN';
             voiceRecognition.interimResults = true;
             voiceRecognition.onstart = () => {
                 voiceActive = true;
-                btn.style.background = 'rgba(230,59,46,0.1)';
-                btn.style.borderColor = '#e63b2e';
-                btn.style.color = '#e63b2e';
-                document.getElementById('chat-input').placeholder = 'Listening…';
+                setOrbState('listening');
+                document.getElementById('assistant-text').value = '';
+                if (!keyboardOpen) toggleAssistantKeyboard();
             };
             voiceRecognition.onresult = (e) => {
-                document.getElementById('chat-input').value = Array.from(e.results).map(r=>r[0].transcript).join('');
+                document.getElementById('assistant-text').value = Array.from(e.results).map(r=>r[0].transcript).join('');
             };
             voiceRecognition.onend = () => {
                 voiceActive = false;
-                btn.style.background = '#ffffff';
-                btn.style.borderColor = '#1a1a1a';
-                btn.style.color = '#1a1a1a';
-                const input = document.getElementById('chat-input');
-                input.placeholder = 'Describe your travel need…';
-                if (input.value.trim()) sendChat();
+                const text = document.getElementById('assistant-text').value.trim();
+                if (text) sendAssistantChat();
+                else setOrbState('idle');
             };
             voiceRecognition.onerror = (e) => {
                 voiceActive = false;
-                btn.style.background = '#ffffff'; btn.style.borderColor = '#1a1a1a'; btn.style.color = '#1a1a1a';
-                if (e.error !== 'no-speech') showToast(`Mic error: ${e.error}`, 'error');
+                setOrbState('idle');
+                if (e.error !== 'no-speech') showToast(`Mic: ${e.error}`, 'warning');
             };
             voiceRecognition.start();
         }
 
-        async function sendChat() {
-            const input = document.getElementById('chat-input');
+        async function sendAssistantChat() {
+            const input = document.getElementById('assistant-text');
             const text  = input.value.trim();
             if (!text) return;
-            const sendBtn = document.getElementById('chat-send');
-            input.value = ''; input.disabled = true; sendBtn.disabled = true;
+            input.value = '';
             chatMessages.push({ role: 'user', content: text });
-            addBubble('user', text);
-            showTyping();
+            setOrbState('thinking');
+            document.getElementById('assistant-reply').style.display = 'none';
+            document.getElementById('assistant-actions').innerHTML = '';
             try {
                 const data = await apiRequest('/ai/chat', { method: 'POST', body: { messages: chatMessages } });
-                document.getElementById('typing-dot')?.remove();
                 chatMessages.push({ role: 'assistant', content: data.reply });
-                addBubble('assistant', data.reply);
+                const replyEl = document.getElementById('assistant-reply');
+                replyEl.textContent = data.reply;
+                replyEl.style.display = 'block';
+                showAssistantActions(data.reply);
                 if (data.booking) await loadBookings();
-            } catch (err) {
-                document.getElementById('typing-dot')?.remove();
-                addBubble('assistant', 'Something went wrong. Please try again.');
-            } finally {
-                input.disabled = false; sendBtn.disabled = false; input.focus();
+                setOrbState('idle');
+            } catch {
+                setOrbState('idle');
+                showToast('Something went wrong. Please try again.', 'error');
             }
         }
     </script>
