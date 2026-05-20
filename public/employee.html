@@ -529,7 +529,7 @@
                 <span class="material-symbols-outlined">dashboard</span>
                 Dashboard
             </a>
-            <a href="request.html">
+            <a href="#bookings-section" onclick="document.getElementById('bookings-section').scrollIntoView({behavior:'smooth'});return false;">
                 <span class="material-symbols-outlined">luggage</span>
                 My Trips
             </a>
@@ -774,20 +774,9 @@
             if (!currentUser) return;
             document.getElementById('user-name').innerText = currentUser.name.toUpperCase();
 
-            // Greeting banner
-            const hr = new Date().getHours();
-            const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
-            document.getElementById('greeting-eyebrow').textContent = greet;
-            document.getElementById('greeting-name').textContent = currentUser.name;
-
             showTableSkeleton('bookings-list', 6);
             try { _userMe = await apiRequest('/auth/me'); } catch (_) {}
-            if (_userMe) {
-                const dept = _userMe.department ? ` · ${_userMe.department}` : '';
-                document.getElementById('greeting-role').textContent = `Corporate Traveler${dept}`;
-            }
             await loadBookings();
-            await loadNotifications();
         }
         init();
 
@@ -802,41 +791,6 @@
                 _fpFrom.config.onChange.push(() => { fp.set('minDate', _fpFrom.selectedDates[0]); });
             }
         });
-
-        async function loadNotifications() {
-            try {
-                const notifications = await apiRequest('/notifications');
-                const container = document.getElementById('activity-feed-container');
-                if (!notifications || !notifications.length) {
-                    container.innerHTML = `
-                        <div style="text-align:center;padding:1.5rem;color:var(--secondary);font-size:0.85rem;font-weight:500;">
-                            No recent activity.
-                        </div>`;
-                    return;
-                }
-                container.innerHTML = notifications.slice(0, 5).map(n => {
-                    let icon = 'info';
-                    let color = 'var(--primary)';
-                    if (n.message.toLowerCase().includes('approve')) {
-                        icon = 'check_circle';
-                        color = 'var(--success-text)';
-                    } else if (n.message.toLowerCase().includes('reject')) {
-                        icon = 'cancel';
-                        color = 'var(--danger-text)';
-                    }
-                    return `
-                        <div class="activity-item" style="border-bottom:1px solid var(--outline-variant);padding-bottom:0.75rem;margin-bottom:0.75rem;display:flex;gap:0.75rem;align-items:flex-start;">
-                            <span class="material-symbols-outlined" style="color:${color};font-size:20px;">${icon}</span>
-                            <div class="activity-details">
-                                <p style="margin:0;font-size:0.85rem;font-weight:500;color:var(--on-surface);">${n.message}</p>
-                                <span class="time" style="font-size:0.7rem;color:var(--secondary);font-weight:600;">${new Date(n.createdAt).toLocaleDateString()}</span>
-                            </div>
-                        </div>`;
-                }).join('');
-            } catch (err) {
-                console.error(err.message);
-            }
-        }
 
         function fmtDate(str) {
             if (!str) return '';
