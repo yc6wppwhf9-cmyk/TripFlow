@@ -29,11 +29,18 @@ exports.submitRequest = async (bookingId) => {
 exports.approve = async (bookingId, vendorId) => {
   const booking = await prisma.booking.update({
     where: { id: bookingId },
-    data: { 
-      stage: 'PENDING_VENDOR',
-      vendorId: vendorId
-    },
-    include: { vendor: { include: { user: userSelect } } }
+    data: { stage: 'PENDING_VENDOR', vendorId },
+    include: {
+      employee: { include: { user: userSelect } },
+      vendor:   { include: { user: userSelect } }
+    }
+  });
+
+  await prisma.notification.create({
+    data: {
+      userId:  booking.employee.userId,
+      message: `Your travel request (${booking.details?.origin || ''} → ${booking.details?.destination || ''}) has been approved and sent to the travel desk.`
+    }
   });
 
   if (booking.vendor) {
@@ -46,14 +53,17 @@ exports.approve = async (bookingId, vendorId) => {
 exports.reject = async (bookingId, reason) => {
   const booking = await prisma.booking.update({
     where: { id: bookingId },
-    data: { 
-      stage: 'REJECTED',
-      rejectionReason: reason
-    },
+    data: { stage: 'REJECTED', rejectionReason: reason },
     include: { employee: { include: { user: userSelect } } }
   });
 
-  // Notify Employee
+  await prisma.notification.create({
+    data: {
+      userId:  booking.employee.userId,
+      message: `Your travel request (${booking.details?.origin || ''} → ${booking.details?.destination || ''}) was rejected. Reason: ${reason || 'No reason provided.'}`
+    }
+  });
+
   await emailService.sendRejectionNotice(booking.employee.user.email, reason);
 
   return booking;
@@ -62,17 +72,19 @@ exports.reject = async (bookingId, reason) => {
 exports.complete = async (bookingId, ticketUrl, pnr) => {
   const booking = await prisma.booking.update({
     where: { id: bookingId },
-    data: { 
-      stage: 'COMPLETED',
-      ticketUrl: ticketUrl,
-      pnr: pnr
-    },
+    data: { stage: 'COMPLETED', ticketUrl, pnr },
     include: { employee: { include: { user: userSelect } } }
+  });
+
+  await prisma.notification.create({
+    data: {
+      userId:  booking.employee.userId,
+      message: `Your ticket is ready! ${pnr ? `PNR: ${pnr}. ` : ''}Trip: ${booking.details?.origin || ''} → ${booking.details?.destination || ''}.`
+    }
   });
 
   const hrAdmin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
 
-  // Notify Employee and HR
   await emailService.sendTicketConfirmation(
     booking.employee.user.email,
     hrAdmin ? hrAdmin.email : process.env.FROM_EMAIL,
@@ -80,9 +92,7 @@ exports.complete = async (bookingId, ticketUrl, pnr) => {
     pnr
   );
 
-  // WhatsApp Notification
-  // Assuming user model has a phone field or it's in details
-  const phoneNumber = booking.employee.user.phone || ""; // Need to add phone to User model or handle it
+  const phoneNumber = booking.employee.user.phone || '';
   if (phoneNumber) {
     await whatsappService.sendTicketUploaded(phoneNumber, pnr);
   }
