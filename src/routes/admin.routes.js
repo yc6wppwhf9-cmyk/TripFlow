@@ -14,9 +14,9 @@ router.get('/employees', role(['ADMIN', 'HR']), adminController.getEmployees);
 router.get('/vendors', role(['ADMIN', 'HR']), adminController.getVendors);
 router.get('/policies', role(['ADMIN', 'HR']), adminController.getPolicies);
 
-// ADMIN only — system management
-router.post('/users', role('ADMIN'), adminController.createUser);
-router.post('/employees', role('ADMIN'), adminController.createEmployee);
+// ADMIN + HR — user & employee management
+router.post('/users', role(['ADMIN', 'HR']), adminController.createUser);
+router.post('/employees', role(['ADMIN', 'HR']), adminController.createEmployee);
 router.post('/policies', role(['ADMIN', 'HR']), adminController.createPolicy);
 router.post('/policies/assign', role(['ADMIN', 'HR']), adminController.assignPolicy);
 router.post('/policies/analyze', role(['ADMIN', 'HR']), adminController.analyzePolicy);
