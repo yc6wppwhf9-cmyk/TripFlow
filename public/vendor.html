@@ -195,38 +195,33 @@
 
         <!-- Content Body -->
         <div class="container" style="padding-top:2rem;">
-            
-            <!-- Page Title & Actions -->
-            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-                <div>
-                    <p class="page-label" id="company-name">Vendor Desk</p>
-                    <h2 style="font-size:1.85rem;line-height:1.2;margin-bottom:0.25rem;" id="welcome-heading">Welcome Partner</h2>
-                    <p style="font-size:0.9rem;font-weight:400;color:var(--on-surface-variant);">Here is your performance overview for TripFlow Enterprise bookings today.</p>
+
+            <!-- Greeting Banner -->
+            <div class="greeting-banner animate-fadein" style="margin-bottom:1.75rem;">
+                <div class="gb-inner">
+                    <div class="gb-text">
+                        <div class="gb-eyebrow" id="greeting-eyebrow">Good morning</div>
+                        <div class="gb-name" id="welcome-heading">Partner</div>
+                        <div class="gb-role" id="company-name">Fulfillment Center · Vendor Desk</div>
+                    </div>
                 </div>
             </div>
 
             <!-- Bento Performance Metrics -->
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2rem;">
-                <div class="card" style="padding:1.5rem;display:flex;flex-direction:column;justify-content:space-between;height:140px;">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                        <span class="page-label" style="margin:0;">Total Bookings</span>
-                        <span class="material-symbols-outlined" style="color:var(--primary);">calendar_month</span>
+            <div class="stats-grid-4 stagger animate-fadein" style="margin-bottom:2rem;">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon-wrap blue">
+                        <span class="material-symbols-outlined">calendar_month</span>
                     </div>
-                    <div>
-                        <div style="font-family:var(--font-display);font-size:1.85rem;font-weight:700;line-height:1;" id="stat-total">0</div>
-                        <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">Enterprise assigned</span>
-                    </div>
+                    <div class="stat-label">Total Bookings</div>
+                    <div class="stat-value" id="stat-total">0</div>
                 </div>
-
-                <div class="card" style="padding:1.5rem;display:flex;flex-direction:column;justify-content:space-between;height:140px;">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                        <span class="page-label" style="margin:0;">Avg Ticket Value</span>
-                        <span class="material-symbols-outlined" style="color:var(--danger-text);">payments</span>
+                <div class="stat-card stat-card-green">
+                    <div class="stat-icon-wrap green">
+                        <span class="material-symbols-outlined">payments</span>
                     </div>
-                    <div>
-                        <div style="font-family:var(--font-display);font-size:1.85rem;font-weight:700;line-height:1;" id="stat-rate">₹0</div>
-                        <span style="font-size:0.75rem;font-weight:500;color:var(--secondary);">Per completed booking</span>
-                    </div>
+                    <div class="stat-label">Avg Ticket Value</div>
+                    <div class="stat-value" id="stat-rate">₹0</div>
                 </div>
             </div>
 
@@ -359,10 +354,13 @@
             const user = checkAuth();
             if (!user) return;
             document.getElementById('user-name').innerText = user.name;
-            
-            const companyName = user.vendor?.companyName || user.name || "Vendor Partner";
-            document.getElementById('company-name').innerText = companyName.toUpperCase() + " PARTNER";
-            document.getElementById('welcome-heading').innerText = "Welcome, " + companyName;
+
+            const companyName = user.vendor?.companyName || user.name || "Partner";
+            const hr = new Date().getHours();
+            const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+            document.getElementById('greeting-eyebrow').textContent = greet;
+            document.getElementById('welcome-heading').textContent = companyName;
+            document.getElementById('company-name').textContent = 'Fulfillment Center · ' + companyName.toUpperCase();
 
             showTableSkeleton('requests-list', 6);
             showTableSkeleton('completed-list', 6);

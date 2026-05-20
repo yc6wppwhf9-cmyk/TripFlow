@@ -190,11 +190,56 @@
 
         <div class="container" style="padding-top:2rem;">
 
-            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-                <div>
-                    <p class="page-label">Operations Oversight</p>
-                    <h2 style="font-size:1.8rem;line-height:1.1;margin-bottom:0.25rem;font-weight:600;">Travel Spend &amp; ROI Control</h2>
-                    <p style="font-size:0.9rem;font-weight:500;color:var(--secondary);">Review department budgets, policy variance alerts, and pending active requests.</p>
+            <!-- Greeting Banner -->
+            <div class="greeting-banner animate-fadein" style="margin-bottom:1.75rem;">
+                <div class="gb-inner">
+                    <div class="gb-text">
+                        <div class="gb-eyebrow" id="greeting-eyebrow">Good morning</div>
+                        <div class="gb-name" id="greeting-name">Manager</div>
+                        <div class="gb-role">Operations Oversight · Manager Portal</div>
+                    </div>
+                    <div class="gb-action">
+                        <button class="gb-btn primary" onclick="switchTab('pending', document.getElementById('tab-btn-pending'))">
+                            <span class="material-symbols-outlined" style="font-size:17px;">pending_actions</span>
+                            Approvals <span id="pending-badge" style="display:none;background:rgba(255,255,255,0.25);padding:0.1rem 0.45rem;border-radius:9999px;font-size:0.72rem;"></span>
+                        </button>
+                        <button class="gb-btn white" onclick="window.location.href='request.html'">
+                            <span class="material-symbols-outlined" style="font-size:17px;">add</span>
+                            New Request
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-grid-4 stagger animate-fadein" style="margin-bottom:2rem;">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon-wrap blue">
+                        <span class="material-symbols-outlined">currency_rupee</span>
+                    </div>
+                    <div class="stat-label">Total Spend</div>
+                    <div class="stat-value" id="stat-spend">₹0</div>
+                </div>
+                <div class="stat-card stat-card-amber">
+                    <div class="stat-icon-wrap amber">
+                        <span class="material-symbols-outlined">pending_actions</span>
+                    </div>
+                    <div class="stat-label">Pending Approvals</div>
+                    <div class="stat-value" id="stat-active">0</div>
+                </div>
+                <div class="stat-card stat-card-green">
+                    <div class="stat-icon-wrap green">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <div class="stat-label">Completed</div>
+                    <div class="stat-value" id="stat-completed">0</div>
+                </div>
+                <div class="stat-card stat-card-teal">
+                    <div class="stat-icon-wrap teal">
+                        <span class="material-symbols-outlined">group</span>
+                    </div>
+                    <div class="stat-label">Team Members</div>
+                    <div class="stat-value" id="stat-team">0</div>
                 </div>
             </div>
 
@@ -204,24 +249,12 @@
                     Approval Queue
                     <span id="pending-count" style="background:var(--danger-bg);color:var(--danger-text);padding:0.15rem 0.45rem;border-radius:9999px;font-size:0.7rem;margin-left:0.35rem;display:none;font-weight:800;"></span>
                 </button>
-                <button class="tab-btn" id="tab-btn-team" onclick="switchTab('team',this)">My Team Registry</button>
+                <button class="tab-btn" id="tab-btn-team" onclick="switchTab('team',this)">Team Registry</button>
                 <button class="tab-btn" id="tab-btn-mytrips" onclick="switchTab('mytrips',this)">My Trips</button>
             </div>
 
             <!-- Tab 1: Analytics -->
             <div id="tab-analytics" class="tab-content active">
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2.5rem;">
-                    <div class="card" style="padding:1.5rem;">
-                        <span class="page-label" style="margin-bottom:0.5rem;">Total Spend</span>
-                        <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1;color:var(--primary);" id="stat-spend">₹0</div>
-                        <span style="font-size:0.7rem;font-weight:700;color:var(--secondary);text-transform:uppercase;">Department Total</span>
-                    </div>
-                    <div class="card" style="padding:1.5rem;border-color:var(--primary);background:var(--secondary-container, #dce2f3);">
-                        <span class="page-label" style="margin-bottom:0.5rem;">Pending Approvals</span>
-                        <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1;color:var(--primary);" id="stat-active">0</div>
-                        <span style="font-size:0.7rem;font-weight:700;color:var(--primary);text-transform:uppercase;">Awaiting Review</span>
-                    </div>
-                </div>
 
                 <div class="analytics-grid">
                     <div class="chart-card">
@@ -378,6 +411,10 @@
             const user = checkAuth();
             if (!user) return;
             document.getElementById('user-name').innerText = user.name.toUpperCase();
+            const hr = new Date().getHours();
+            const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+            document.getElementById('greeting-eyebrow').textContent = greet;
+            document.getElementById('greeting-name').textContent = user.name;
             showTableSkeleton('approvals-list', 5);
             showTableSkeleton('team-list', 6);
             showTableSkeleton('mytrips-list', 4);
@@ -400,6 +437,7 @@
             try {
                 const s = await apiRequest('/admin/stats');
                 document.getElementById('stat-spend').innerText = '₹' + (s.totalCost || 0).toLocaleString('en-IN');
+                if (s.completedCount !== undefined) document.getElementById('stat-completed').innerText = s.completedCount;
             } catch(e) {}
         }
 
@@ -463,11 +501,17 @@
             try {
                 const approvals = await apiRequest('/approvals/pending');
                 const badge     = document.getElementById('pending-count');
+                const gbBadge   = document.getElementById('pending-badge');
                 const activeExc = document.getElementById('stat-active');
 
                 activeExc.innerText = approvals.length;
-                if (approvals.length) { badge.innerText = approvals.length; badge.style.display = 'inline'; }
-                else { badge.style.display = 'none'; }
+                if (approvals.length) {
+                    badge.innerText = approvals.length; badge.style.display = 'inline';
+                    gbBadge.innerText = approvals.length; gbBadge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                    gbBadge.style.display = 'none';
+                }
 
                 const list = document.getElementById('approvals-list');
                 if (!approvals.length) {
@@ -529,7 +573,10 @@
         }
 
         function updateTeamKPIMetrics(bookings) {
-            // stat-spend is loaded from /admin/stats in loadStats()
+            const completed = bookings.filter(b => b.stage === 'COMPLETED').length;
+            const members   = [...new Set(bookings.map(b => b.employee?.id).filter(Boolean))].length;
+            document.getElementById('stat-completed').innerText = completed;
+            document.getElementById('stat-team').innerText      = members;
         }
 
         function renderTeam(list) {

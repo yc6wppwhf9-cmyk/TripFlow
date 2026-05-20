@@ -188,18 +188,21 @@
 
         <!-- Content Body -->
         <div class="container" style="padding-top:2rem;">
-            
-            <!-- Page Title & Actions -->
-            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-                <div>
-                    <p class="page-label">Governance & Security</p>
-                    <h2 style="font-size:1.8rem;line-height:1.1;margin-bottom:0.25rem;font-weight:600;color:var(--on-surface);">System Governance</h2>
-                    <p style="font-size:0.9rem;font-weight:500;color:var(--secondary);max-width:600px;">Manage organizational travel parameters, employee database, and vendor supplier registrations.</p>
-                </div>
-                <div style="display:flex;gap:0.75rem;">
-                    <button onclick="showUserModal()" style="background:var(--primary);color:#ffffff;border-color:transparent;">
-                        <span class="material-symbols-outlined" style="font-size:18px;">person_add</span>Add User
-                    </button>
+
+            <!-- Greeting Banner -->
+            <div class="greeting-banner animate-fadein" style="margin-bottom:1.75rem;">
+                <div class="gb-inner">
+                    <div class="gb-text">
+                        <div class="gb-eyebrow" id="greeting-eyebrow">Good morning</div>
+                        <div class="gb-name" id="greeting-name">Administrator</div>
+                        <div class="gb-role">System Governance · Governance &amp; Security</div>
+                    </div>
+                    <div class="gb-action">
+                        <button class="gb-btn white" onclick="showUserModal()">
+                            <span class="material-symbols-outlined" style="font-size:17px;">person_add</span>
+                            Add User
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -412,6 +415,10 @@
             const user = checkAuth();
             if (!user) return;
             document.getElementById('user-name').innerText = user.name.toUpperCase();
+            const hr = new Date().getHours();
+            const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+            document.getElementById('greeting-eyebrow').textContent = greet;
+            document.getElementById('greeting-name').textContent = user.name;
             showTableSkeleton('users-list', 6);
             showTableSkeleton('vendors-list', 4);
             showTableSkeleton('bookings-list', 6);

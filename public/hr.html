@@ -219,37 +219,57 @@
 
         <!-- Content Body -->
         <div class="container" style="padding-top:2rem;">
-            
-            <!-- Page Title & Actions -->
-            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-                <div>
-                    <p class="page-label">Global Operations</p>
-                    <h2 style="font-size:1.8rem;line-height:1.1;margin-bottom:0.25rem;font-weight:600;color:var(--on-surface);">HR Mobility Dashboard</h2>
-                    <p style="font-size:0.9rem;font-weight:500;color:var(--secondary);">Monitoring traveler compliance and emergency care rules.</p>
+
+            <!-- Greeting Banner -->
+            <div class="greeting-banner animate-fadein" style="margin-bottom:1.75rem;">
+                <div class="gb-inner">
+                    <div class="gb-text">
+                        <div class="gb-eyebrow" id="greeting-eyebrow">Good morning</div>
+                        <div class="gb-name" id="greeting-name">HR Manager</div>
+                        <div class="gb-role">HR Mobility Dashboard · Global Operations</div>
+                    </div>
+                    <div class="gb-action">
+                        <button class="gb-btn primary" onclick="switchTab('add-employee', document.getElementById('snav-add-employee'))">
+                            <span class="material-symbols-outlined" style="font-size:17px;">person_add</span>
+                            Add Employee
+                        </button>
+                        <button class="gb-btn white" onclick="switchTab('analytics', document.getElementById('snav-analytics'))">
+                            <span class="material-symbols-outlined" style="font-size:17px;">bar_chart</span>
+                            Analytics
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- Bento Stats Matrix -->
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2rem;">
-                <div class="card" style="padding:1.5rem;">
-                    <span class="page-label" style="margin-bottom:0.5rem;">Registered Users</span>
-                    <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1;" id="stat-emp">—</div>
-                    <span style="font-size:0.7rem;font-weight:700;color:var(--secondary);text-transform:uppercase;">Across all divisions</span>
+            <div class="stats-grid-4 stagger animate-fadein" style="margin-bottom:2rem;">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon-wrap blue">
+                        <span class="material-symbols-outlined">group</span>
+                    </div>
+                    <div class="stat-label">Registered Users</div>
+                    <div class="stat-value" id="stat-emp">—</div>
                 </div>
-                <div class="card" style="padding:1.5rem;border-color:var(--primary);background:var(--secondary-container);">
-                    <span class="page-label" style="margin-bottom:0.5rem;color:var(--primary);">Active Approvals</span>
-                    <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1;color:var(--primary);" id="stat-active">—</div>
-                    <span style="font-size:0.7rem;font-weight:700;color:var(--primary);text-transform:uppercase;">Trips in Queue</span>
+                <div class="stat-card stat-card-amber">
+                    <div class="stat-icon-wrap amber">
+                        <span class="material-symbols-outlined">pending_actions</span>
+                    </div>
+                    <div class="stat-label">Active Approvals</div>
+                    <div class="stat-value" id="stat-active">—</div>
                 </div>
-                <div class="card" style="padding:1.5rem;">
-                    <span class="page-label" style="margin-bottom:0.5rem;">Completed Trips</span>
-                    <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1;" id="stat-completed">—</div>
-                    <span style="font-size:0.7rem;font-weight:700;color:var(--secondary);text-transform:uppercase;">This Billing Cycle</span>
+                <div class="stat-card stat-card-green">
+                    <div class="stat-icon-wrap green">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <div class="stat-label">Completed Trips</div>
+                    <div class="stat-value" id="stat-completed">—</div>
                 </div>
-                <div class="card" style="padding:1.5rem;">
-                    <span class="page-label" style="margin-bottom:0.5rem;">Total Spend</span>
-                    <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1;color:var(--primary);" id="stat-spend">—</div>
-                    <span style="font-size:0.7rem;font-weight:700;color:var(--secondary);text-transform:uppercase;">Dynamic calculations</span>
+                <div class="stat-card stat-card-purple">
+                    <div class="stat-icon-wrap purple">
+                        <span class="material-symbols-outlined">currency_rupee</span>
+                    </div>
+                    <div class="stat-label">Total Spend</div>
+                    <div class="stat-value" id="stat-spend">—</div>
                 </div>
             </div>
 
@@ -547,6 +567,10 @@
             const user = checkAuth();
             if (!user) return;
             document.getElementById('user-name').innerText = user.name.toUpperCase();
+            const hr = new Date().getHours();
+            const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+            document.getElementById('greeting-eyebrow').textContent = greet;
+            document.getElementById('greeting-name').textContent = user.name;
             showTableSkeleton('emp-list', 6);
             showTableSkeleton('bookings-list', 6);
             showTableSkeleton('policy-list', 6);

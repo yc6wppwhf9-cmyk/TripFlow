@@ -559,55 +559,70 @@
 
         <!-- Content Body -->
         <div class="container" style="padding-top:2rem;">
-            <!-- Bento Hero Section -->
-            <div class="bento-grid">
-                <!-- Greeting Card -->
-                <div class="bento-card-greeting">
-                    <p class="page-label">Welcome back</p>
-                    <h2 style="font-size:1.85rem;margin-bottom:0.5rem;line-height:1.2;">Ready for your next journey?</h2>
-                    <p id="greeting-subtitle" style="font-size:0.9rem;font-weight:400;color:var(--on-surface-variant);margin-bottom:2rem;max-width:540px;">Plan and manage your corporate travel from one place.</p>
-                    
-                    <div class="bento-badge-group" id="greeting-badges">
-                        <div class="bento-badge">
-                            <span class="bb-label">Next Flight</span>
-                            <div class="bb-value" style="color:var(--secondary);font-size:0.95rem;">None Scheduled</div>
-                            <span class="bb-sub">No upcoming flights</span>
-                        </div>
-                        <div class="bento-badge">
-                            <span class="bb-label">Lodging</span>
-                            <div class="bb-value" style="color:var(--secondary);font-size:0.95rem;">No Lodging</div>
-                            <span class="bb-sub">No hotel arranged</span>
-                        </div>
+
+            <!-- Greeting Banner -->
+            <div class="greeting-banner animate-fadein" style="margin-bottom:1.75rem;">
+                <div class="gb-inner">
+                    <div class="gb-text">
+                        <div class="gb-eyebrow" id="greeting-eyebrow">Good morning</div>
+                        <div class="gb-name" id="greeting-name">Welcome back</div>
+                        <div class="gb-role" id="greeting-role">Corporate Traveler · Employee</div>
+                    </div>
+                    <div class="gb-action">
+                        <button class="gb-btn primary" onclick="window.location.href='request.html'">
+                            <span class="material-symbols-outlined" style="font-size:17px;">add</span>
+                            New Request
+                        </button>
+                        <button class="gb-btn white" onclick="document.getElementById('bookings-section').scrollIntoView({behavior:'smooth'})">
+                            <span class="material-symbols-outlined" style="font-size:17px;">travel_explore</span>
+                            My Trips
+                        </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Stats Bento Block -->
-                <div class="bento-card-stats">
-                    <!-- Monthly Spend -->
-                    <div class="budget-card" id="budget-progress-card">
-                        <span class="page-label">Monthly Travel Spend</span>
-                        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.2;">₹0</div>
-                        <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">This month's non-rejected bookings</span>
+            <!-- Stats Row -->
+            <div class="stats-grid-4 stagger animate-fadein" style="margin-bottom:2rem;">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon-wrap blue">
+                        <span class="material-symbols-outlined">currency_rupee</span>
                     </div>
-
-                    <!-- Active Requests Box -->
-                    <div class="budget-card" style="background:#ffffff;">
-                        <span class="page-label">Active Requests</span>
-
-                        <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-                            <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:700;line-height:1;" id="active-req-count">0</div>
-                            <button class="secondary" onclick="window.location.href='request.html'" style="padding:0.4rem 0.8rem;font-size:0.75rem;">Plan Trip</button>
-                        </div>
+                    <div class="stat-label">Monthly Spend</div>
+                    <div class="stat-value" id="stat-spend">₹0</div>
+                </div>
+                <div class="stat-card stat-card-amber">
+                    <div class="stat-icon-wrap amber">
+                        <span class="material-symbols-outlined">pending_actions</span>
                     </div>
+                    <div class="stat-label">Active Requests</div>
+                    <div class="stat-value" id="active-req-count">0</div>
+                </div>
+                <div class="stat-card stat-card-green">
+                    <div class="stat-icon-wrap green">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <div class="stat-label">Completed</div>
+                    <div class="stat-value" id="stat-completed">0</div>
+                </div>
+                <div class="stat-card stat-card-red">
+                    <div class="stat-icon-wrap red">
+                        <span class="material-symbols-outlined">cancel</span>
+                    </div>
+                    <div class="stat-label">Rejected</div>
+                    <div class="stat-value" id="stat-rejected">0</div>
                 </div>
             </div>
 
             <!-- Main Sections Grid -->
             <div class="dashboard-sections">
                 <!-- Bookings Table -->
-                <section style="display:flex;flex-direction:column;gap:1rem;">
-                    <div class="section-header">
-                        <h2>Active Request Status</h2>
+                <section id="bookings-section" style="display:flex;flex-direction:column;gap:1rem;">
+                    <div class="section-title-bar">
+                        <h3>My Travel Requests</h3>
+                        <div class="stb-line"></div>
+                        <button onclick="window.location.href='request.html'" style="padding:0.45rem 1rem;font-size:0.8rem;white-space:nowrap;">
+                            <span class="material-symbols-outlined" style="font-size:16px;">add</span> New
+                        </button>
                     </div>
                     <div class="table-card">
                         <table>
@@ -622,7 +637,16 @@
                                 </tr>
                             </thead>
                             <tbody id="bookings-list">
-                                <tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">⏳</div><p>Loading your trips…</p></div></td></tr>
+                                <tr><td colspan="6">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon"><span class="material-symbols-outlined">flight_takeoff</span></div>
+                                        <h4>No trips yet</h4>
+                                        <p>Your upcoming and past bookings will appear here.</p>
+                                        <button onclick="window.location.href='request.html'">
+                                            <span class="material-symbols-outlined" style="font-size:16px;">add</span> Plan a Trip
+                                        </button>
+                                    </div>
+                                </td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -784,8 +808,19 @@
             currentUser = checkAuth();
             if (!currentUser) return;
             document.getElementById('user-name').innerText = currentUser.name.toUpperCase();
+
+            // Greeting banner
+            const hr = new Date().getHours();
+            const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+            document.getElementById('greeting-eyebrow').textContent = greet;
+            document.getElementById('greeting-name').textContent = currentUser.name;
+
             showTableSkeleton('bookings-list', 6);
             try { _userMe = await apiRequest('/auth/me'); } catch (_) {}
+            if (_userMe) {
+                const dept = _userMe.department ? ` · ${_userMe.department}` : '';
+                document.getElementById('greeting-role').textContent = `Corporate Traveler${dept}`;
+            }
             await loadBookings();
             await loadNotifications();
         }
@@ -856,41 +891,31 @@
             try {
                 const bookings = await apiRequest('/bookings/mine');
                 const list = document.getElementById('bookings-list');
-                const activeCount = bookings.filter(b => b.stage === 'PENDING_MANAGER' || b.stage === 'PENDING_VENDOR').length;
+
+                const activeCount    = bookings.filter(b => b.stage === 'PENDING_MANAGER' || b.stage === 'PENDING_VENDOR').length;
+                const completedCount = bookings.filter(b => b.stage === 'COMPLETED').length;
+                const rejectedCount  = bookings.filter(b => b.stage === 'REJECTED').length;
                 document.getElementById('active-req-count').innerText = activeCount;
-                document.getElementById('greeting-subtitle').innerText = activeCount > 0
-                    ? `You have ${activeCount} active request${activeCount > 1 ? 's' : ''} in progress.`
-                    : 'No active requests. Ready to plan your next trip?';
-                
-                // 1. Calculate and update monthly spend card
+                document.getElementById('stat-completed').innerText   = completedCount;
+                document.getElementById('stat-rejected').innerText    = rejectedCount;
+
                 const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0,0,0,0);
                 const monthlySpend = bookings
                     .filter(b => b.stage !== 'REJECTED' && new Date(b.createdAt) >= startOfMonth)
                     .reduce((acc, curr) => acc + Number(curr.cost || 0), 0);
-                document.getElementById('budget-progress-card').innerHTML = `
-                    <span class="page-label">Monthly Travel Spend</span>
-                    <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.2;color:var(--on-surface);">₹${monthlySpend.toLocaleString('en-IN')}</div>
-                    <span style="font-size:0.75rem;font-weight:600;color:var(--secondary);">This month's non-rejected bookings</span>
-                `;
-
-                // 2. Greeting Badges: Flight & Lodging
-                const nextFlight = bookings.find(b => b.type === 'FLIGHT' && b.stage === 'COMPLETED');
-                const nextHotel = bookings.find(b => b.type === 'HOTEL' && b.stage === 'COMPLETED');
-                document.getElementById('greeting-badges').innerHTML = `
-                    <div class="bento-badge">
-                        <span class="bb-label">Next Flight</span>
-                        <div class="bb-value" style="font-size:1.1rem;font-weight:700;">${nextFlight ? `${nextFlight.details.origin || '—'} → ${nextFlight.details.destination || '—'}` : 'None Scheduled'} <span class="material-symbols-outlined" style="color:var(--primary);font-size:18px;">flight</span></div>
-                        <span class="bb-sub">${nextFlight ? `${nextFlight.details.date || 'Arranged'} • Confirmed` : 'No upcoming flights'}</span>
-                    </div>
-                    <div class="bento-badge">
-                        <span class="bb-label">Lodging</span>
-                        <div class="bb-value" style="font-size:1.1rem;font-weight:700;">${nextHotel ? nextHotel.details.destination : 'None Reserved'} <span class="material-symbols-outlined" style="color:var(--primary);font-size:18px;">hotel</span></div>
-                        <span class="bb-sub">${nextHotel ? `${nextHotel.details.date || 'Arranged'} • Confirmed` : 'No lodging reserved'}</span>
-                    </div>
-                `;
+                document.getElementById('stat-spend').innerText = '₹' + monthlySpend.toLocaleString('en-IN');
 
                 if (!bookings.length) {
-                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✈</div><p>No travel requests yet. Click <strong>Plan a Trip</strong> to get started.</p></div></td></tr>';
+                    list.innerHTML = `<tr><td colspan="6">
+                        <div class="empty-state">
+                            <div class="empty-state-icon"><span class="material-symbols-outlined">flight_takeoff</span></div>
+                            <h4>No trips yet</h4>
+                            <p>Your upcoming and past bookings will appear here.</p>
+                            <button onclick="window.location.href='request.html'">
+                                <span class="material-symbols-outlined" style="font-size:16px;">add</span> Plan a Trip
+                            </button>
+                        </div>
+                    </td></tr>`;
                 } else {
                     list.innerHTML = bookings.map(b => `
                         <tr>
