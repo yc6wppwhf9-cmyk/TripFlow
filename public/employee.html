@@ -592,6 +592,16 @@
                 </div>
             </div>
 
+            <!-- Recent Journeys -->
+            <section id="recent-journeys-section" style="display:none;flex-direction:column;gap:1rem;">
+                <div class="section-title-bar">
+                    <h3>Recent Journeys</h3>
+                    <div class="stb-line"></div>
+                    <a href="mytrips.html" style="font-size:0.8rem;font-weight:600;color:var(--primary);text-decoration:none;white-space:nowrap;">View all →</a>
+                </div>
+                <div id="recent-journeys-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem;"></div>
+            </section>
+
         </div>
     </main>
 
@@ -778,9 +788,54 @@
             return '';
         }
 
+        const CITY_IMAGES = {
+            'Mumbai':     'https://images.unsplash.com/photo-1567157577867-05993eb926d3?auto=format&fit=crop&w=480&h=200&q=80',
+            'Delhi':      'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=480&h=200&q=80',
+            'New Delhi':  'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=480&h=200&q=80',
+            'Bangalore':  'https://images.unsplash.com/photo-1596516109370-a06d0dd7cd03?auto=format&fit=crop&w=480&h=200&q=80',
+            'Bengaluru':  'https://images.unsplash.com/photo-1596516109370-a06d0dd7cd03?auto=format&fit=crop&w=480&h=200&q=80',
+            'Hyderabad':  'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=480&h=200&q=80',
+            'Chennai':    'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=480&h=200&q=80',
+            'Kolkata':    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=480&h=200&q=80',
+            'Jaipur':     'https://images.unsplash.com/photo-1477587458883-47145ed31672?auto=format&fit=crop&w=480&h=200&q=80',
+            'Goa':        'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=480&h=200&q=80',
+            'Agra':       'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&h=200&q=80',
+            'Varanasi':   'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=480&h=200&q=80',
+            'Pune':       'https://images.unsplash.com/photo-1590123715937-9b8c8b6cd2e4?auto=format&fit=crop&w=480&h=200&q=80',
+            'Ahmedabad':  'https://images.unsplash.com/photo-1597040663342-45b6af3d91a5?auto=format&fit=crop&w=480&h=200&q=80',
+            'Lucknow':    'https://images.unsplash.com/photo-1586183189334-1cb3a044f96c?auto=format&fit=crop&w=480&h=200&q=80',
+            'Amritsar':   'https://images.unsplash.com/photo-1588416936097-41850ab3d86d?auto=format&fit=crop&w=480&h=200&q=80',
+            'Kochi':      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=480&h=200&q=80',
+            'Udaipur':    'https://images.unsplash.com/photo-1568695133990-d46c44b9d5e1?auto=format&fit=crop&w=480&h=200&q=80',
+            'Jodhpur':    'https://images.unsplash.com/photo-1524909600633-50fb4a1cc56e?auto=format&fit=crop&w=480&h=200&q=80',
+            'Srinagar':   'https://images.unsplash.com/photo-1548605710-a99a0bedfab8?auto=format&fit=crop&w=480&h=200&q=80',
+            'Leh':        'https://images.unsplash.com/photo-1605649461784-eee8f6b0e3d3?auto=format&fit=crop&w=480&h=200&q=80',
+            'Muzaffarpur':'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=480&h=200&q=80',
+        };
+        const DEFAULT_CITY_IMG = 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=480&h=200&q=80';
+
+        function cityImg(name) {
+            if (!name) return DEFAULT_CITY_IMG;
+            const key = Object.keys(CITY_IMAGES).find(k => name.toLowerCase().includes(k.toLowerCase()));
+            return key ? CITY_IMAGES[key] : DEFAULT_CITY_IMG;
+        }
+
+        function fmtDate(str) {
+            if (!str) return '';
+            const d = new Date(str);
+            if (isNaN(d)) return str;
+            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        const STAGE_BG    = { PENDING_MANAGER:'var(--warning-bg)',  PENDING_VENDOR:'var(--info-bg)',  COMPLETED:'var(--success-bg)',  REJECTED:'var(--danger-bg)' };
+        const STAGE_COLOR = { PENDING_MANAGER:'var(--warning-text)', PENDING_VENDOR:'var(--info-text)', COMPLETED:'var(--success-text)', REJECTED:'var(--danger-text)' };
+        const STAGE_LABEL = { PENDING_MANAGER:'AWAITING APPROVAL',  PENDING_VENDOR:'WITH TRAVEL DESK', COMPLETED:'COMPLETED',          REJECTED:'REJECTED' };
+
         async function loadBookings() {
             try {
                 const bookings = await apiRequest('/bookings/mine');
+
+                // ── Stat cards ───────────────────────────────────────
                 const activeCount    = bookings.filter(b => b.stage === 'PENDING_MANAGER' || b.stage === 'PENDING_VENDOR').length;
                 const completedCount = bookings.filter(b => b.stage === 'COMPLETED').length;
                 const rejectedCount  = bookings.filter(b => b.stage === 'REJECTED').length;
@@ -792,6 +847,45 @@
                     .filter(b => b.stage !== 'REJECTED' && new Date(b.createdAt) >= startOfMonth)
                     .reduce((acc, curr) => acc + Number(curr.cost || 0), 0);
                 document.getElementById('stat-spend').innerText = '₹' + monthlySpend.toLocaleString('en-IN');
+
+                // ── Recent journey cards ─────────────────────────────
+                const recent = bookings.slice(0, 4);
+                const section = document.getElementById('recent-journeys-section');
+                if (recent.length) {
+                    document.getElementById('recent-journeys-grid').innerHTML = recent.map(b => {
+                        const dest = b.details?.destination || '—';
+                        const img  = cityImg(dest);
+                        return `
+                        <div onclick="window.location.href='detail.html?id=${b.id}'"
+                             style="border-radius:16px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow-level-1);cursor:pointer;border:1px solid var(--outline-variant);transition:transform 0.18s,box-shadow 0.18s;"
+                             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='var(--shadow-level-2)'"
+                             onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow-level-1)'">
+                            <div style="position:relative;height:140px;overflow:hidden;background:var(--surface-container-low);">
+                                <img src="${img}" alt="${dest}" loading="lazy"
+                                     style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.35s;"
+                                     onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform=''"
+                                     onerror="this.style.display='none'">
+                                <span style="position:absolute;top:10px;right:10px;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;padding:0.2rem 0.55rem;border-radius:6px;background:${STAGE_BG[b.stage]};color:${STAGE_COLOR[b.stage]};">
+                                    ${STAGE_LABEL[b.stage] || b.stage}
+                                </span>
+                            </div>
+                            <div style="padding:0.85rem 1rem;">
+                                <div style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--on-surface);margin-bottom:0.15rem;">${dest}</div>
+                                <div style="font-size:0.72rem;font-weight:500;color:var(--secondary);margin-bottom:0.6rem;">${b.details?.origin ? b.details.origin + ' → ' : ''}${dest}</div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-size:0.72rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:0.25rem;">
+                                        <span class="material-symbols-outlined" style="font-size:13px;">calendar_today</span>
+                                        ${fmtDate(b.details?.date) || 'TBA'}
+                                    </span>
+                                    <span style="font-family:var(--font-display);font-size:0.82rem;font-weight:700;color:var(--on-surface);">₹${Number(b.cost||0).toLocaleString('en-IN')}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    section.style.display = 'flex';
+                } else {
+                    section.style.display = 'none';
+                }
             } catch (err) {
                 console.error(err.message);
             }
