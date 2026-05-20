@@ -292,6 +292,7 @@
                                         <th>Stage</th>
                                         <th>Cost</th>
                                         <th>Date</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="bookings-list"></tbody>
@@ -659,7 +660,17 @@
             if (!list.length) {
                 el.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>No bookings found</p></div></td></tr>'; return;
             }
-            el.innerHTML = list.map(b => `
+            el.innerHTML = list.map(b => {
+                const isPending = b.stage === 'PENDING_MANAGER';
+                const actionCell = isPending
+                    ? `<td data-label="Action" style="white-space:nowrap;">
+                           <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                               <button onclick="hrApprove('${b.id}')" style="font-size:0.72rem;padding:0.3rem 0.6rem;background:#16a34a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Approve</button>
+                               <button onclick="hrReject('${b.id}')" style="font-size:0.72rem;padding:0.3rem 0.6rem;background:#dc2626;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Reject</button>
+                           </div>
+                       </td>`
+                    : `<td data-label="Action" style="color:var(--secondary);font-size:0.75rem;font-weight:600;">—</td>`;
+                return `
                 <tr>
                     <td data-label="Employee" style="font-weight:700;color:var(--on-surface);">${b.employee?.user?.name || '—'}</td>
                     <td data-label="Type"><span class="role-badge role-VENDOR">${b.type}</span></td>
@@ -671,7 +682,9 @@
                     <td data-label="Stage"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
                     <td data-label="Cost" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
                     <td data-label="Date" style="color:var(--secondary);font-size:0.78rem;font-weight:600;">${new Date(b.createdAt).toLocaleDateString('en-IN')}</td>
-                </tr>`).join('');
+                    ${actionCell}
+                </tr>`;
+            }).join('');
         }
 
         function filterBookings() {
@@ -722,6 +735,33 @@
                 btn.disabled = false; btn.innerText = 'Save Policy';
             }
         });
+
+        // ── HR Approval Actions ──
+        async function hrApprove(bookingId) {
+            try {
+                const vendors = await apiRequest('/approvals/vendors');
+                const vendorId = vendors.length ? vendors[0].id : null;
+                await apiRequest(`/approvals/${bookingId}/approve`, { method: 'POST', body: { vendorId } });
+                showToast('Booking approved and sent to vendor.', 'success');
+                await loadBookings();
+                await loadStats();
+            } catch(err) {
+                showToast(err.message || 'Approval failed', 'error');
+            }
+        }
+
+        async function hrReject(bookingId) {
+            const reason = prompt('Reason for rejection (required):');
+            if (!reason || !reason.trim()) return;
+            try {
+                await apiRequest(`/approvals/${bookingId}/reject`, { method: 'POST', body: { reason } });
+                showToast('Booking rejected.', 'success');
+                await loadBookings();
+                await loadStats();
+            } catch(err) {
+                showToast(err.message || 'Rejection failed', 'error');
+            }
+        }
 
         // ── Add Employee Tab ──
         async function loadManagerOptions() {

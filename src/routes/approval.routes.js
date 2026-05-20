@@ -5,7 +5,7 @@ const auth = require('../middleware/auth.middleware');
 const role = require('../middleware/role.middleware');
 
 router.use(auth);
-router.use(role(['MANAGER', 'ADMIN']));
+router.use(role(['MANAGER', 'ADMIN', 'HR']));
 
 router.get('/vendors', approvalController.getVendors);
 router.get('/pending', approvalController.getPendingApprovals);

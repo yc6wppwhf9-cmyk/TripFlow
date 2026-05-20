@@ -16,7 +16,7 @@ router.get('/:id',         bookingController.getBookingById);
 router.delete('/:id',      bookingController.deleteBooking);
 router.post('/:id/receipt', upload.single('receipt'), bookingController.uploadReceipt);
 
-router.post('/', role('EMPLOYEE'), [
+router.post('/', role(['EMPLOYEE', 'MANAGER']), [
   body('type')
     .isIn(['FLIGHT', 'HOTEL', 'TRAIN', 'CAB', 'MEAL', 'TRIP_PACKAGE'])
     .withMessage('type must be FLIGHT, HOTEL, TRAIN, CAB, MEAL, or TRIP_PACKAGE'),
