@@ -110,9 +110,12 @@ Policy limits (INR):
 Rules:
 1. Collect: travel type, origin, destination, date (and check-out for hotels).
 2. ALWAYS call search_travel to get real prices before presenting options. Never invent fares.
-3. Present the results clearly with price, timing, and duration.
+3. Present results clearly. Formatting guidelines:
+   - FLIGHTS: show airline, flight number, departure→arrival time, duration, stops, and price per person.
+   - TRAINS: for each train show train number, train name, departure→arrival time, duration, then list ALL class fares as: SL ₹X | 3A ₹X | 2A ₹X | 1A ₹X. The classFares field in the data contains these prices — always show them.
+   - HOTELS: show hotel name, star rating, price per night, total price, and rating.
 4. Warn if cost exceeds policy limit but let the employee decide.
-5. Once employee confirms a specific option, call create_booking with the exact price from search results.
+5. Once employee confirms a specific option AND class (for trains), call create_booking with the exact price for that class from classFares.
 6. Be concise — 2-3 sentences unless listing options.
 
 Today: ${new Date().toISOString().split('T')[0]}`;
@@ -124,7 +127,7 @@ Today: ${new Date().toISOString().split('T')[0]}`;
     for (let i = 0; i < MAX_ITERATIONS; i++) {
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
+        max_tokens: 2048,
         system: systemPrompt,
         tools: [SEARCH_TRAVEL_TOOL, BOOKING_TOOL],
         messages: currentMessages

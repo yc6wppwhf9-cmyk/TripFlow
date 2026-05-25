@@ -1,5 +1,6 @@
 const axios = require('axios');
 const Anthropic = require('@anthropic-ai/sdk');
+const { searchTrainsBetweenStations } = require('./train-db.service');
 
 const _anthropic = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -158,6 +159,8 @@ const CITY_TO_STATION = {
   'delhi': 'NDLS', 'new delhi': 'NDLS',
   'mumbai': 'CSTM', 'bombay': 'CSTM',
   'mumbai central': 'BCT',
+  'bandra terminus': 'BDTS', 'bandra': 'BDTS',
+  'ltt': 'LTT', 'lokmanya tilak terminus': 'LTT', 'kurla': 'LTT',
   'bangalore': 'SBC', 'bengaluru': 'SBC',
   'hyderabad': 'HYB',
   'chennai': 'MAS', 'madras': 'MAS',
@@ -182,6 +185,7 @@ const CITY_TO_STATION = {
   'ranchi': 'RNC',
   'bhubaneswar': 'BBS',
   'raipur': 'R',
+  'patliputra': 'PPTA',
   'goa': 'MAO', 'madgaon': 'MAO',
   'muzaffarpur': 'MFP', 'mfp': 'MFP',
   'darbhanga': 'DBG',
@@ -287,66 +291,204 @@ async function searchFlights(origin, destination, date) {
 
 // Route → train numbers map (both directions)
 const ROUTE_TRAINS = {
-  'NDLS-CSTM': ['12952','12954','12910'], 'CSTM-NDLS': ['12951','12953','12909'],
-  'NDLS-BCT':  ['12952','12954'],         'BCT-NDLS':  ['12951','12953'],
-  'NDLS-LTT':  ['12952'],                 'LTT-NDLS':  ['12951'],
-  'NDLS-SBC':  ['22692','12628'],         'SBC-NDLS':  ['22691','12627'],
-  'NDLS-MAS':  ['12622','12616'],         'MAS-NDLS':  ['12621','12615'],
-  'NDLS-HWH':  ['12302','12312'],         'HWH-NDLS':  ['12301','12311'],
-  'NDLS-JP':   ['12016','12058'],         'JP-NDLS':   ['12015','12057'],
-  'NDLS-ADI':  ['12958','12918'],         'ADI-NDLS':  ['12957','12917'],
-  'NDLS-HYB':  ['12724','12716'],         'HYB-NDLS':  ['12723','12715'],
-  'NDLS-LKO':  ['12230','12004'],         'LKO-NDLS':  ['12229','12003'],
-  'CSTM-SBC':  ['11302','16536'],         'SBC-CSTM':  ['11301','16535'],
-  'CSTM-HWH':  ['12810','12322'],         'HWH-CSTM':  ['12809','12321'],
-  // Mumbai ↔ Bihar / East UP
-  'CSTM-MFP':  ['12141','11061'],         'MFP-CSTM':  ['12142','11062'],
-  'CSTM-PNBE': ['12141','11061'],         'PNBE-CSTM': ['12142','11062'],
-  'CSTM-DBG':  ['22945','15069'],         'DBG-CSTM':  ['22946','15070'],
-  'CSTM-GKP':  ['15018','11016'],         'GKP-CSTM':  ['15017','11015'],
-  'CSTM-BSB':  ['15018','12168'],         'BSB-CSTM':  ['15017','12167'],
+  'NDLS-CSTM': ['12952','12954','12910','12926','12138'], 'CSTM-NDLS': ['12951','12953','12909','12925','12137'],
+  'NDLS-BCT':  ['12952','12954','12910','12926'],         'BCT-NDLS':  ['12951','12953','12909','12925'],
+  'NDLS-LTT':  ['12140','12168','22210'],                 'LTT-NDLS':  ['12139','12167','22209'],
+  'NDLS-SBC':  ['22692','12628','12650','12296'],         'SBC-NDLS':  ['22691','12627','12649','12295'],
+  'NDLS-MAS':  ['12622','12616','12434','12658'],         'MAS-NDLS':  ['12621','12615','12433','12657'],
+  'NDLS-HWH':  ['12302','12312','12304','12314'],         'HWH-NDLS':  ['12301','12311','12303','12313'],
+  'NDLS-JP':   ['12016','12058','12986','12016'],         'JP-NDLS':   ['12015','12057','12985','12015'],
+  'NDLS-ADI':  ['12958','12918','12490','12216'],         'ADI-NDLS':  ['12957','12917','12489','12215'],
+  'NDLS-HYB':  ['12724','12716','12714','22692'],         'HYB-NDLS':  ['12723','12715','12713','22691'],
+  'NDLS-LKO':  ['12230','12004','14016','12532'],         'LKO-NDLS':  ['12229','12003','14015','12531'],
+  'CSTM-SBC':  ['11302','16536','17032'],                 'SBC-CSTM':  ['11301','16535','17031'],
+  'CSTM-HWH':  ['12810','12322','12860'],                 'HWH-CSTM':  ['12809','12321','12859'],
+  // Mumbai CSMT ↔ Bihar / East UP  (only trains that actually start from CSMT)
+  'CSTM-PNBE': ['11057','12166','22945'],                 'PNBE-CSTM': ['11058','12165','22946'],
+  'CSTM-BSB':  ['11077','11095'],                         'BSB-CSTM':  ['11078','11096'],
+  'CSTM-GKP':  ['15017','11015'],                         'GKP-CSTM':  ['15018','11016'],
+  // Mumbai LTT ↔ Bihar / East UP  (LTT-originating trains)
+  'LTT-MFP':   ['12141','12553','12179'],                 'MFP-LTT':   ['12142','12554','12180'],
+  'LTT-DBG':   ['11061','22945','15069'],                 'DBG-LTT':   ['11062','22946','15070'],
+  'LTT-PNBE':  ['12141','15027','12166'],                 'PNBE-LTT':  ['12142','15028','12165'],
+  'LTT-GKP':   ['15017','12591','11015'],                 'GKP-LTT':   ['15018','12592','11016'],
+  'LTT-BSB':   ['12167','11078','15067'],                 'BSB-LTT':   ['12168','11077','15068'],
   // Delhi ↔ Bihar / East
-  'NDLS-MFP':  ['12557','12569'],         'MFP-NDLS':  ['12558','12570'],
-  'NDLS-PNBE': ['12310','12302'],         'PNBE-NDLS': ['12309','12301'],
-  'NDLS-GKP':  ['12555','12541'],         'GKP-NDLS':  ['12556','12542'],
-  // Mumbai ↔ South
-  'CSTM-MAS':  ['11041','12164'],         'MAS-CSTM':  ['11042','12163'],
-  // Delhi ↔ Punjab
-  'NDLS-ASR':  ['12014','12030'],         'ASR-NDLS':  ['12013','12029'],
+  'NDLS-MFP':  ['12557','12569','12554'],                 'MFP-NDLS':  ['12558','12570','12553'],
+  'NDLS-PNBE': ['12310','12302','12560'],                 'PNBE-NDLS': ['12309','12301','12559'],
+  'NDLS-GKP':  ['12555','12541','15053'],                 'GKP-NDLS':  ['12556','12542','15054'],
+  'NDLS-CNB':  ['12034','12004','14008'],                 'CNB-NDLS':  ['12033','12003','14007'],
+  'NDLS-ALD':  ['12418','12310','12420'],                 'ALD-NDLS':  ['12417','12309','12419'],
+  'NDLS-BSB':  ['12560','12306','15018'],                 'BSB-NDLS':  ['12559','12305','15017'],
+  // Mumbai CSMT ↔ South
+  'CSTM-MAS':  ['12164','12124','11301'],                 'MAS-CSTM':  ['12163','12123','11302'],
+  // Mumbai CSTM ↔ Patliputra (via dedicated Bihar expresses — verify at IRCTC)
+  'CSTM-PPTA': ['11057','22945'],                         'PPTA-CSTM': ['11058','22946'],
+  // Delhi ↔ Punjab / North
+  'NDLS-ASR':  ['12014','12030','12460'],                 'ASR-NDLS':  ['12013','12029','12459'],
+  'NDLS-CDG':  ['12012','12006','12046'],                 'CDG-NDLS':  ['12011','12005','12045'],
+  'NDLS-DDN':  ['12018','12206','18309'],                 'DDN-NDLS':  ['12017','12205','18310'],
+  // Delhi ↔ Rajasthan
+  'NDLS-UDZ':  ['12956','12992','12964'],                 'UDZ-NDLS':  ['12955','12991','12963'],
+  'NDLS-JU':   ['12462','22478','14659'],                 'JU-NDLS':   ['12461','22477','14660'],
+  // Mumbai BCT ↔ Surat / Ahmedabad (WR line)
+  'BCT-ST':    ['12921','12901','12009'],                 'ST-BCT':    ['12922','12902','12010'],
+  'BCT-BRC':   ['12921','12901','12009'],                 'BRC-BCT':   ['12922','12902','12010'],
+  'BCT-ADI':   ['12921','12901','12009'],                 'ADI-BCT':   ['12922','12902','12010'],
+  // Mumbai CSMT ↔ Nashik Road / Manmad (CR line)
+  'CSTM-NK':   ['12107'],                                'NK-CSTM':   ['12108'],
+  'CSTM-MMR':  ['12107'],                                'MMR-CSTM':  ['12108'],
+};
+
+// Departure → arrival times + duration for popular trains
+const TRAIN_SCHEDULES = {
+  '12951': { dep: '16:35', arr: '08:35', duration: '15h 55m' }, // Mumbai Rajdhani (NDLS→BCT)
+  '12952': { dep: '17:40', arr: '10:00', duration: '16h 20m' }, // Mumbai Rajdhani (BCT→NDLS)
+  '12953': { dep: '17:05', arr: '12:00', duration: '18h 55m' }, // August Kranti (NDLS→BCT)
+  '12954': { dep: '17:40', arr: '11:55', duration: '18h 15m' }, // August Kranti (BCT→NDLS)
+  '12909': { dep: '15:30', arr: '13:15', duration: '21h 45m' }, // Garib Rath (NDLS→BCT)
+  '12910': { dep: '14:35', arr: '12:30', duration: '21h 55m' }, // Garib Rath (BCT→NDLS)
+  '22691': { dep: '20:00', arr: '05:50', duration: '33h 50m' }, // Bangalore Rajdhani (SBC→NDLS)
+  '22692': { dep: '20:30', arr: '06:10', duration: '33h 40m' }, // Bangalore Rajdhani (NDLS→SBC)
+  '12627': { dep: '14:30', arr: '06:15', duration: '39h 45m' }, // Karnataka Exp (SBC→NDLS)
+  '12628': { dep: '22:30', arr: '14:10', duration: '39h 40m' }, // Karnataka Exp (NDLS→SBC)
+  '12649': { dep: '06:05', arr: '09:00', duration: '26h 55m' }, // Karnataka SK (NDLS→SBC)
+  '12650': { dep: '07:00', arr: '08:25', duration: '25h 25m' }, // Karnataka SK (SBC→NDLS)
+  '12621': { dep: '22:30', arr: '07:25', duration: '32h 55m' }, // Tamil Nadu Express (NDLS→MAS)
+  '12622': { dep: '22:00', arr: '07:30', duration: '33h 30m' }, // Tamil Nadu Express (MAS→NDLS)
+  '12615': { dep: '19:05', arr: '12:55', duration: '41h 50m' }, // GT Express (MAS→NDLS)
+  '12616': { dep: '07:10', arr: '18:45', duration: '35h 35m' }, // GT Express (NDLS→MAS)
+  '12301': { dep: '16:55', arr: '10:05', duration: '17h 10m' }, // Howrah Rajdhani (NDLS→HWH)
+  '12302': { dep: '16:50', arr: '10:00', duration: '17h 10m' }, // Howrah Rajdhani (HWH→NDLS)
+  '12303': { dep: '08:15', arr: '05:05', duration: '20h 50m' }, // Poorva Express (HWH→NDLS)
+  '12304': { dep: '22:15', arr: '20:25', duration: '22h 10m' }, // Poorva Express (NDLS→HWH)
+  '12311': { dep: '19:35', arr: '11:45', duration: '16h 10m' }, // Kalka Mail (NDLS→HWH)
+  '12312': { dep: '14:00', arr: '06:35', duration: '16h 35m' }, // Kalka Mail (HWH→NDLS)
+  '12313': { dep: '18:25', arr: '11:05', duration: '16h 40m' }, // Sealdah Rajdhani (NDLS→SDAH)
+  '12314': { dep: '19:55', arr: '12:55', duration: '17h 00m' }, // Sealdah Rajdhani (SDAH→NDLS)
+  '12015': { dep: '06:05', arr: '12:55', duration: '6h 50m'  }, // Ajmer Shatabdi (NDLS→AII)
+  '12016': { dep: '14:35', arr: '21:20', duration: '6h 45m'  }, // Ajmer Shatabdi (AII→NDLS)
+  '12057': { dep: '06:20', arr: '13:00', duration: '6h 40m'  }, // Jan Shatabdi (NDLS→JP)
+  '12058': { dep: '14:55', arr: '21:35', duration: '6h 40m'  }, // Jan Shatabdi (JP→NDLS)
+  '12957': { dep: '19:45', arr: '11:05', duration: '15h 20m' }, // Swarna Jayanti Rajdhani (NDLS→ADI)
+  '12958': { dep: '15:30', arr: '05:50', duration: '14h 20m' }, // Swarna Jayanti Rajdhani (ADI→NDLS)
+  '12557': { dep: '21:45', arr: '11:50', duration: '14h 05m' }, // Sapt Kranti (NDLS→MFP)
+  '12558': { dep: '16:05', arr: '06:35', duration: '14h 30m' }, // Sapt Kranti (MFP→NDLS)
+  '12569': { dep: '12:30', arr: '07:40', duration: '19h 10m' }, // Jansadharan (NDLS→MFP)
+  '12570': { dep: '20:30', arr: '17:00', duration: '20h 30m' }, // Jansadharan (MFP→NDLS)
+  '12309': { dep: '18:00', arr: '06:45', duration: '12h 45m' }, // Patna Rajdhani (NDLS→PNBE)
+  '12310': { dep: '18:00', arr: '06:45', duration: '12h 45m' }, // Patna Rajdhani (PNBE→NDLS)
+  '12141': { dep: '12:00', arr: '17:45', duration: '29h 45m' }, // LTT-MFP SF (LTT→MFP)
+  '12142': { dep: '07:45', arr: '11:30', duration: '27h 45m' }, // MFP-LTT SF (MFP→LTT)
+  '22945': { dep: '23:30', arr: '11:50', duration: '36h 20m' }, // Mumbai-DBG SF (LTT→DBG)
+  '22946': { dep: '13:45', arr: '05:35', duration: '39h 50m' }, // DBG-Mumbai SF (DBG→LTT)
+  '12555': { dep: '18:05', arr: '06:45', duration: '12h 40m' }, // Gorakhdham (NDLS→GKP)
+  '12556': { dep: '18:05', arr: '06:30', duration: '12h 25m' }, // Gorakhdham (GKP→NDLS)
+  '12014': { dep: '07:20', arr: '13:10', duration: '5h 50m'  }, // Amritsar Shatabdi (NDLS→ASR)
+  '12013': { dep: '16:30', arr: '22:20', duration: '5h 50m'  }, // Amritsar Shatabdi (ASR→NDLS)
 };
 
 const TRAIN_NAMES = {
-  '12951':'Mumbai Rajdhani','12952':'Mumbai Rajdhani',
+  '12951':'Mumbai Rajdhani Express','12952':'Mumbai Rajdhani Express',
   '12953':'August Kranti Rajdhani','12954':'August Kranti Rajdhani',
-  '12909':'Garib Rath','12910':'Garib Rath',
-  '22691':'Bangalore Rajdhani','22692':'Bangalore Rajdhani',
+  '12909':'Garib Rath Express','12910':'Garib Rath Express',
+  '12925':'Paschim Express','12926':'Paschim Express',
+  '12137':'Punjab Mail','12138':'Punjab Mail',
+  '22691':'Bangalore Rajdhani Express','22692':'Bangalore Rajdhani Express',
   '12627':'Karnataka Express','12628':'Karnataka Express',
+  '12649':'Karnataka Sampark Kranti','12650':'Karnataka Sampark Kranti',
+  '12295':'Sanghamitra Express','12296':'Sanghamitra Express',
   '12621':'Tamil Nadu Express','12622':'Tamil Nadu Express',
   '12615':'Grand Trunk Express','12616':'Grand Trunk Express',
-  '12301':'Howrah Rajdhani','12302':'Howrah Rajdhani',
+  '12433':'Chennai Rajdhani Express','12434':'Chennai Rajdhani Express',
+  '12657':'Chennai Mail','12658':'Chennai Mail',
+  '12301':'Howrah Rajdhani Express','12302':'Howrah Rajdhani Express',
+  '12303':'Poorva Express','12304':'Poorva Express',
   '12311':'Kalka Mail','12312':'Kalka Mail',
-  '12015':'Ajmer Shatabdi','12016':'Ajmer Shatabdi',
-  '12057':'Jan Shatabdi','12058':'Jan Shatabdi',
+  '12313':'Sealdah Rajdhani Express','12314':'Sealdah Rajdhani Express',
+  '12015':'Ajmer Shatabdi Express','12016':'Ajmer Shatabdi Express',
+  '12057':'Shatabdi Express (Jan Shatabdi)','12058':'Shatabdi Express (Jan Shatabdi)',
+  '12985':'Ajmer Garib Rath','12986':'Ajmer Garib Rath',
   '12957':'Swarna Jayanti Rajdhani','12958':'Swarna Jayanti Rajdhani',
   '12917':'Gujarat Express','12918':'Gujarat Express',
+  '12489':'Bikaner-Howrah Humsafar','12490':'Bikaner-Howrah Humsafar',
+  '12215':'Garib Rath Express (ADI)','12216':'Garib Rath Express (ADI)',
   '12723':'Telangana Express','12724':'Telangana Express',
+  '12713':'Satavahana Express','12714':'Satavahana Express',
   '12715':'Sachkhand Express','12716':'Sachkhand Express',
   '12229':'Lucknow Mail','12230':'Lucknow Mail',
   '12003':'Lucknow Shatabdi','12004':'Lucknow Shatabdi',
-  // Mumbai ↔ Bihar/East
-  '12141':'Mumbai LTT Muzaffarpur SF Express','12142':'Muzaffarpur Mumbai LTT SF Express',
+  '14015':'Ranikhet Express','14016':'Ranikhet Express',
+  '12531':'Lucknow SF Intercity','12532':'Lucknow SF Intercity',
+  '11301':'Udyan Express','11302':'Udyan Express',
+  '16535':'Gol Gumbaz Express','16536':'Gol Gumbaz Express',
+  '17031':'Hubli Express','17032':'Hubli Express',
+  '12809':'Howrah Mail','12810':'Howrah Mail',
+  '12321':'Howrah-Mumbai Mail','12322':'Howrah-Mumbai Mail',
+  '12859':'Gitanjali Express','12860':'Gitanjali Express',
+  '12123':'Mumbai-Chennai Garib Rath','12124':'Chennai-Mumbai Garib Rath',
+  '12163':'Chennai-Dadar Express','12164':'Dadar-Chennai SF Express',
+  // Mumbai LTT ↔ Bihar/East (LTT-originating)
+  '12141':'LTT Muzaffarpur SF Express','12142':'Muzaffarpur LTT SF Express',
+  '12553':'Vaishali Express','12554':'Vaishali Express',
+  '12179':'LTT Gorakhpur Express','12180':'Gorakhpur LTT Express',
   '11061':'LTT Darbhanga Express','11062':'Darbhanga LTT Express',
-  '22945':'Mumbai Darbhanga SF Express','22946':'Darbhanga Mumbai SF Express',
-  '15069':'LTT Darbhanga Express (via Patna)','15070':'Darbhanga LTT Express (via Patna)',
-  '15018':'LTT Gorakhpur Express','15017':'Gorakhpur LTT Express',
-  '11016':'LTT Kushinagar Express','11015':'Kushinagar LTT Express',
+  '22945':'LTT Darbhanga SF Express','22946':'Darbhanga LTT SF Express',
+  '15069':'LTT Darbhanga Express (Patna route)','15070':'Darbhanga LTT Express (Patna route)',
+  '15027':'Mumbai-Gorakhpur Maurya Express','15028':'Gorakhpur-Mumbai Maurya Express',
+  '15067':'LTT Varanasi Express','15068':'Varanasi LTT Express',
   '12167':'LTT Varanasi SF Express','12168':'Varanasi LTT SF Express',
-  // Delhi ↔ Bihar
-  '12557':'Sapt Kranti Express (Delhi-MFP)','12558':'Sapt Kranti Express (MFP-Delhi)',
+  '12591':'Gorakhpur Express (LTT)','12592':'Gorakhpur Express (LTT)',
+  '11015':'Kushinagar Express','11016':'Kushinagar Express',
+  '11077':'Jhelum Express','11078':'Jhelum Express',
+  '12165':'LTT-Patna Express','12166':'Patna-LTT Express',
+  // Mumbai CSMT ↔ Patliputra
+  '11041':'Sainagar Shirdi Express','11042':'Sainagar Shirdi Express',
+  '11055':'Godan Express','11056':'Godan Express',
+  '11057':'Mumbai CSMT Patna Express','11058':'Patna Mumbai CSMT Express',
+  '11095':'Mumbai-Gorakhpur Express','11096':'Gorakhpur-Mumbai Express',
+  '12561':'Darbhanga Express','12562':'Darbhanga Express',
+  // Delhi ↔ Bihar / East UP
+  '12557':'Sapt Kranti Express','12558':'Sapt Kranti Express',
+  '12553':'Vaishali Express','12554':'Vaishali Express',
   '12569':'Jansadharan Express','12570':'Jansadharan Express',
-  '12310':'Rajdhani Express (Patna)','12309':'Rajdhani Express (Patna)',
+  '12310':'Patna Rajdhani Express','12309':'Patna Rajdhani Express',
+  '12560':'Shivganga Express','12559':'Shivganga Express',
   '12555':'Gorakhdham Express','12556':'Gorakhdham Express',
-  '12541':'Gorakhpur Shatabdi','12542':'Gorakhpur Shatabdi',
+  '15053':'Rapti Sagar Express','15054':'Rapti Sagar Express',
+  '12541':'Gorakhpur SF Express','12542':'Gorakhpur SF Express',
+  // Delhi ↔ Central / UP
+  '12033':'Kanpur Shatabdi','12034':'Kanpur Shatabdi',
+  '14007':'Siddharth Express','14008':'Siddharth Express',
+  '12417':'Prayagraj Express','12418':'Prayagraj Express',
+  '12419':'Allahabad-New Delhi Intercity','12420':'Allahabad-New Delhi Intercity',
+  '12305':'Rajdhani Express','12306':'Rajdhani Express',
+  // Delhi ↔ North
+  '12014':'Amritsar Shatabdi','12013':'Amritsar Shatabdi',
+  '12029':'Swarna Shatabdi','12030':'Swarna Shatabdi',
+  '12459':'Delhi-Amritsar Express','12460':'Delhi-Amritsar Express',
+  '12005':'Kalka Shatabdi','12006':'Kalka Shatabdi',
+  '12011':'Kalka Shatabdi','12012':'Kalka Shatabdi',
+  '12045':'Chandigarh-Delhi Express','12046':'Chandigarh-Delhi Express',
+  '12017':'Dehradun Shatabdi','12018':'Dehradun Shatabdi',
+  '12205':'Nanda Devi Express','12206':'Nanda Devi Express',
+  '18309':'Sambalpur-Dehradun Express','18310':'Sambalpur-Dehradun Express',
+  // Delhi ↔ Rajasthan
+  '12955':'Jaipur-Delhi SF Express','12956':'Delhi-Jaipur SF Express',
+  '12963':'Mewar Express','12964':'Mewar Express',
+  '12991':'Udaipur-Jaipur Express','12992':'Jaipur-Udaipur Express',
+  '12461':'Mandor Express','12462':'Mandor Express',
+  '22477':'Jodhpur Intercity','22478':'Jodhpur Intercity',
+  '14659':'Jodhpur-Delhi Express','14660':'Jodhpur-Delhi Express',
+  // Mumbai BCT ↔ Surat / Ahmedabad (WR line)
+  '12921':'Flying Ranee Express','12922':'Flying Ranee Express',
+  '12901':'Gujarat Mail','12902':'Gujarat Mail',
+  '12009':'Mumbai Ahmedabad Shatabdi','12010':'Ahmedabad Mumbai Shatabdi',
+  // Mumbai CSMT ↔ Nashik / Manmad
+  '12107':'Panchavati Express','12108':'Panchavati Express',
+  // Mumbai ↔ South
+  '12163':'Chennai-Dadar Express','12164':'Dadar-Chennai Express',
+  '22149':'Patliputra-Ernakulam Express','22150':'Ernakulam Express',
 };
 
 // ── Trains ────────────────────────────────────────────────────────────────────
@@ -525,72 +667,141 @@ function getTrainFares(origin, destination, classesList = ['SL', '3A', '2A', '1A
   return res;
 }
 
+// Fetch real class-wise fares from indianrailapi.com for one train
+async function fetchTrainFare(apiKey, trainNo, fromCode, toCode) {
+  try {
+    const res = await axios.get(
+      `http://indianrailapi.com/api/v2/TrainFare/apikey/${apiKey}/TrainNumber/${trainNo}/From/${fromCode}/To/${toCode}/Quota/GN`,
+      { timeout: 8000 }
+    );
+    const fares = res.data?.Fares;
+    if (!Array.isArray(fares) || !fares.length) return null;
+    // Build classFares map: { SL: 385, '3A': 1020, '2A': 1455, '1A': 2430 }
+    return fares.reduce((acc, f) => {
+      const cls  = f.ClassType?.trim();
+      const fare = parseInt(f.Fare, 10);
+      if (cls && !isNaN(fare) && fare > 0) acc[cls] = fare;
+      return acc;
+    }, {});
+  } catch {
+    return null;
+  }
+}
+
 async function searchTrains(origin, destination, date) {
   const fromCode = resolveStation(origin);
   const toCode   = resolveStation(destination);
 
-  // 1. Try irctc1 REST API (returns live schedule data from IRCTC backend)
-  if (process.env.RAPIDAPI_KEY) {
-    try {
-      const dateOfJourney = date.replace(/-/g, ''); // YYYYMMDD
-      const res = await axios.get(
-        'https://irctc1.p.rapidapi.com/api/v3/trainsBetweenStations',
-        {
-          headers: {
-            'X-RapidAPI-Key':  process.env.RAPIDAPI_KEY,
-            'X-RapidAPI-Host': 'irctc1.p.rapidapi.com'
-          },
-          params: {
-            fromStationCode: fromCode,
-            toStationCode:   toCode,
-            dateOfJourney
-          },
-          timeout: 10000
+  // 1. Own Supabase DB — fastest, no external dependency
+  try {
+    const dbResults = await searchTrainsBetweenStations(fromCode, toCode);
+    if (Array.isArray(dbResults) && dbResults.length) {
+      console.log(`[trains] DB hit: ${dbResults.length} trains for ${fromCode}→${toCode}`);
+      return dbResults;
+    }
+    // Mumbai multi-terminal fallback: try alternate terminals
+    const MUMBAI = ['CSTM', 'LTT', 'BCT', 'BDTS'];
+    if (MUMBAI.includes(fromCode) || MUMBAI.includes(toCode)) {
+      const altsFrom = MUMBAI.includes(fromCode) ? MUMBAI.filter(s => s !== fromCode) : [fromCode];
+      const altsTo   = MUMBAI.includes(toCode)   ? MUMBAI.filter(s => s !== toCode)   : [toCode];
+      for (const f of altsFrom) {
+        for (const t of altsTo) {
+          const alt = await searchTrainsBetweenStations(f, t);
+          if (Array.isArray(alt) && alt.length) {
+            console.log(`[trains] DB hit via alternate terminals ${f}→${t}`);
+            return alt;
+          }
         }
+      }
+    }
+  } catch (err) {
+    console.warn('[trains] DB lookup failed:', err.message);
+  }
+
+  // 2. indianrailapi.com — free, accurate, no subscription needed
+  if (process.env.INDIAN_RAIL_API_KEY) {
+    try {
+      const res = await axios.get(
+        `http://indianrailapi.com/api/v2/TrainBetweenStation/apikey/${process.env.INDIAN_RAIL_API_KEY}/From/${fromCode}/To/${toCode}`,
+        { timeout: 10000 }
       );
 
-      const list = res.data?.data;
+      const list = res.data?.Trains;
       if (Array.isArray(list) && list.length) {
-        return list.slice(0, 5).map(t => {
-          const availClasses = Array.isArray(t.classes) && t.classes.length ? t.classes : ['SL', '3A', '2A', '1A'];
+        const top = list.slice(0, 5);
+
+        // Fetch real fares for all 5 trains in parallel
+        const fareResults = await Promise.all(
+          top.map(t => fetchTrainFare(process.env.INDIAN_RAIL_API_KEY, t.TrainNo, fromCode, toCode))
+        );
+
+        return top.map((t, i) => {
+          const liveFares  = fareResults[i];
+          const classes    = liveFares ? Object.keys(liveFares) : ['SL', '3A', '2A', '1A'];
+          const classFares = liveFares || getTrainFares(origin, destination, classes);
           return {
-            trainNumber: t.train_number,
-            trainName:   t.train_name,
-            departure:   t.from_sta,
-            arrival:     t.to_sta,
-            duration:    t.travel_time,
-            classes:     availClasses,
-            classFares:  getTrainFares(origin, destination, availClasses),
-            runDays:     Array.isArray(t.run_days) ? t.run_days.join(', ') : null,
-            note:        'Live IRCTC data — book at IRCTC.co.in'
+            trainNumber: t.TrainNo,
+            trainName:   t.TrainName,
+            departure:   t.DepartureTime,
+            arrival:     t.ArrivalTime,
+            duration:    t.TravelTime,
+            trainType:   t.TrainType,
+            classes,
+            classFares,
+            note: liveFares
+              ? 'Live IRCTC fares — book at IRCTC.co.in'
+              : 'Estimated fares — verify at IRCTC.co.in'
           };
         });
       }
+
+      console.warn('[trains] indianrailapi: no trains found for', fromCode, '→', toCode);
     } catch (err) {
-      const status = err.response?.status;
-      const msg    = err.response?.data?.message || err.message;
-      if (status === 403 || status === 401) {
-        console.warn(`[trains] irctc1 API: not subscribed or invalid key (${status}). Subscribe at rapidapi.com/nabeelp/api/irctc1`);
-      } else {
-        console.warn(`[trains] irctc1 API failed (${status || 'timeout'}): ${msg}`);
-      }
+      console.warn('[trains] indianrailapi failed:', err.response?.status || err.message);
     }
   }
 
   // 2. Instant result for known popular routes (no API call needed)
+  // Mumbai has multiple terminals — check CSTM and LTT route keys together
+  const MUMBAI_STATIONS = ['CSTM', 'LTT', 'BCT', 'BDTS'];
+  function getRouteCandidates(from, to) {
+    const candidates = [`${from}-${to}`, `${to}-${from}`];
+    if (MUMBAI_STATIONS.includes(from)) {
+      MUMBAI_STATIONS.forEach(alt => {
+        if (alt !== from) { candidates.push(`${alt}-${to}`, `${to}-${alt}`); }
+      });
+    }
+    if (MUMBAI_STATIONS.includes(to)) {
+      MUMBAI_STATIONS.forEach(alt => {
+        if (alt !== to) { candidates.push(`${from}-${alt}`, `${alt}-${from}`); }
+      });
+    }
+    return candidates;
+  }
   const routeKey   = `${fromCode}-${toCode}`;
   const reverseKey = `${toCode}-${fromCode}`;
-  const knownNos   = ROUTE_TRAINS[routeKey] || ROUTE_TRAINS[reverseKey] || [];
+  const candidates = getRouteCandidates(fromCode, toCode);
+  const knownNos   = candidates.reduce((acc, key) => {
+    const trains = ROUTE_TRAINS[key] || [];
+    trains.forEach(t => { if (!acc.includes(t)) acc.push(t); });
+    return acc;
+  }, []);
   if (knownNos.length) {
-    return knownNos.slice(0, 3).map(no => ({
-      trainNumber: no,
-      trainName:   TRAIN_NAMES[no] || no,
-      departure:   null,
-      arrival:     null,
-      classes:     ['1A', '2A', '3A', 'SL'],
-      classFares:  getTrainFares(origin, destination, ['1A', '2A', '3A', 'SL']),
-      note:        'Fares vary by class — book at IRCTC.co.in'
-    }));
+    const classes = ['SL', '3A', '2A', '1A'];
+    const fares   = getTrainFares(origin, destination, classes);
+    return [...new Set(knownNos)].slice(0, 5).map(no => {
+      const sched = TRAIN_SCHEDULES[no];
+      return {
+        trainNumber: no,
+        trainName:   TRAIN_NAMES[no] || `Train ${no}`,
+        departure:   sched?.dep || null,
+        arrival:     sched?.arr || null,
+        duration:    sched?.duration || null,
+        classes,
+        classFares:  fares,
+        note:        'Fares are estimated — book at IRCTC.co.in for confirmed availability'
+      };
+    });
   }
 
   // 3. Claude fallback for all other routes — clearly labelled as estimated

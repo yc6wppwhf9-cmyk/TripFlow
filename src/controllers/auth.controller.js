@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const prisma = require('../config/db');
 const { userSelect } = require('../config/selects');
 const { redisClient } = require('../config/redis');
+const emailService = require('../services/email.service');
 
 const MAX_ATTEMPTS  = 5;
 const LOCKOUT_SECS  = 15 * 60; // 15 minutes
@@ -158,6 +160,75 @@ exports.me = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+exports.logout = async (req, res) => {
+  try {
+    const token = req.token;
+    const decoded = req.tokenDecoded;
+    // Blacklist the token until its natural expiry
+    const ttl = decoded.exp ? decoded.exp - Math.floor(Date.now() / 1000) : 7 * 24 * 3600;
+    if (ttl > 0) {
+      const key = `token:revoked:${decoded.jti || token.slice(-16)}`;
+      try { await redisClient.set(key, '1', { EX: ttl }); } catch { /* Redis unavailable */ }
+    }
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const RESET_TOKEN_TTL = 60 * 60; // 1 hour
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await prisma.user.findUnique({ where: { email } });
+    // Always return success to prevent user enumeration
+    if (!user) return res.json({ message: 'If that email exists, a reset link has been sent.' });
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash  = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    await redisClient.set(`pwd:reset:${tokenHash}`, user.id, { EX: RESET_TOKEN_TTL });
+
+    const appUrl  = process.env.APP_URL || 'http://localhost:3000';
+    const resetUrl = `${appUrl}/reset-password.html?token=${resetToken}`;
+
+    const resetHtml = `<p>Hi ${user.name},</p>
+      <p>You requested a password reset. Click the link below (valid for 1 hour):</p>
+      <p><a href="${resetUrl}">${resetUrl}</a></p>
+      <p>If you did not request this, ignore this email.</p>`;
+    const resetText = `Hi ${user.name},\n\nReset your password here (valid 1 hour):\n${resetUrl}\n\nIf you did not request this, ignore this email.`;
+    await emailService.sendEmail(user.email, 'TripFlow — Password Reset Request', resetText, resetHtml);
+
+    res.json({ message: 'If that email exists, a reset link has been sent.' });
+  } catch (error) {
+    console.error('Forgot password error:', error.message);
+    res.status(500).json({ error: 'Failed to process request' });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: 'Token and new password are required' });
+    if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const userId    = await redisClient.get(`pwd:reset:${tokenHash}`);
+
+    if (!userId) return res.status(400).json({ error: 'Reset link is invalid or has expired' });
+
+    const hashed = await bcrypt.hash(password, 12);
+    await prisma.user.update({ where: { id: userId }, data: { password: hashed } });
+    await redisClient.del(`pwd:reset:${tokenHash}`);
+
+    res.json({ message: 'Password updated successfully. You can now log in.' });
+  } catch (error) {
+    console.error('Reset password error:', error.message);
+    res.status(500).json({ error: 'Failed to reset password' });
   }
 };
 

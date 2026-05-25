@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/db');
+const { redisClient } = require('../config/redis');
 
 module.exports = async (req, res, next) => {
   try {
@@ -10,10 +11,16 @@ module.exports = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
+    // Check if token has been revoked (logout blacklist)
+    try {
+      const revoked = await redisClient.get(`token:revoked:${decoded.jti || token.slice(-16)}`);
+      if (revoked) return res.status(401).json({ error: 'Token has been revoked. Please log in again.' });
+    } catch { /* Redis unavailable — skip revocation check */ }
+
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      include: { 
+      include: {
         employee: true,
         vendor: true
       }
@@ -24,6 +31,8 @@ module.exports = async (req, res, next) => {
     }
 
     req.user = user;
+    req.token = token;
+    req.tokenDecoded = decoded;
     next();
   } catch (error) {
     console.error('Auth Middleware Error:', error);

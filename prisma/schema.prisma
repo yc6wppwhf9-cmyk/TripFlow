@@ -112,3 +112,50 @@ model Notification {
 
   @@index([userId])
 }
+
+// ── Indian Railways own database ─────────────────────────────────────────────
+
+model RailStation {
+  code  String     @id         // e.g. "NDLS", "BCT", "MFP"
+  name  String                 // e.g. "New Delhi"
+  city  String                 // e.g. "Delhi"
+  state String?
+  zone  String?                // NR, WR, CR, SR, ER, SER, SCR, ECR, NCR, NWR, WCR, NER
+  lat   Float?
+  lng   Float?
+  stops RailStop[]
+
+  @@index([city])
+}
+
+model RailTrain {
+  id        Int        @id @default(autoincrement())
+  trainNo   String     @unique  // e.g. "12951"
+  trainName String               // e.g. "Mumbai Rajdhani Express"
+  trainType String               // RAJDHANI | SHATABDI | DURONTO | SF | EXP | PASS
+  fromCode  String               // origin station code
+  toCode    String               // destination station code
+  runDays   String               // "Daily" | "Mon,Wed,Fri" | "Except Sun"
+  classes   String[]             // ["1A","2A","3A"] or ["SL","3A","2A","1A"]
+  stops     RailStop[]
+
+  @@index([fromCode])
+  @@index([toCode])
+}
+
+model RailStop {
+  id            Int         @id @default(autoincrement())
+  trainId       Int
+  train         RailTrain   @relation(fields: [trainId], references: [id])
+  stationCode   String
+  station       RailStation @relation(fields: [stationCode], references: [code])
+  sequence      Int                    // order of stop on route (1, 2, 3...)
+  arrivalTime   String?                // "HH:MM" — null for origin
+  departureTime String?                // "HH:MM" — null for terminus
+  dayCount      Int         @default(1) // day 1, 2, 3 of the journey
+  distanceKm    Int         @default(0) // km from train origin
+
+  @@unique([trainId, sequence])
+  @@index([stationCode])
+  @@index([trainId])
+}

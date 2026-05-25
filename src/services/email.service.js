@@ -3,7 +3,7 @@ const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 exports.resend = resend;
 
-exports.sendEmail = async (to, subject, text) => {
+exports.sendEmail = async (to, subject, text, html) => {
   if (!process.env.RESEND_API_KEY) {
     console.log(`Email not configured. Would have sent to ${to}: ${subject}`);
     return;
@@ -13,7 +13,7 @@ exports.sendEmail = async (to, subject, text) => {
       from: process.env.FROM_EMAIL,
       to,
       subject,
-      text,
+      ...(html ? { html } : { text }),
     });
     console.log(`Email sent to ${to}`);
   } catch (err) {

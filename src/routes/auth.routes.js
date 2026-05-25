@@ -23,6 +23,19 @@ router.post('/refresh', [
   validate
 ], authController.refresh);
 
+router.post('/logout', auth, authController.logout);
+
+router.post('/forgot-password', [
+  body('email').isEmail().withMessage('Valid email is required'),
+  validate
+], authController.forgotPassword);
+
+router.post('/reset-password', [
+  body('token').notEmpty().withMessage('token is required'),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  validate
+], authController.resetPassword);
+
 router.get('/me', auth, authController.me);
 
 module.exports = router;
