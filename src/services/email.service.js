@@ -47,6 +47,14 @@ exports.sendRejectionNotice = async (employeeEmail, reason) => {
   await exports.sendEmail(employeeEmail, subject, text);
 };
 
+exports.sendManagerApprovalNotice = async (employeeEmail, booking) => {
+  const details = booking.details || {};
+  const route = details.origin && details.destination ? `${details.origin} → ${details.destination}` : 'your trip';
+  const subject = `Manager Approved: Your travel request for ${route}`;
+  const text = `Good news! Your manager has approved your travel request.\n\nRoute: ${route}\nType: ${booking.type}\nCost: ₹${booking.cost || 'TBD'}\n\nYour request is now with HR for vendor assignment. You'll receive another update once your ticket is issued.\n\nLog in to TripFlow to track your booking status.`;
+  await exports.sendEmail(employeeEmail, subject, text);
+};
+
 exports.sendHrNotification = async (hrUsers, booking) => {
   if (!hrUsers || !hrUsers.length) return;
   const details = booking.details || {};

@@ -556,9 +556,23 @@
                 <h1 style="font-size:1.25rem;font-weight:600;margin:0;">Dashboard</h1>
             </div>
             <div style="display:flex;align-items:center;gap:1rem;">
+                <!-- Notification bell -->
+                <div style="position:relative;cursor:pointer;" onclick="toggleNotifPanel()" title="Notifications">
+                    <span class="material-symbols-outlined" style="font-size:1.5rem;color:var(--on-surface-variant);vertical-align:middle;">notifications</span>
+                    <span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger,#dc2626);color:#fff;font-size:0.6rem;font-weight:800;font-family:var(--font-display);min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 3px;line-height:1;"></span>
+                </div>
                 <span id="user-name" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;border:1px solid var(--outline-variant);background:var(--surface-container-low);padding:0.25rem 0.75rem;border-radius:var(--radius-md);">Employee</span>
             </div>
         </header>
+
+        <!-- Notification panel (slides in from top-right) -->
+        <div id="notif-panel" style="display:none;position:fixed;top:64px;right:1rem;width:min(360px,92vw);max-height:70vh;overflow-y:auto;background:var(--surface);border:var(--border-thin);border-radius:var(--radius-lg);box-shadow:var(--shadow-level-2);z-index:200;padding:0.75rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:0.5rem;border-bottom:var(--border-thin);margin-bottom:0.5rem;">
+                <span style="font-family:var(--font-display);font-weight:700;font-size:0.85rem;">Notifications</span>
+                <button onclick="markAllRead()" style="font-size:0.72rem;font-weight:600;color:var(--primary);background:none;border:none;cursor:pointer;padding:0;">Mark all read</button>
+            </div>
+            <div id="notif-list"><p style="font-size:0.8rem;color:var(--secondary);text-align:center;padding:1rem 0;">No notifications</p></div>
+        </div>
 
         <!-- Content Body -->
         <div class="container" style="padding-top:2rem;">
@@ -736,6 +750,67 @@
         }
         let keyboardOpen = false;
 
+        // ── Notification bell ────────────────────────────────────────────
+        let _notifPanelOpen = false;
+        let _notifIds = [];
+
+        function toggleNotifPanel() {
+            _notifPanelOpen = !_notifPanelOpen;
+            document.getElementById('notif-panel').style.display = _notifPanelOpen ? 'block' : 'none';
+            if (_notifPanelOpen) loadNotifications();
+        }
+
+        // Close panel when clicking outside
+        document.addEventListener('click', e => {
+            if (_notifPanelOpen && !e.target.closest('#notif-panel') && !e.target.closest('[onclick="toggleNotifPanel()"]')) {
+                _notifPanelOpen = false;
+                document.getElementById('notif-panel').style.display = 'none';
+            }
+        });
+
+        async function loadNotifications() {
+            try {
+                const data = await apiRequest('/notifications');
+                const notifs = Array.isArray(data) ? data : [];
+                const badge = document.getElementById('notif-badge');
+                const unread = notifs.filter(n => !n.read);
+
+                if (unread.length > 0) {
+                    badge.style.display = 'flex';
+                    badge.textContent = unread.length > 9 ? '9+' : unread.length;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                const list = document.getElementById('notif-list');
+                if (!notifs.length) {
+                    list.innerHTML = '<p style="font-size:0.8rem;color:var(--secondary);text-align:center;padding:1rem 0;">No notifications</p>';
+                    return;
+                }
+                list.innerHTML = notifs.map(n => `
+                    <div onclick="markRead('${n.id}')" style="padding:0.6rem 0.5rem;border-radius:8px;cursor:pointer;background:${n.read ? 'transparent' : 'var(--primary-bg)'};margin-bottom:0.25rem;transition:background 0.15s;">
+                        <p style="margin:0;font-size:0.8rem;font-weight:${n.read ? '500' : '700'};color:var(--on-surface);line-height:1.4;">${n.message}</p>
+                        <p style="margin:0.2rem 0 0;font-size:0.68rem;color:var(--secondary);">${new Date(n.createdAt).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
+                    </div>`).join('');
+            } catch (_) {}
+        }
+
+        async function markRead(id) {
+            try {
+                await apiRequest(`/notifications/${id}/read`, { method: 'PATCH' });
+                loadNotifications();
+            } catch (_) {}
+        }
+
+        async function markAllRead() {
+            try {
+                const data = await apiRequest('/notifications');
+                const unread = Array.isArray(data) ? data.filter(n => !n.read) : [];
+                await Promise.all(unread.map(n => apiRequest(`/notifications/${n.id}/read`, { method: 'PATCH' })));
+                loadNotifications();
+            } catch (_) {}
+        }
+
         async function init() {
             currentUser = checkAuth();
             if (!currentUser) return;
@@ -744,6 +819,9 @@
             showTableSkeleton('bookings-list', 6);
             try { _userMe = await apiRequest('/auth/me'); } catch (_) {}
             await loadBookings();
+            loadNotifications();
+            // Poll every 60s for new notifications
+            setInterval(loadNotifications, 60000);
         }
         init();
 

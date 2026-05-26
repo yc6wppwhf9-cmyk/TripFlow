@@ -53,6 +53,7 @@ exports.approve = async (bookingId) => {
   }
 
   await emailService.sendHrNotification(hrUsers, booking);
+  await emailService.sendManagerApprovalNotice(booking.employee.user.email, booking);
 
   return booking;
 };
