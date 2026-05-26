@@ -514,13 +514,16 @@
 
         function extractPNRFromText(text) {
             const upper = text.toUpperCase();
+            // Common column/field header words that are NOT PNR values
+            const BLOCKLIST = new Set(['TRAIN','CLASS','STATUS','NUMBER','QUOTA','COACH','BERTH','SEAT','DATE','FROM','TYPE','VALID','DEPART','ARRIVE','TICKET','BOARDING','STATION']);
             for (const pattern of PNR_PATTERNS) {
                 pattern.lastIndex = 0;
-                const match = pattern.exec(upper);
-                if (match && match[1]) {
+                let match;
+                while ((match = pattern.exec(upper)) !== null) {
                     const candidate = match[1].trim();
-                    // Filter out obviously non-PNR sequences (all zeros, too long)
-                    if (candidate !== '0000000000' && candidate.length >= 5) {
+                    // Real PNRs always contain at least one digit; reject pure-letter words and blocklist
+                    const hasDigit = /\d/.test(candidate);
+                    if (hasDigit && candidate !== '0000000000' && candidate.length >= 5 && !BLOCKLIST.has(candidate)) {
                         return candidate;
                     }
                 }
