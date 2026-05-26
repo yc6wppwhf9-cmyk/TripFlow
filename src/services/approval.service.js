@@ -79,7 +79,6 @@ exports.assignVendor = async (bookingId, vendorId) => {
   if (booking.vendor) {
     await emailService.sendVendorRequest(booking.vendor.user.email, booking.details);
   }
-  await emailService.sendVendorAssignedNotice(booking.employee.user.email, booking);
 
   return booking;
 };
