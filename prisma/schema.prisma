@@ -118,7 +118,7 @@ model Notification {
 model RailStation {
   code  String     @id         // e.g. "NDLS", "BCT", "MFP"
   name  String                 // e.g. "New Delhi"
-  city  String                 // e.g. "Delhi"
+  city  String?                // e.g. "Delhi"
   state String?
   zone  String?                // NR, WR, CR, SR, ER, SER, SCR, ECR, NCR, NWR, WCR, NER
   lat   Float?

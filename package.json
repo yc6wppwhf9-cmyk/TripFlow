@@ -10,6 +10,7 @@
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
     "prisma:seed-trains": "node prisma/seed-trains.js",
+    "prisma:import-csv": "node prisma/import-trains-csv.js",
     "postinstall": "npx prisma generate"
   },
   "keywords": [],
