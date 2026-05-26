@@ -662,18 +662,18 @@
                             <div id="origin-dest-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
                                 <div class="field-group" style="position:relative;">
                                     <label for="req-origin">Origin City</label>
-                                    <input id="req-origin" class="brutalist-input" placeholder="e.g. Mumbai" autocomplete="off"
+                                    <input id="req-origin" class="brutalist-input" placeholder="e.g. Mumbai or NDLS" autocomplete="off"
                                         oninput="showCitySuggestions(this,'req-origin-list')"
                                         onfocus="showCitySuggestions(this,'req-origin-list')"
-                                        onblur="setTimeout(()=>hideCityList('req-origin-list'),200)">
+                                        onblur="setTimeout(()=>{hideCityList('req-origin-list');resolveStationCodeInput(this)},200)">
                                     <div id="req-origin-list" class="city-dropdown"></div>
                                 </div>
                                 <div class="field-group" style="position:relative;">
                                     <label for="req-destination">Destination City</label>
-                                    <input id="req-destination" class="brutalist-input" placeholder="e.g. London" autocomplete="off"
+                                    <input id="req-destination" class="brutalist-input" placeholder="e.g. Delhi or NDLS" autocomplete="off"
                                         oninput="showCitySuggestions(this,'req-dest-list')"
                                         onfocus="showCitySuggestions(this,'req-dest-list')"
-                                        onblur="setTimeout(()=>hideCityList('req-dest-list'),200)">
+                                        onblur="setTimeout(()=>{hideCityList('req-dest-list');resolveStationCodeInput(this)},200)">
                                     <div id="req-dest-list" class="city-dropdown"></div>
                                 </div>
                             </div>
@@ -799,8 +799,12 @@
                         <div style="display:flex;flex-direction:column;gap:1.25rem;">
                             <div id="step3-summary"></div>
                             <div class="field-group">
-                                <label for="estimated-cost">Trip Cost (₹)</label>
-                                <input type="number" id="estimated-cost" placeholder="Select a fare above or enter cost" class="brutalist-input">
+                                <label style="font-size:0.8rem;font-weight:600;color:var(--on-surface-variant);">Trip Cost (auto-calculated)</label>
+                                <div id="cost-display" style="display:flex;align-items:center;gap:0.75rem;background:var(--surface-container-low);border:1px solid var(--outline-variant);border-radius:var(--radius-md);padding:0.65rem 0.85rem;font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--primary);">
+                                    <span class="material-symbols-outlined" style="font-size:20px;color:var(--secondary);">calculate</span>
+                                    <span id="cost-display-text">Select a travel option above</span>
+                                </div>
+                                <input type="number" id="estimated-cost" style="display:none;">
                             </div>
                             <div style="background:var(--warning-bg);color:var(--warning-text);padding:1rem;font-family:var(--font-display);font-size:0.85rem;font-weight:600;border-radius:var(--radius-md);display:flex;align-items:center;gap:0.5rem;">
                                 <span class="material-symbols-outlined">info</span>
@@ -954,16 +958,7 @@
             document.getElementById('user-name').innerText = currentUser.name.toUpperCase();
             loadApprovers();
 
-            document.getElementById('estimated-cost')?.addEventListener('input', (e) => {
-                const val = Number(e.target.value);
-                if (_selectedFare) {
-                    _selectedFare.price = val;
-                    const priceTag = document.getElementById('summary-price-tag');
-                    if (priceTag) {
-                        priceTag.innerText = val > 0 ? `₹${val.toLocaleString('en-IN')}` : 'Enter fare below';
-                    }
-                }
-            });
+            // cost is auto-calculated only — no manual input
         }
         init();
 
@@ -1204,6 +1199,15 @@
         }
         function hideCityList(id) { document.getElementById(id)?.classList.remove('open'); }
 
+        // When user types a station code (e.g. "MFP") and leaves the field, auto-resolve to city name
+        function resolveStationCodeInput(input) {
+            const v = input.value.trim();
+            if (!v) return;
+            const upper = v.toUpperCase();
+            const match = CITY_LIST.find(c => c.c.toUpperCase() === upper);
+            if (match) { input.value = match.n; updatePolicyStatus(); }
+        }
+
         function updateCharCount(textarea) {
             const count = textarea.value.length;
             document.getElementById('char-counter').innerText = `${count} / 500 characters`;
@@ -1378,6 +1382,7 @@
         const HOTEL_LIMIT = 3;
         let _flightGroups = [];
         let _expandedGroups = {};
+        let _filterState = {}; // { [groupCode]: { slot, sortBy } }
 
         function toggleShowAll(btn) {
             const section = btn.closest('[data-expandable]');
@@ -1441,7 +1446,7 @@
                         </button>`
                     ).join('')}
                     <select class="flight-sort-select" id="sort-${group.code||'direct'}"
-                        onchange="applyFlightFilter('${group.code||'direct'}',document.querySelector('#flight-group-${group.code||'direct'} .time-filter-btn.active')?.textContent?.trim()||'all',this.value)">
+                        onchange="applyFlightFilter('${group.code||'direct'}',(_filterState['${group.code||'direct'}']||{}).slot||'all',this.value)">
                         <option value="price" ${sortBy==='price'?'selected':''}>Sort: Cheapest</option>
                         <option value="time"  ${sortBy==='time'?'selected':''}>Sort: Earliest</option>
                     </select>
@@ -1475,9 +1480,14 @@
             return html;
         }
 
-        function applyFlightFilter(groupCode, filterSlot, sortBy) {
+        function applyFlightFilter(groupCode, slotOrLabel, sortByOverride) {
+            // Accept both raw slot keys ('morning') and button labels ('Morning 6–12')
             const slotMap = { 'All': 'all', 'Morning 6–12': 'morning', 'Afternoon 12–17': 'afternoon', 'Evening 17–21': 'evening', 'Night 21–6': 'night' };
-            const slot = slotMap[filterSlot] || filterSlot || 'all';
+            const slot = slotMap[slotOrLabel] || slotOrLabel || 'all';
+            const prev = _filterState[groupCode] || { slot: 'all', sortBy: 'price' };
+            const sortBy = sortByOverride || prev.sortBy;
+            _filterState[groupCode] = { slot, sortBy };
+
             const group = _flightGroups.find(g => (g.code || 'direct') === groupCode);
             if (!group) return;
             const dest = document.getElementById('req-destination').value.trim();
@@ -1497,6 +1507,7 @@
 
         function renderTripFares(plan, dest, date) {
             _flightGroups = [];
+            _filterState = {};
             const estRailHours   = plan.distanceKm ? Math.round(plan.distanceKm / 70) : null;
             const flightPermitted = estRailHours === null || estRailHours >= 12;
             const tBand = _userMe?.band || 3;
@@ -1656,7 +1667,7 @@
                 const travelLabel = _travelFare.type === 'FLIGHT'
                     ? (`${_travelFare.airline || ''} ${_travelFare.flightNumber || ''}`.trim() || 'Flight')
                     : (`${_travelFare.trainNumber || ''} ${_travelFare.trainName || ''}`.trim() || 'Train');
-                document.getElementById('estimated-cost').value = total;
+                setCost(total);
                 el.innerHTML = `
                     <div style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Travel + Hotel Package:</div>
                     <div style="display:flex;flex-direction:column;gap:0;border:2px solid var(--primary);border-radius:var(--radius-lg);overflow:hidden;">
@@ -1711,16 +1722,18 @@
                 const entitledList = POLICY.trainEntitled[tBand] || [];
                 const availableClasses = f.classes || [];
                 
-                let classOptions = '';
-                availableClasses.forEach(c => {
-                    const isEntitled = entitledList.includes(c.toUpperCase());
-                    classOptions += `<option value="${c}" ${isEntitled ? '' : 'style="color:var(--danger-text)"'}>Class ${c} ${isEntitled ? '(Entitled)' : '(Approval Needed)'}</option>`;
-                });
-                
                 if (!f.class && availableClasses.length > 0) {
                     const firstEntitled = availableClasses.find(c => entitledList.includes(c.toUpperCase()));
                     f.class = firstEntitled || availableClasses[0];
                 }
+
+                let classOptions = '';
+                availableClasses.forEach(c => {
+                    const isEntitled = entitledList.includes(c.toUpperCase());
+                    const isSel = c === f.class ? ' selected' : '';
+                    const fare = f.classFares?.[c] ? ` · ₹${f.classFares[c].toLocaleString('en-IN')}` : '';
+                    classOptions += `<option value="${c}"${isSel} ${isEntitled ? '' : 'style="color:var(--danger-text)"'}>Class ${c}${fare} ${isEntitled ? '(Entitled)' : '(Approval Needed)'}</option>`;
+                });
 
                 extraDetails = `
                     <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--outline-variant);display:flex;flex-direction:column;gap:0.75rem;">
@@ -1754,9 +1767,9 @@
                     </div>`;
             }
             
-            if (f.price > 0) document.getElementById('estimated-cost').value = f.price;
+            if (f.price > 0) setCost(f.price);
             const costVal = Number(document.getElementById('estimated-cost').value || 0);
-            const priceStr = costVal > 0 ? `₹${costVal.toLocaleString('en-IN')}` : 'Enter fare below';
+            const priceStr = costVal > 0 ? `₹${costVal.toLocaleString('en-IN')}` : '—';
 
             el.innerHTML = `
                 <div style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">You're requesting:</div>
@@ -1773,20 +1786,29 @@
                 </div>`;
         }
 
+        function setCost(val) {
+            const n = Number(val) || 0;
+            document.getElementById('estimated-cost').value = n || '';
+            const el = document.getElementById('cost-display-text');
+            if (el) el.innerText = n > 0 ? `₹${n.toLocaleString('en-IN')}` : 'Select a travel option above';
+            const priceTag = document.getElementById('summary-price-tag');
+            if (priceTag) priceTag.innerText = n > 0 ? `₹${n.toLocaleString('en-IN')}` : '—';
+        }
+
         function updateTrainClass(value) {
-            if (_selectedFare && _selectedFare.type === 'TRAIN') {
-                _selectedFare.class = value;
-                if (_selectedFare.classFares && _selectedFare.classFares[value]) {
-                    const price = _selectedFare.classFares[value];
-                    _selectedFare.price = price;
-                    document.getElementById('estimated-cost').value = price;
-                    
-                    const priceTag = document.getElementById('summary-price-tag');
-                    if (priceTag) {
-                        priceTag.innerText = `₹${price.toLocaleString('en-IN')}`;
-                    }
-                }
-            }
+            if (!(_selectedFare && _selectedFare.type === 'TRAIN')) return;
+            _selectedFare.class = value;
+            _travelFare = _selectedFare;
+
+            const trainFare = (_selectedFare.classFares && _selectedFare.classFares[value])
+                ? _selectedFare.classFares[value]
+                : (_selectedFare.price || 0);
+            _selectedFare.price = trainFare;
+
+            const hotelTotal = _hotelFare ? (_hotelFare.pricePerNight || 0) * _getNights() : 0;
+            setCost(trainFare + hotelTotal);
+            updateItineraryBar();
+            updatePolicyStatus();
         }
 
         function _getNights() {
@@ -1873,16 +1895,18 @@
             _selectedFare = Object.assign({ type: 'TRAIN', price: 0 }, fareDetails || {});
             _travelFare   = _selectedFare;
 
-            const defaultClass = _selectedFare.class || (_selectedFare.classes && _selectedFare.classes[0]) || '3A';
+            const tBand2 = _userMe?.band || 3;
+            const entitledList2 = POLICY.trainEntitled[tBand2] || [];
+            const availCls = _selectedFare.classes || [];
+            const entitledDefault = availCls.find(c => entitledList2.includes(c.toUpperCase()));
+            const defaultClass = _selectedFare.class || entitledDefault || availCls[0] || '3A';
             _selectedFare.class = defaultClass;
-            if (_selectedFare.classFares && _selectedFare.classFares[defaultClass]) {
-                const fareVal = _selectedFare.classFares[defaultClass];
-                _selectedFare.price = fareVal;
-                _travelFare.price   = fareVal;
-                document.getElementById('estimated-cost').value = fareVal;
-            } else {
-                document.getElementById('estimated-cost').value = '';
-            }
+            const fareVal = (_selectedFare.classFares && _selectedFare.classFares[defaultClass])
+                ? _selectedFare.classFares[defaultClass] : 0;
+            _selectedFare.price = fareVal;
+            _travelFare.price   = fareVal;
+            const hotelTotal0 = _hotelFare ? (_hotelFare.pricePerNight || 0) * _getNights() : 0;
+            setCost(fareVal + hotelTotal0);
 
             document.querySelectorAll('.trip-card:not([data-fare-type="hotel"])').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');

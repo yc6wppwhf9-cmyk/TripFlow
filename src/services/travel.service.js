@@ -221,6 +221,24 @@ const CITY_TO_STATION = {
   'hubli': 'UBL',
 };
 
+// Reverse: station code → canonical city name (for hotel search)
+const STATION_TO_CITY = Object.fromEntries(
+  Object.entries(CITY_TO_STATION)
+    .filter(([cityName]) => !['mfp','ltt','bandra terminus','bandra','lokmanya tilak terminus','kurla',
+      'bombay','new delhi','calcutta','cochin','madras','bengaluru','vizag','madgaon','prayagraj',
+      'tiruchirappalli','thiruvananthapuram','mangaluru'].includes(cityName))
+    .map(([cityName, code]) => [code, cityName.replace(/^\w/, c => c.toUpperCase())])
+);
+
+function resolveHotelCity(cityOrCode) {
+  const key = (cityOrCode || '').trim();
+  // If it looks like a station code (all uppercase letters, 2–6 chars), reverse-lookup city name
+  if (/^[A-Z]{2,6}$/.test(key)) {
+    return STATION_TO_CITY[key] || key;
+  }
+  return key;
+}
+
 function resolveIATA(city) {
   const key = city.toLowerCase().trim();
   const code = CITY_TO_IATA[key];
@@ -1025,8 +1043,8 @@ async function planTrip(from, to, fromDate, toDate) {
     // Trains directly to destination
     searchTrains(from, to, fromDate).catch(() => ({ available: false, reason: 'Train search failed.' })),
 
-    // Hotels at destination
-    searchHotels(to, fromDate, toDate || fromDate).catch(() => ({ available: false, reason: 'Hotel search failed.' }))
+    // Hotels at destination — resolve station codes to city names first
+    searchHotels(resolveHotelCity(to), fromDate, toDate || fromDate).catch(() => ({ available: false, reason: 'Hotel search failed.' }))
   ]);
 
   const distanceKm = getDistanceKm(from, to);
