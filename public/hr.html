@@ -156,6 +156,10 @@
             }
         }
     </style>
+    <meta name="theme-color" content="#003d9b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body class="bg-background text-on-surface">
 
@@ -174,6 +178,11 @@
             <a href="#" class="active" id="snav-employees" onclick="switchTab('employees',this);return false;">
                 <span class="material-symbols-outlined">group</span>
                 Employee Directory
+            </a>
+            <a href="#" id="snav-vendor-assign" onclick="switchTab('vendor-assign',this);return false;">
+                <span class="material-symbols-outlined">assignment_turned_in</span>
+                Assign Vendors
+                <span id="vendor-assign-badge" style="display:none;margin-left:auto;background:var(--primary);color:#fff;font-size:0.65rem;font-weight:700;padding:0.15rem 0.45rem;border-radius:10px;"></span>
             </a>
             <a href="#" id="snav-bookings" onclick="switchTab('bookings',this);return false;">
                 <span class="material-symbols-outlined">luggage</span>
@@ -299,6 +308,29 @@
                         </div>
                     </div>
 
+                    <!-- Directory: Vendor Assignment (PENDING_HR) -->
+                    <div id="tab-vendor-assign" class="tab-content">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                            <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--on-surface);">Pending Vendor Assignment</h3>
+                            <button onclick="loadVendorAssignQueue()" class="secondary" style="font-size:0.75rem;padding:0.4rem 0.8rem;">Refresh</button>
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Type</th>
+                                        <th>Route</th>
+                                        <th>Cost</th>
+                                        <th>Date</th>
+                                        <th>Assign Vendor</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vendor-assign-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <!-- Directory 2: Bookings -->
                     <div id="tab-bookings" class="tab-content">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
@@ -306,9 +338,11 @@
                             <select id="stage-filter" onchange="filterBookings()" class="brutalist-select">
                                 <option value="">All Stages</option>
                                 <option value="PENDING_MANAGER">Pending Manager</option>
+                                <option value="PENDING_HR">Pending HR</option>
                                 <option value="PENDING_VENDOR">Pending Vendor</option>
                                 <option value="COMPLETED">Completed</option>
                                 <option value="REJECTED">Rejected</option>
+                                <option value="CANCELLED">Cancelled</option>
                             </select>
                         </div>
                         <div class="table-card">
@@ -579,21 +613,25 @@
             loadBookings();
             loadPolicies();
             loadManagerOptions();
+            loadVendorAssignQueue();
             toggleEmployeeFields();
         }
         init();
 
         const tabTitles = {
-            'employees':    'Employee Directory',
-            'bookings':     'All Travel Requests',
-            'policies':     'Travel Policies',
-            'add-employee': 'Add Employee',
-            'analytics':    'Analytics'
+            'employees':     'Employee Directory',
+            'vendor-assign': 'Assign Vendors',
+            'bookings':      'All Travel Requests',
+            'policies':      'Travel Policies',
+            'add-employee':  'Add Employee',
+            'analytics':     'Analytics'
         };
         function switchTab(name, el) {
-            document.querySelectorAll('.sidebar-nav-links a').forEach(a => a.classList.remove('active'));
+            document.querySelectorAll('.sidebar-nav-links a, .side-bottom-nav a').forEach(a => a.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             (el || document.getElementById('snav-' + name)).classList.add('active');
+            const bnavEl = document.getElementById('bnav-' + name);
+            if (bnavEl) bnavEl.classList.add('active');
             document.getElementById('tab-' + name).classList.add('active');
             document.getElementById('page-section-title').innerText = tabTitles[name] || 'HR Portal';
             if (window.innerWidth <= 768) toggleSidebar();
@@ -703,15 +741,14 @@
                 el.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>No bookings found</p></div></td></tr>'; return;
             }
             el.innerHTML = list.map(b => {
-                const isPending = b.stage === 'PENDING_MANAGER';
-                const actionCell = isPending
-                    ? `<td data-label="Action" style="white-space:nowrap;">
-                           <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
-                               <button onclick="hrApprove('${b.id}')" style="font-size:0.72rem;padding:0.3rem 0.6rem;background:#16a34a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Approve</button>
-                               <button onclick="hrReject('${b.id}')" style="font-size:0.72rem;padding:0.3rem 0.6rem;background:#dc2626;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Reject</button>
-                           </div>
-                       </td>`
-                    : `<td data-label="Action" style="color:var(--secondary);font-size:0.75rem;font-weight:600;">—</td>`;
+                let actionCell;
+                if (b.stage === 'PENDING_HR') {
+                    actionCell = `<td data-label="Action" style="white-space:nowrap;">
+                        <button onclick="switchTab('vendor-assign',document.getElementById('snav-vendor-assign'))" style="font-size:0.72rem;padding:0.3rem 0.6rem;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Assign Vendor</button>
+                    </td>`;
+                } else {
+                    actionCell = `<td data-label="Action" style="color:var(--secondary);font-size:0.75rem;font-weight:600;">—</td>`;
+                }
                 return `
                 <tr>
                     <td data-label="Employee" style="font-weight:700;color:var(--on-surface);">${b.employee?.user?.name || '—'}</td>
@@ -778,32 +815,7 @@
             }
         });
 
-        // ── HR Approval Actions ──
-        async function hrApprove(bookingId) {
-            try {
-                const vendors = await apiRequest('/approvals/vendors');
-                const vendorId = vendors.length ? vendors[0].id : null;
-                await apiRequest(`/approvals/${bookingId}/approve`, { method: 'POST', body: { vendorId } });
-                showToast('Booking approved and sent to vendor.', 'success');
-                await loadBookings();
-                await loadStats();
-            } catch(err) {
-                showToast(err.message || 'Approval failed', 'error');
-            }
-        }
-
-        async function hrReject(bookingId) {
-            const reason = prompt('Reason for rejection (required):');
-            if (!reason || !reason.trim()) return;
-            try {
-                await apiRequest(`/approvals/${bookingId}/reject`, { method: 'POST', body: { reason } });
-                showToast('Booking rejected.', 'success');
-                await loadBookings();
-                await loadStats();
-            } catch(err) {
-                showToast(err.message || 'Rejection failed', 'error');
-            }
-        }
+        // HR approval actions are now handled in the Assign Vendors tab (loadVendorAssignQueue)
 
         // ── Add Employee Tab ──
         async function loadManagerOptions() {
@@ -865,7 +877,7 @@
         function renderAnalytics(bookings) {
             const total = bookings.length;
             const spend = bookings.reduce((s, b) => s + (Number(b.cost) || 0), 0);
-            const pending   = bookings.filter(b => b.stage === 'PENDING_MANAGER' || b.stage === 'PENDING_VENDOR').length;
+            const pending   = bookings.filter(b => ['PENDING_MANAGER','PENDING_HR','PENDING_VENDOR'].includes(b.stage)).length;
             const completed = bookings.filter(b => b.stage === 'COMPLETED').length;
             const rejected  = bookings.filter(b => b.stage === 'REJECTED').length;
 
@@ -898,8 +910,8 @@
                 : '<div style="color:var(--secondary);font-size:0.85rem;">No data yet.</div>';
 
             // By stage
-            const stageLabel = { PENDING_MANAGER:'Pending Manager', PENDING_VENDOR:'Pending Vendor', COMPLETED:'Completed', REJECTED:'Rejected', TICKET_UPLOADED:'Ticket Uploaded' };
-            const stageColor = { PENDING_MANAGER:'#f59e0b', PENDING_VENDOR:'#6366f1', COMPLETED:'#16a34a', REJECTED:'#dc2626', TICKET_UPLOADED:'#0ea5e9' };
+            const stageLabel = { PENDING_MANAGER:'Pending Manager', PENDING_HR:'Pending HR', PENDING_VENDOR:'Pending Vendor', COMPLETED:'Completed', REJECTED:'Rejected', CANCELLED:'Cancelled' };
+            const stageColor = { PENDING_MANAGER:'#f59e0b', PENDING_HR:'#8b5cf6', PENDING_VENDOR:'#6366f1', COMPLETED:'#16a34a', REJECTED:'#dc2626', CANCELLED:'#6b7280' };
             const byStage = {};
             bookings.forEach(b => {
                 byStage[b.stage] = (byStage[b.stage] || 0) + 1;
@@ -939,6 +951,86 @@
                 : '<tr><td colspan="5"><div class="empty-state"><p>No bookings yet.</p></div></td></tr>';
         }
 
+        // ── Vendor Assignment Queue (PENDING_HR) ──
+        let allVendors = [];
+
+        async function loadVendorAssignQueue() {
+            try {
+                const [pendingHr, vendors] = await Promise.all([
+                    apiRequest('/approvals/hr/pending'),
+                    apiRequest('/approvals/vendors')
+                ]);
+                allVendors = vendors;
+
+                const badge = document.getElementById('vendor-assign-badge');
+                if (pendingHr.length) {
+                    badge.innerText = pendingHr.length;
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                const list = document.getElementById('vendor-assign-list');
+                if (!pendingHr.length) {
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✅</div><p>No bookings awaiting vendor assignment</p></div></td></tr>';
+                    return;
+                }
+                list.innerHTML = pendingHr.map(b => {
+                    const typeVendors = allVendors.filter(v =>
+                        !v.serviceType || v.serviceType.toUpperCase() === b.type
+                    );
+                    const vendorOptions = typeVendors.length
+                        ? typeVendors.map(v => `<option value="${v.id}">${v.companyName} (${v.serviceType})</option>`).join('')
+                        : allVendors.map(v => `<option value="${v.id}">${v.companyName} (${v.serviceType})</option>`).join('');
+                    return `
+                    <tr>
+                        <td data-label="Employee" style="font-weight:700;">${b.employee?.user?.name || '—'}<br><span style="font-size:0.75rem;color:var(--secondary);font-weight:600;">${b.employee?.department || ''}</span></td>
+                        <td data-label="Type"><span class="role-badge role-VENDOR">${b.type}</span></td>
+                        <td data-label="Route" style="font-weight:700;">${b.details?.origin || '—'} → ${b.details?.destination || '—'}<br><span style="font-size:0.75rem;color:var(--secondary);">${b.details?.date || ''}</span></td>
+                        <td data-label="Cost" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                        <td data-label="Submitted" style="color:var(--secondary);font-size:0.78rem;font-weight:600;">${new Date(b.createdAt).toLocaleDateString('en-IN')}</td>
+                        <td data-label="Assign Vendor" style="white-space:nowrap;">
+                            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+                                <select id="vendor-sel-${b.id}" class="brutalist-select" style="font-size:0.75rem;padding:0.25rem 0.5rem;">
+                                    <option value="">Select vendor…</option>
+                                    ${vendorOptions}
+                                </select>
+                                <button onclick="assignVendor('${b.id}')" style="font-size:0.72rem;padding:0.3rem 0.6rem;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;white-space:nowrap;">Assign</button>
+                                <button onclick="hrRejectPendingHr('${b.id}')" style="font-size:0.72rem;padding:0.3rem 0.6rem;background:#dc2626;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Reject</button>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function assignVendor(bookingId) {
+            const sel = document.getElementById('vendor-sel-' + bookingId);
+            const vendorId = sel ? sel.value : '';
+            if (!vendorId) { showToast('Please select a vendor first.', 'warning'); return; }
+            try {
+                await apiRequest(`/approvals/${bookingId}/assign-vendor`, { method: 'POST', body: { vendorId } });
+                showToast('Vendor assigned successfully. Vendor has been notified.', 'success');
+                await loadVendorAssignQueue();
+                await loadStats();
+            } catch(err) {
+                showToast(err.message || 'Failed to assign vendor', 'error');
+            }
+        }
+
+        async function hrRejectPendingHr(bookingId) {
+            const reason = prompt('Reason for rejection (required):');
+            if (!reason || !reason.trim()) return;
+            try {
+                await apiRequest(`/approvals/${bookingId}/reject`, { method: 'POST', body: { reason } });
+                showToast('Booking rejected.', 'success');
+                await loadVendorAssignQueue();
+                await loadStats();
+            } catch(err) {
+                showToast(err.message || 'Rejection failed', 'error');
+            }
+        }
+
         async function analyzePolicy() {
             const text = document.getElementById('policy-text').value;
             if (!text.trim()) { showToast('Please paste corporate policy rules text first.', 'warning'); return; }
@@ -974,5 +1066,24 @@
             }
         }
     </script>
+    <nav class="side-bottom-nav">
+        <a href="#" id="bnav-employees" class="active" onclick="switchTab('employees',document.getElementById('snav-employees'));return false;">
+            <span class="material-symbols-outlined">group</span>
+            Employees
+        </a>
+        <a href="#" id="bnav-vendor-assign" onclick="switchTab('vendor-assign',document.getElementById('snav-vendor-assign'));return false;">
+            <span class="material-symbols-outlined">assignment_turned_in</span>
+            Assign
+        </a>
+        <a href="#" id="bnav-bookings" onclick="switchTab('bookings',document.getElementById('snav-bookings'));return false;">
+            <span class="material-symbols-outlined">luggage</span>
+            Requests
+        </a>
+        <a href="#" id="bnav-analytics" onclick="switchTab('analytics',document.getElementById('snav-analytics'));return false;">
+            <span class="material-symbols-outlined">bar_chart</span>
+            Analytics
+        </a>
+    </nav>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>

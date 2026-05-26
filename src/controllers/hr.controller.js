@@ -21,7 +21,7 @@ exports.getDeptSpend = async (req, res) => {
     const employees = await prisma.employee.findMany({
       include: {
         user: userSelect,
-        bookings: { where: { stage: { not: 'REJECTED' } } },
+        bookings: { where: { stage: { notIn: ['REJECTED', 'CANCELLED'] } } },
         policy: true
       }
     });
@@ -47,45 +47,64 @@ exports.getDeptSpend = async (req, res) => {
 
 exports.getPolicyCompliance = async (req, res) => {
   try {
-    const [withPolicy, withoutPolicy, totalBookings, pendingApprovals, completed, rejected] =
+    const [withPolicy, withoutPolicy, totalBookings, pendingManager, pendingHr, completed, rejected] =
       await Promise.all([
         prisma.employee.count({ where: { policyId: { not: null } } }),
         prisma.employee.count({ where: { policyId: null } }),
         prisma.booking.count(),
         prisma.booking.count({ where: { stage: 'PENDING_MANAGER' } }),
+        prisma.booking.count({ where: { stage: 'PENDING_HR' } }),
         prisma.booking.count({ where: { stage: 'COMPLETED' } }),
         prisma.booking.count({ where: { stage: 'REJECTED' } })
       ]);
 
-    res.json({ withPolicy, withoutPolicy, totalBookings, pendingApprovals, completed, rejected });
+    res.json({
+      withPolicy,
+      withoutPolicy,
+      totalBookings,
+      pendingApprovals: pendingManager + pendingHr,
+      pendingManager,
+      pendingHr,
+      completed,
+      rejected
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+// Single GROUP BY query replacing 12 sequential DB round-trips
 exports.getMonthlyTrend = async (req, res) => {
   try {
-    const months = 6;
+    const rows = await prisma.$queryRaw`
+      SELECT
+        date_trunc('month', "createdAt") AS month,
+        COUNT(*)::int                    AS bookings,
+        COALESCE(SUM(cost), 0)::float    AS "totalCost"
+      FROM "Booking"
+      WHERE
+        "createdAt" >= date_trunc('month', NOW()) - INTERVAL '5 months'
+        AND stage NOT IN ('REJECTED', 'CANCELLED')
+      GROUP BY date_trunc('month', "createdAt")
+      ORDER BY month ASC
+    `;
+
+    // Fill in any missing months so the chart always shows 6 data points
     const results = [];
-
-    for (let i = months - 1; i >= 0; i--) {
-      const start = new Date();
-      start.setDate(1);
-      start.setHours(0, 0, 0, 0);
-      start.setMonth(start.getMonth() - i);
-
-      const end = new Date(start);
-      end.setMonth(end.getMonth() + 1);
-
-      const [count, agg] = await Promise.all([
-        prisma.booking.count({ where: { createdAt: { gte: start, lt: end }, stage: { not: 'REJECTED' } } }),
-        prisma.booking.aggregate({ where: { createdAt: { gte: start, lt: end }, stage: { not: 'REJECTED' } }, _sum: { cost: true } })
-      ]);
-
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      d.setMonth(d.getMonth() - i);
+      const label = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+      const match = rows.find(r => {
+        const rm = new Date(r.month);
+        return rm.getFullYear() === d.getFullYear() && rm.getMonth() === d.getMonth();
+      });
       results.push({
-        month: start.toLocaleString('default', { month: 'short', year: 'numeric' }),
-        bookings: count,
-        totalCost: agg._sum.cost || 0
+        month: label,
+        bookings: match ? match.bookings : 0,
+        totalCost: match ? Number(match.totalCost) : 0
       });
     }
 

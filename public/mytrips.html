@@ -158,6 +158,10 @@
             color: var(--on-surface);
         }
     </style>
+    <meta name="theme-color" content="#003d9b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
@@ -426,5 +430,20 @@
 
         init();
     </script>
+    <nav class="side-bottom-nav">
+        <a href="employee.html">
+            <span class="material-symbols-outlined">dashboard</span>
+            Dashboard
+        </a>
+        <a href="mytrips.html" data-active="true">
+            <span class="material-symbols-outlined">luggage</span>
+            My Trips
+        </a>
+        <a href="request.html">
+            <span class="material-symbols-outlined">add_circle</span>
+            New Booking
+        </a>
+    </nav>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>

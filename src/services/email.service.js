@@ -46,3 +46,14 @@ exports.sendRejectionNotice = async (employeeEmail, reason) => {
   const text = `Your travel request has been rejected.\nReason: ${reason}`;
   await exports.sendEmail(employeeEmail, subject, text);
 };
+
+exports.sendHrNotification = async (hrUsers, booking) => {
+  if (!hrUsers || !hrUsers.length) return;
+  const details = booking.details || {};
+  const route = details.origin && details.destination ? `${details.origin} → ${details.destination}` : 'Travel request';
+  const subject = `Action Required: Assign Vendor for ${route}`;
+  const text = `A travel booking has been approved by the manager and requires vendor assignment.\n\nEmployee: ${booking.employee?.user?.name || 'N/A'}\nRoute: ${route}\nType: ${booking.type}\nCost: ₹${booking.cost || 'TBD'}\n\nPlease log in to TripFlow and assign a vendor.`;
+  for (const hr of hrUsers) {
+    await exports.sendEmail(hr.email, subject, text);
+  }
+};

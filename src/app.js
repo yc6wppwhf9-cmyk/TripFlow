@@ -2,8 +2,25 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: false // disabled so existing inline scripts in HTML portals still work
+}));
+
+// Global rate limiter — 200 req/15 min per IP (AI route keeps its own tighter 20 req/min)
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' }
+});
+app.use('/api/', globalLimiter);
 
 // Middleware
 const allowedOrigins = process.env.ALLOWED_ORIGINS

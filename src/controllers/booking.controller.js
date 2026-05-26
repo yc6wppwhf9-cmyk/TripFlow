@@ -39,6 +39,9 @@ function getMealCapKey(days) {
 
 // ── Policy enforcement ────────────────────────────────────────────────────────
 async function checkPolicyLimits(employeeId, type, cost, details = {}) {
+  // Guard: nullable cost causes NaN comparisons which silently pass all checks
+  if (cost == null || isNaN(cost)) return null;
+
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
     include: { policy: true }
@@ -166,7 +169,7 @@ async function checkPolicyLimits(employeeId, type, cost, details = {}) {
         where: {
           employeeId,
           type: 'MEAL',
-          stage: { not: 'REJECTED' },
+          stage: { notIn: ['REJECTED', 'CANCELLED'] },
           createdAt: { gte: startOfMonth }
         },
         _sum: { cost: true }
@@ -181,6 +184,31 @@ async function checkPolicyLimits(employeeId, type, cost, details = {}) {
           policyRule: 'T&E Policy 2026 §7.1'
         };
       }
+    }
+  }
+
+  // 7. Global monthly budget cap
+  const globalBudget = rules.globalMonthlyBudget;
+  if (globalBudget) {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const { _sum } = await prisma.booking.aggregate({
+      where: {
+        employeeId,
+        stage: { notIn: ['REJECTED', 'CANCELLED'] },
+        createdAt: { gte: startOfMonth }
+      },
+      _sum: { cost: true }
+    });
+    const monthSpent = _sum.cost || 0;
+    if (monthSpent + cost > globalBudget) {
+      return {
+        error: `This booking of ₹${cost} would exceed your monthly travel budget of ₹${globalBudget}. You have spent ₹${monthSpent.toFixed(2)} this month.`,
+        globalMonthlyBudget: globalBudget,
+        monthSpentSoFar: monthSpent,
+        policyRule: 'T&E Policy 2026 — Global Monthly Budget'
+      };
     }
   }
 
@@ -323,10 +351,10 @@ exports.deleteBooking = async (req, res) => {
     if (booking.stage === 'COMPLETED') {
       return res.status(409).json({ error: 'Completed bookings cannot be cancelled. Contact HR.' });
     }
-    if (booking.stage === 'PENDING_VENDOR') {
-      return res.status(409).json({ error: 'Booking is already with the vendor. Contact your manager to cancel.' });
+    if (booking.stage === 'PENDING_VENDOR' || booking.stage === 'PENDING_HR') {
+      return res.status(409).json({ error: 'Booking is already in vendor assignment. Contact HR to cancel.' });
     }
-    await prisma.booking.delete({ where: { id: req.params.id } });
+    await prisma.booking.update({ where: { id: req.params.id }, data: { stage: 'CANCELLED' } });
     res.json({ success: true, message: 'Booking cancelled successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });

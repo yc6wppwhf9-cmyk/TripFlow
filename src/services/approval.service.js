@@ -11,7 +11,6 @@ exports.submitRequest = async (bookingId) => {
 
   if (!booking) throw new Error('Booking not found');
 
-  // Notify Manager and HR
   const hrAdmin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
 
   if (booking.employee.manager) {
@@ -26,7 +25,40 @@ exports.submitRequest = async (bookingId) => {
   return booking;
 };
 
-exports.approve = async (bookingId, vendorId) => {
+// Manager approves → moves to PENDING_HR (no vendor yet)
+exports.approve = async (bookingId) => {
+  const booking = await prisma.booking.update({
+    where: { id: bookingId },
+    data: { stage: 'PENDING_HR' },
+    include: {
+      employee: { include: { user: userSelect } }
+    }
+  });
+
+  await prisma.notification.create({
+    data: {
+      userId:  booking.employee.userId,
+      message: `Your travel request (${booking.details?.origin || ''} → ${booking.details?.destination || ''}) has been approved by your manager and is pending vendor assignment.`
+    }
+  });
+
+  const hrUsers = await prisma.user.findMany({ where: { role: 'HR' } });
+  for (const hr of hrUsers) {
+    await prisma.notification.create({
+      data: {
+        userId:  hr.id,
+        message: `New booking pending vendor assignment: ${booking.details?.origin || ''} → ${booking.details?.destination || ''} (${booking.type}, ₹${booking.cost || 'TBD'})`
+      }
+    });
+  }
+
+  await emailService.sendHrNotification(hrUsers, booking);
+
+  return booking;
+};
+
+// HR assigns vendor → moves to PENDING_VENDOR
+exports.assignVendor = async (bookingId, vendorId) => {
   const booking = await prisma.booking.update({
     where: { id: bookingId },
     data: { stage: 'PENDING_VENDOR', vendorId },
@@ -39,7 +71,7 @@ exports.approve = async (bookingId, vendorId) => {
   await prisma.notification.create({
     data: {
       userId:  booking.employee.userId,
-      message: `Your travel request (${booking.details?.origin || ''} → ${booking.details?.destination || ''}) has been approved and sent to the travel desk.`
+      message: `Your booking (${booking.details?.origin || ''} → ${booking.details?.destination || ''}) has been assigned to ${booking.vendor?.companyName || 'a vendor'} and is being processed.`
     }
   });
 

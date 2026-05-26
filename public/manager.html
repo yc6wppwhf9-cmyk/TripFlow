@@ -146,6 +146,10 @@
             .analytics-grid { grid-template-columns: 1fr; }
         }
     </style>
+    <meta name="theme-color" content="#003d9b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
 
@@ -243,7 +247,7 @@
                 </div>
             </div>
 
-            <div class="tab-bar">
+            <div class="tab-bar tab-nav">
                 <button class="tab-btn active" id="tab-btn-analytics" onclick="switchTab('analytics',this)">Spend Analytics</button>
                 <button class="tab-btn" id="tab-btn-pending" onclick="switchTab('pending',this)">
                     Approval Queue
@@ -348,14 +352,10 @@
     <div id="approval-modal" class="modal">
         <div class="modal-content" style="max-width:460px;">
             <h2 style="font-family:var(--font-display);font-size:1.4rem;font-weight:600;margin:0 0 0.5rem;color:var(--on-surface);">Approve Request</h2>
-            <p style="color:var(--secondary);font-size:0.875rem;margin-bottom:1.5rem;font-weight:500;">Assign a contracted ticketing vendor to handle this request.</p>
+            <p style="color:var(--secondary);font-size:0.875rem;margin-bottom:1.5rem;font-weight:500;">Approving will forward this booking to HR for vendor assignment.</p>
             <form id="approval-form" style="display:flex;flex-direction:column;gap:1rem;">
                 <input type="hidden" id="booking-id">
-                <div class="form-group">
-                    <label>Assign Vendor</label>
-                    <select id="vendor-id" required style="width:100%;"><option value="">Loading vendors…</option></select>
-                </div>
-                <div style="display:flex;gap:0.75rem;margin-top:1.5rem;">
+                <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
                     <button type="submit" style="flex:1;">Confirm Approval</button>
                     <button type="button" onclick="hideModal('approval-modal')" class="secondary" style="flex:0.5;">Cancel</button>
                 </div>
@@ -562,12 +562,7 @@
         }
 
         async function loadVendors() {
-            try {
-                const vendors = await apiRequest('/approvals/vendors');
-                const sel = document.getElementById('vendor-id');
-                if (!vendors.length) { sel.innerHTML = '<option value="">No vendors registered — ask admin to add one</option>'; return; }
-                sel.innerHTML = '<option value="">Select a fulfillment vendor…</option>' + vendors.map(v => `<option value="${v.id}">${v.companyName} (${v.serviceType})</option>`).join('');
-            } catch(err) { console.error(err.message); }
+            // Vendor assignment now handled by HR — this function is kept for compatibility
         }
 
         async function loadTeamBookings() {
@@ -627,9 +622,9 @@
             const btn = e.target.querySelector('button[type=submit]');
             btn.disabled = true; btn.innerText = 'Approving…';
             try {
-                await apiRequest(`/approvals/${document.getElementById('booking-id').value}/approve`, { method: 'POST', body: { vendorId: document.getElementById('vendor-id').value } });
+                await apiRequest(`/approvals/${document.getElementById('booking-id').value}/approve`, { method: 'POST', body: {} });
                 hideModal('approval-modal');
-                showToast('Booking request approved and forwarded to ticketing vendor.', 'success');
+                showToast('Booking approved and forwarded to HR for vendor assignment.', 'success');
                 await loadApprovals(); await loadTeamBookings();
             } catch(err) {
                 showToast(err.message, 'error');
@@ -678,5 +673,6 @@
             }
         });
     </script>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>

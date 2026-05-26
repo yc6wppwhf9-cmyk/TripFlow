@@ -16,9 +16,11 @@ enum Role {
 
 enum Stage {
   PENDING_MANAGER
+  PENDING_HR
   PENDING_VENDOR
   COMPLETED
   REJECTED
+  CANCELLED
 }
 
 enum BookingType {

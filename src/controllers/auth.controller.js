@@ -37,28 +37,28 @@ async function getLockTTL(email) {
 
 exports.register = async (req, res) => {
   try {
-    const { email, password, name, role, phone, department, managerId } = req.body;
-    
+    const { email, password, name, phone, department, managerId } = req.body;
+    // role is intentionally excluded — public registration always creates EMPLOYEE accounts.
+    // Admin creates elevated roles via POST /api/admin/users.
+
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) return res.status(400).json({ error: 'Email already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    
+
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
-        role: role || 'EMPLOYEE',
+        role: 'EMPLOYEE',
         phone,
-        ...(role === 'EMPLOYEE' && {
-          employee: {
-            create: {
-              department: department || 'General',
-              managerId: managerId
-            }
+        employee: {
+          create: {
+            department: department || 'General',
+            managerId: managerId || null
           }
-        })
+        }
       },
       include: { employee: true }
     });
