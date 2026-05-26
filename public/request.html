@@ -1548,7 +1548,12 @@
                     const trainBadge = entitledAvail.length
                         ? `<span class="policy-badge ok">${entitledAvail.join(' · ')} ENTITLED</span>`
                         : (t.classes?.length ? `<span class="policy-badge warn">CHECK ${POLICY.trainLabel[tBand]}</span>` : '');
-                    const _tfd = encodeURIComponent(JSON.stringify({trainNumber:t.trainNumber,trainName:t.trainName,departure:t.departure,arrival:t.arrival,duration:t.duration,classes:t.classes||[]}));
+                    const _tfd = encodeURIComponent(JSON.stringify({trainNumber:t.trainNumber,trainName:t.trainName,departure:t.departure,arrival:t.arrival,duration:t.duration,classes:t.classes||[],classFares:t.classFares||{}}));
+                    const fareChips = t.classFares && Object.keys(t.classFares).length
+                        ? Object.entries(t.classFares).map(([cls,price]) =>
+                            `<span style="font-size:0.68rem;font-weight:700;background:var(--surface-container-low);border:1px solid var(--outline-variant);border-radius:6px;padding:0.15rem 0.45rem;white-space:nowrap;">${cls} ₹${price.toLocaleString('en-IN')}</span>`
+                          ).join('')
+                        : '';
                     trainHtml += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectTrainFare(this,JSON.parse(decodeURIComponent('${_tfd}')))" style="flex-direction:column;align-items:flex-start;gap:0.35rem;">
                         <div style="display:flex;justify-content:space-between;width:100%;align-items:center;gap:0.5rem;">
                             <span><strong>${t.trainNumber}</strong> · ${t.trainName}</span>
@@ -1559,6 +1564,7 @@
                             <span style="font-size:0.72rem;color:var(--secondary);">${t.classes?.join(' · ') || ''}</span>
                             ${t.runDays ? `<span style="font-size:0.65rem;color:var(--secondary);">${t.runDays}</span>` : ''}
                         </div>
+                        ${fareChips ? `<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.2rem;">${fareChips}</div>` : ''}
                         ${trainBadge ? `<div>${trainBadge}</div>` : ''}
                         ${isEstimated ? `<span style="font-size:0.7rem;color:var(--warning-text);font-weight:600;">Estimated — verify at IRCTC.co.in</span>` : `<span style="font-size:0.7rem;color:var(--success-text);font-weight:600;">${isLive ? 'Live data' : 'Confirmed route'} — book at IRCTC.co.in</span>`}
                     </div>`;
