@@ -103,7 +103,6 @@ exports.sendApprovalRequest = async (managerEmail, hrEmail, employeeName, bookin
     ${ctaButton('Review Request in TripDesk', `${APP_URL}/manager.html`)}
   `);
   await exports.sendEmail(managerEmail, subject, undefined, html);
-  await exports.sendEmail(hrEmail, `[FYI] Travel Request from ${employeeName}`, undefined, html);
 };
 
 // ── 2. HR notified to assign vendor ─────────────────────────────────────────
