@@ -1400,14 +1400,16 @@
 
         function timeSlot(timeStr) {
             if (!timeStr) return 'unknown';
-            const h = parseInt(timeStr.split(':')[0], 10);
+            // departure may be "HH:MM" or "YYYY-M-D HH:MM" — extract only the time portion
+            const timePart = timeStr.includes(' ') ? timeStr.split(' ').pop() : timeStr;
+            const h = parseInt(timePart.split(':')[0], 10);
             if (h >= 6  && h < 12) return 'morning';
             if (h >= 12 && h < 17) return 'afternoon';
             if (h >= 17 && h < 21) return 'evening';
             return 'night';
         }
 
-        function renderFlightGroup(group, dest, filterSlot, sortBy, expanded = false) {
+        function renderFlightGroup(group, dest, filterSlot, sortBy, expanded = false, directOnly = true) {
             let flights = Array.isArray(group.results) ? [...group.results] : [];
             if (!flights.length) {
                 if (group.km > 0) {
@@ -1418,6 +1420,9 @@
                 }
                 return '';
             }
+
+            // Filter: direct only
+            if (directOnly) flights = flights.filter(f => (f.stops ?? 0) === 0);
 
             // Filter by time slot
             const filtered = filterSlot === 'all'
@@ -1450,6 +1455,10 @@
                         <option value="price" ${sortBy==='price'?'selected':''}>Sort: Cheapest</option>
                         <option value="time"  ${sortBy==='time'?'selected':''}>Sort: Earliest</option>
                     </select>
+                    <button class="time-filter-btn ${directOnly?'active':''}" style="margin-left:auto;"
+                        onclick="applyFlightFilter('${group.code||'direct'}',(_filterState['${group.code||'direct'}']||{}).slot||'all',null,${!directOnly})">
+                        Direct only
+                    </button>
                 </div>
                 <p class="flight-count-label" id="count-${group.code||'direct'}">${filtered.length} of ${flights.length} flights shown</p>
                 <div id="flights-${group.code||'direct'}">`;
@@ -1480,20 +1489,21 @@
             return html;
         }
 
-        function applyFlightFilter(groupCode, slotOrLabel, sortByOverride) {
+        function applyFlightFilter(groupCode, slotOrLabel, sortByOverride, directOnlyOverride) {
             // Accept both raw slot keys ('morning') and button labels ('Morning 6–12')
             const slotMap = { 'All': 'all', 'Morning 6–12': 'morning', 'Afternoon 12–17': 'afternoon', 'Evening 17–21': 'evening', 'Night 21–6': 'night' };
             const slot = slotMap[slotOrLabel] || slotOrLabel || 'all';
-            const prev = _filterState[groupCode] || { slot: 'all', sortBy: 'price' };
+            const prev = _filterState[groupCode] || { slot: 'all', sortBy: 'price', directOnly: true };
             const sortBy = sortByOverride || prev.sortBy;
-            _filterState[groupCode] = { slot, sortBy };
+            const directOnly = directOnlyOverride !== undefined ? directOnlyOverride : prev.directOnly;
+            _filterState[groupCode] = { slot, sortBy, directOnly };
 
             const group = _flightGroups.find(g => (g.code || 'direct') === groupCode);
             if (!group) return;
             const dest = document.getElementById('req-destination').value.trim();
             const expanded = _expandedGroups[groupCode] || false;
             const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = renderFlightGroup(group, dest, slot, sortBy, expanded);
+            tempDiv.innerHTML = renderFlightGroup(group, dest, slot, sortBy, expanded, directOnly);
             const existing = document.getElementById(`flight-group-${groupCode}`);
             if (existing) existing.replaceWith(tempDiv.firstElementChild);
         }
@@ -1531,8 +1541,10 @@
             } else if (plan.outboundFlights?.length) {
                 _flightGroups = plan.outboundFlights;
                 plan.outboundFlights.forEach(group => {
-                    const part = renderFlightGroup(group, dest, 'all', 'price');
-                    if (part) { flightHtml += part; flightCount += (group.results?.length || 0); }
+                    _filterState[group.code || 'direct'] = { slot: 'all', sortBy: 'price', directOnly: true };
+                    const directFlights = (group.results || []).filter(f => (f.stops ?? 0) === 0);
+                    const part = renderFlightGroup(group, dest, 'all', 'price', false, true);
+                    if (part) { flightHtml += part; flightCount += directFlights.length; }
                 });
             }
             if (!flightHtml) flightHtml = `<p class="no-result">No flights found for this route and date.</p>`;
