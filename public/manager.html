@@ -635,7 +635,7 @@
 
         async function loadMyTrips() {
             try {
-                const bookings = await apiRequest('/bookings/mine');
+                const bookings = ((await apiRequest('/bookings/mine'))?.data) || [];
                 const list = document.getElementById('mytrips-list');
                 if (!bookings.length) {
                     list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✈️</div><p>No travel requests yet. <a href="request.html" style="color:var(--primary);font-weight:700;">Book your first trip</a></p></div></td></tr>'; return;

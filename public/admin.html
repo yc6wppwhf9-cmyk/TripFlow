@@ -450,7 +450,7 @@
 
         async function loadUsers() {
             try {
-                allUsers = await apiRequest('/admin/users');
+                allUsers = ((await apiRequest('/admin/users'))?.data) || [];
                 const list = document.getElementById('users-list');
                 if (!allUsers.length) {
                     list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👥</div><p>No users yet</p></div></td></tr>'; return;
@@ -486,7 +486,7 @@
 
         async function loadBookings() {
             try {
-                allBookings = await apiRequest('/admin/bookings');
+                allBookings = ((await apiRequest('/admin/bookings'))?.data) || [];
                 renderBookings(allBookings);
             } catch(e) { console.error(e); }
         }
@@ -518,7 +518,7 @@
 
         async function loadManagers() {
             try {
-                const users    = await apiRequest('/admin/users');
+                const users    = ((await apiRequest('/admin/users'))?.data) || [];
                 const managers = users.filter(u => u.role === 'MANAGER');
                 const sel      = document.getElementById('u-manager');
                 sel.innerHTML  = '<option value="">No manager</option>' + managers.map(m => `<option value="${m.id}">${m.name}</option>`).join('');

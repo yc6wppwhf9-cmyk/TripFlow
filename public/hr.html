@@ -692,7 +692,7 @@
 
         async function loadBookings() {
             try {
-                allBookings = await apiRequest('/admin/bookings');
+                allBookings = ((await apiRequest('/admin/bookings'))?.data) || [];
                 renderBookings(allBookings);
                 updateRightColumnStats(allBookings);
                 renderAnalytics(allBookings);
@@ -820,7 +820,7 @@
         // ── Add Employee Tab ──
         async function loadManagerOptions() {
             try {
-                const users = await apiRequest('/admin/users');
+                const users = ((await apiRequest('/admin/users'))?.data) || [];
                 const managers = users.filter(u => u.role === 'MANAGER' || u.role === 'HR' || u.role === 'ADMIN');
                 const sel = document.getElementById('cu-manager');
                 managers.forEach(m => {

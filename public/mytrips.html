@@ -348,7 +348,7 @@
 
         async function loadBookings() {
             try {
-                const bookings = await apiRequest('/bookings/mine');
+                const bookings = ((await apiRequest('/bookings/mine'))?.data) || [];
 
                 // ── Upcoming cards ───────────────────────────────────
                 const today   = new Date().toISOString().slice(0, 10);

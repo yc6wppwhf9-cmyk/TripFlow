@@ -771,7 +771,7 @@
         async function loadNotifications() {
             try {
                 const data = await apiRequest('/notifications');
-                const notifs = Array.isArray(data) ? data : [];
+                const notifs = Array.isArray(data) ? data : (data?.data || []);
                 const badge = document.getElementById('notif-badge');
                 const unread = notifs.filter(n => !n.read);
 
@@ -805,7 +805,8 @@
         async function markAllRead() {
             try {
                 const data = await apiRequest('/notifications');
-                const unread = Array.isArray(data) ? data.filter(n => !n.read) : [];
+                const _notifs = Array.isArray(data) ? data : (data?.data || []);
+                const unread = _notifs.filter(n => !n.read);
                 await Promise.all(unread.map(n => apiRequest(`/notifications/${n.id}/read`, { method: 'PATCH' })));
                 loadNotifications();
             } catch (_) {}
@@ -914,7 +915,7 @@
 
         async function loadBookings() {
             try {
-                const bookings = await apiRequest('/bookings/mine');
+                const bookings = ((await apiRequest('/bookings/mine'))?.data) || [];
 
                 // ── Stat cards ───────────────────────────────────────
                 const activeCount    = bookings.filter(b => b.stage === 'PENDING_MANAGER' || b.stage === 'PENDING_VENDOR').length;
