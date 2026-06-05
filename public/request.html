@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripFlow | New Travel Request</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        /* ── Flatpickr Modern Override ── */
+        .flatpickr-calendar {
+            background: #ffffff !important;
+            border: 1px solid var(--outline-variant) !important;
+            box-shadow: var(--shadow-level-2) !important;
+            font-family: var(--font-body) !important;
+            border-radius: var(--radius-lg) !important;
+        }
+        .flatpickr-day {
+            color: var(--on-surface) !important;
+            border-radius: var(--radius-md) !important;
+            font-weight: 500;
+        }
+        .flatpickr-day:hover, .flatpickr-day.selected {
+            background: var(--primary) !important;
+            color: #ffffff !important;
+            border-color: var(--primary) !important;
+        }
+        .flatpickr-day.today {
+            border-color: var(--outline) !important;
+            background: var(--surface-container-low);
+        }
+        .flatpickr-months .flatpickr-month, .flatpickr-weekday {
+            color: var(--secondary) !important;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months,
+        .flatpickr-current-month input.cur-year {
+            color: var(--on-surface) !important;
+            background: transparent !important;
+        }
+
+        /* ── Fare Tabs ── */
+        .fare-tab-btn {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.82rem;
+            background: transparent;
+            color: var(--secondary);
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 0.6rem 1rem 0.55rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            position: relative;
+            bottom: -2px;
+        }
+        .fare-tab-btn:hover { color: var(--primary); }
+        .fare-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .fare-tab-count {
+            background: var(--secondary-container, #dce2f3);
+            color: var(--primary);
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 0.1rem 0.4rem;
+            border-radius: 99px;
+            min-width: 18px;
+            text-align: center;
+        }
+        .fare-tab-btn.active .fare-tab-count {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        /* ── City Dropdown ── */
+        .city-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            min-width: 100%;
+            background: #ffffff;
+            border: 1px solid var(--outline-variant);
+            box-shadow: var(--shadow-level-2);
+            border-radius: var(--radius-md);
+            z-index: 9999;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .city-dropdown.open { display: block; }
+        .city-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border-bottom: 1px solid var(--surface-container);
+            color: var(--on-surface);
+            transition: var(--transition);
+        }
+        .city-option:last-child { border-bottom: none; }
+        .city-option:hover {
+            background: var(--surface-container-low);
+            color: var(--primary);
+        }
+        .city-code {
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: var(--info-bg);
+            color: var(--info-text);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .city-state {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            margin-left: auto;
+        }
+
+        /* ── Sidebar Navigation ── */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 240px;
+            background: #ffffff;
+            border-right: var(--border-thin);
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            padding: 1.5rem 1rem;
+        }
+        .sidebar-brand {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--outline-variant);
+        }
+        .sidebar-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+        }
+        .sidebar-nav-links a {
+            text-decoration: none;
+            color: var(--secondary);
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+        }
+        .sidebar-nav-links a:hover {
+            background: var(--surface-container-low);
+            color: var(--on-surface);
+        }
+        .sidebar-nav-links a.active {
+            background: var(--secondary-container, #dce2f3);
+            color: var(--primary);
+        }
+
+        /* ── Layout Overrides ── */
+        .main-wrapper {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+        .top-appbar {
+            height: 70px;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border-bottom: var(--border-thin);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            box-shadow: var(--shadow-level-1);
+        }
+
+        /* ── Multi Step Progress ── */
+        .step-container {
+            background: linear-gradient(135deg, #001a4d 0%, #003d9b 60%, #0052cc 100%);
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 16px rgba(0,61,155,0.2);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            position: relative;
+        }
+        .step-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7);
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            transition: var(--transition);
+        }
+        .step-item.active .step-circle {
+            background: #ffffff;
+            color: var(--primary);
+            border-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .step-item.completed .step-circle {
+            background: rgba(255,255,255,0.2);
+            color: #ffffff;
+            border-color: rgba(255,255,255,0.5);
+        }
+        .step-label {
+            font-family: var(--font-display);
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.04em;
+        }
+        .step-item.active .step-label {
+            color: rgba(255,255,255,0.95);
+        }
+        .step-item.completed .step-label {
+            color: rgba(255,255,255,0.6);
+        }
+        .step-line {
+            position: absolute;
+            height: 2px;
+            background: rgba(255,255,255,0.18);
+            top: 19px;
+            left: 50%;
+            width: 100%;
+            z-index: 1;
+        }
+        .step-item:last-child .step-line { display: none; }
+
+        /* ── Trip Planner Cards ── */
+        .trip-section { margin-bottom: 1.5rem; }
+        .trip-section-header {
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--secondary);
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid var(--outline-variant);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .trip-card {
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
+            background: #ffffff;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--on-surface);
+            min-height: 48px;
+            -webkit-tap-highlight-color: rgba(0,0,0,0.08);
+        }
+        .trip-card:hover {
+            background: var(--surface-container-low);
+            border-color: var(--outline);
+        }
+        .trip-card.selected {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+        .trip-card.selected span { color: #ffffff !important; }
+        .trip-card .price {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--danger-text);
+            white-space: nowrap;
+            margin-left: 1rem;
+            font-size: 0.95rem;
+        }
+        .trip-card.selected .price { color: #ffffff; }
+
+        /* ── Form Inputs ── */
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .field-group label {
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--on-surface-variant);
+        }
+        .brutalist-input {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
+            padding: 0.65rem 1rem;
+            font-family: var(--font-body);
+            font-size: 0.92rem;
+            font-weight: 500;
+            color: var(--on-surface);
+            outline: none;
+            transition: var(--transition);
+        }
+        .brutalist-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0px 0px 0px 3px rgba(0, 61, 155, 0.12);
+        }
+
+        /* ── Form Page Layout ── */
+        .form-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        /* ── Sidebar Policy ── */
+        .policy-card {
+            background: var(--primary);
+            color: #ffffff;
+            border: 1px solid transparent;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .policy-card h3 {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+        .policy-card p {
+            font-size: 0.85rem;
+            font-weight: 400;
+            line-height: 1.4;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 1.25rem;
+        }
+
+        .approver-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
+            background: #ffffff;
+            margin-top: 0.5rem;
+        }
+        .approver-avatar {
+            width: 32px; height: 32px;
+            background: var(--surface-container-low);
+            border: 1px solid var(--outline-variant);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 700; font-size: 0.8rem;
+            color: var(--primary);
+        }
+
+        /* ── Flight filter bar ── */
+        .flight-filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            background: var(--surface-container-low);
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
+        }
+        .flight-filter-bar span {
+            font-family: var(--font-display);
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-right: 0.25rem;
+        }
+        .time-filter-btn {
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-radius: 9999px;
+            border: 1px solid var(--outline-variant);
+            background: #ffffff;
+            color: var(--secondary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .time-filter-btn:hover:not(:disabled) {
+            background: var(--surface-container-low);
+            color: var(--on-surface);
+            border-color: var(--outline);
+            box-shadow: none;
+        }
+        .time-filter-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: none;
+        }
+        .flight-sort-select {
+            margin-left: auto;
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.6rem;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
+            background: #ffffff;
+            color: var(--on-surface);
+            cursor: pointer;
+            outline: none;
+            width: auto;
+        }
+        .flight-count-label {
+            font-family: var(--font-display);
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+        .show-all-btn {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 1rem;
+            margin-top: 0.25rem;
+            background: transparent;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
+            color: var(--primary);
+            font-family: var(--font-display);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition);
+        }
+        .show-all-btn:hover { background: var(--primary-bg); border-color: var(--primary); }
+        .extra-item { display: none !important; }
+        .policy-badge {
+            display: inline-flex;
+            align-items: center;
+            font-family: var(--font-display);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.45rem;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+        .policy-badge.ok  { background: var(--success-bg); color: var(--success-text); }
+        .policy-badge.warn { background: var(--warning-bg); color: var(--warning-text); }
+        .policy-badge.over { background: #fde8e8; color: #c62828; }
+        .policy-badge.info { background: var(--info-bg); color: var(--info-text); }
+        .policy-limits-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.9);
+        }
+        .policy-limits-row:last-child { border-bottom: none; }
+        .policy-limits-row strong { color: #ffffff; font-weight: 700; }
+
+        /* ── Contextual Help Cards ── */
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .help-card {
+            background: #ffffff;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
+            padding: 1.25rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+        .help-card .icon {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .form-layout { grid-template-columns: 1fr; }
+            .help-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            [style*="grid-template-columns: 1fr 1fr"],
+            [style*="grid-template-columns:1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+    <meta name="theme-color" content="#003d9b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body class="bg-background text-on-surface">
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="main-sidebar">
+        <div class="sidebar-brand">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+                <img src="images/Logo.png" alt="TripFlow" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; flex-shrink: 0;">
+                <span style="font-family:var(--font-display);font-size:1.35rem;font-weight:700;letter-spacing:-0.02em;color:var(--primary);">TripFlow</span>
+            </div>
+            <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);letter-spacing:0.05em;">Enterprise</p>
+        </div>
+
+        <nav class="sidebar-nav-links">
+            <a href="employee.html">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+            <a href="mytrips.html">
+                <span class="material-symbols-outlined">luggage</span>
+                My Trips
+            </a>
+            <a href="#" class="active">
+                <span class="material-symbols-outlined">add_circle</span>
+                New Booking
+            </a>
+        </nav>
+
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.25rem;">
+            <a href="#" onclick="logout(); return false;" style="text-decoration:none;color:var(--danger-text);font-family:var(--font-display);font-weight:600;font-size:0.8rem;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">logout</span>Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+        <!-- Top App Bar -->
+        <header class="top-appbar">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <button class="sidebar-mobile-btn" onclick="toggleSidebar()" aria-label="Open menu">
+                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                </button>
+                <h1 style="font-size:1.25rem;font-weight:600;margin:0;">New Travel Request</h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem;">
+                <span id="user-name" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;border:1px solid var(--outline-variant);background:var(--surface-container-low);padding:0.25rem 0.75rem;border-radius:var(--radius-md);">Employee</span>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <div class="container" style="padding-top:2rem;">
+            <!-- Breadcrumbs -->
+            <nav style="display:flex;align-items:center;gap:0.25rem;font-size:0.8rem;font-weight:600;text-transform:uppercase;color:var(--secondary);margin-bottom:1.5rem;">
+                <a href="mytrips.html" style="text-decoration:none;color:inherit;">My Trips</a>
+                <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+                <span style="color:var(--on-surface);">New Travel Request</span>
+            </nav>
+
+            <!-- Multi-Step Progress Indicator -->
+            <div class="step-container">
+                <div class="step-item active" id="step-1-indicator">
+                    <div class="step-circle">1</div>
+                    <span class="step-label">Trip Details</span>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step-item" id="step-2-indicator">
+                    <div class="step-circle">2</div>
+                    <span class="step-label">Preferences</span>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step-item" id="step-3-indicator">
+                    <div class="step-circle">3</div>
+                    <span class="step-label">Submit Costs</span>
+                </div>
+            </div>
+
+            <!-- Bento Form and Sidebar Layout -->
+            <div class="form-layout">
+                <!-- Form Body -->
+                <div style="display:flex;flex-direction:column;gap:1.5rem;">
+                    
+                    <!-- STEP 1 CARD -->
+                    <div class="card" id="step-1-card" style="padding:2.5rem 2rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--outline-variant);padding-bottom:0.75rem;">
+                            <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.8rem;">info</span>
+                            <h2 style="font-size:1.35rem;margin:0;">Trip Details</h2>
+                        </div>
+
+                        <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+                            <!-- Booking Type selector -->
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+                                <div class="field-group">
+                                    <label for="req-booking-category">Booking Type</label>
+                                    <select id="req-booking-category" class="brutalist-input" style="height:44px;font-weight:600;background:#ffffff;" onchange="onBookingCategoryChange(this.value)">
+                                        <option value="TRIP">Trip — Flight / Train / Hotel</option>
+                                        <option value="MEAL">Meal Expense Claim</option>
+                                    </select>
+                                </div>
+                                <div class="field-group">
+                                    <label for="req-purpose">Trip Purpose</label>
+                                    <input id="req-purpose" class="brutalist-input" type="text" placeholder="e.g. Client Meeting, Training, Conference…" style="font-weight:600;" autocomplete="off">
+                                </div>
+                            </div>
+
+                            <!-- Origin + Destination (hidden for MEAL) -->
+                            <div id="origin-dest-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+                                <div class="field-group" style="position:relative;">
+                                    <label for="req-origin">Origin City</label>
+                                    <input id="req-origin" class="brutalist-input" placeholder="e.g. Mumbai or NDLS" autocomplete="off"
+                                        oninput="showCitySuggestions(this,'req-origin-list')"
+                                        onfocus="showCitySuggestions(this,'req-origin-list')"
+                                        onblur="setTimeout(()=>{hideCityList('req-origin-list');resolveStationCodeInput(this)},200)">
+                                    <div id="req-origin-list" class="city-dropdown"></div>
+                                </div>
+                                <div class="field-group" style="position:relative;">
+                                    <label for="req-destination">Destination City</label>
+                                    <input id="req-destination" class="brutalist-input" placeholder="e.g. Delhi or NDLS" autocomplete="off"
+                                        oninput="showCitySuggestions(this,'req-dest-list')"
+                                        onfocus="showCitySuggestions(this,'req-dest-list')"
+                                        onblur="setTimeout(()=>{hideCityList('req-dest-list');resolveStationCodeInput(this)},200)">
+                                    <div id="req-dest-list" class="city-dropdown"></div>
+                                </div>
+                            </div>
+
+                            <!-- Destination only row (MEAL) -->
+                            <div id="meal-dest-row" style="display:none;grid-template-columns:1fr 1fr;gap:1.5rem;">
+                                <div class="field-group" style="position:relative;">
+                                    <label for="req-meal-destination">City (where meals incurred)</label>
+                                    <input id="req-meal-destination" class="brutalist-input" placeholder="e.g. Delhi" autocomplete="off"
+                                        oninput="showCitySuggestions(this,'req-meal-dest-list')"
+                                        onfocus="showCitySuggestions(this,'req-meal-dest-list')"
+                                        onblur="setTimeout(()=>hideCityList('req-meal-dest-list'),200)">
+                                    <div id="req-meal-dest-list" class="city-dropdown"></div>
+                                </div>
+                                <div class="field-group">
+                                    <label for="meal-duration-days">Duration (days, 1–20)</label>
+                                    <input type="number" id="meal-duration-days" class="brutalist-input" placeholder="e.g. 3" min="1" max="20" style="height:44px;">
+                                </div>
+                            </div>
+
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+                                <div class="field-group">
+                                    <label for="req-from-date">Departure Date</label>
+                                    <input id="req-from-date" class="brutalist-input" readonly placeholder="YYYY-MM-DD" style="background:#ffffff;cursor:pointer;">
+                                </div>
+                                <div class="field-group">
+                                    <label for="req-to-date" id="return-date-label">Return Date</label>
+                                    <input id="req-to-date" class="brutalist-input" readonly placeholder="YYYY-MM-DD" style="background:#ffffff;cursor:pointer;">
+                                </div>
+                            </div>
+
+                            <!-- International travel flag -->
+                            <label style="display:flex;align-items:center;gap:0.65rem;cursor:pointer;font-family:var(--font-display);font-size:0.82rem;font-weight:600;color:var(--on-surface);padding:0.6rem 0.75rem;border:1px solid var(--outline-variant);border-radius:var(--radius-md);background:#ffffff;">
+                                <input type="checkbox" id="is-foreign-travel" onchange="updatePolicyStatus()" style="width:16px;height:16px;accent-color:var(--primary);flex-shrink:0;">
+                                International / Foreign Travel &nbsp;<span style="font-weight:400;color:var(--secondary);">(45-day advance notice required)</span>
+                            </label>
+
+                            <!-- Urgent reason (shown when travel date is within required advance days) -->
+                            <div id="urgency-reason-group" style="display:none;background:var(--warning-bg);border:1px solid var(--warning-text);border-radius:var(--radius-md);padding:1rem 1.25rem;flex-direction:column;gap:0.5rem;">
+                                <label for="urgency-reason" style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--warning-text);display:flex;align-items:center;gap:0.4rem;">
+                                    <span class="material-symbols-outlined" style="font-size:16px;">warning</span>
+                                    Urgent Travel Justification (required to bypass advance notice rule)
+                                </label>
+                                <textarea id="urgency-reason" class="brutalist-input" placeholder="Explain the business urgency — why this trip cannot wait for the standard booking window (minimum 10 characters)..." rows="3" style="resize:none;border-color:var(--warning-text);"></textarea>
+                                <span style="font-size:0.75rem;font-weight:600;color:var(--warning-text);">Your manager will review this reason. This uses one of your monthly urgent booking allowances.</span>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="req-justification">Business Justification</label>
+                                <textarea id="req-justification" class="brutalist-input" placeholder="Describe why this travel is necessary..." rows="3" style="resize:none;" oninput="updateCharCount(this)"></textarea>
+                                <span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;align-self:flex-end;color:var(--secondary);" id="char-counter">0 / 500 characters</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2 CARD (PREFERENCES / FARES) -->
+                    <div class="card" id="step-2-card" style="padding:2.5rem 2rem;display:none;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--outline-variant);padding-bottom:0.75rem;">
+                            <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.8rem;">flight_takeoff</span>
+                            <h2 style="font-size:1.35rem;margin:0;">Fares &amp; Preferences</h2>
+                        </div>
+                        <!-- Itinerary summary bar — appears once travel or hotel is selected -->
+                        <div id="itinerary-bar" style="display:none;background:var(--primary-bg);border:1.5px solid var(--primary);border-radius:var(--radius-md);padding:1rem 1.25rem;margin-bottom:1.5rem;">
+                            <div style="font-family:var(--font-display);font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--primary);margin-bottom:0.6rem;">Your Itinerary</div>
+                            <div style="display:flex;flex-direction:column;gap:0.45rem;">
+                                <div id="itin-travel-row" style="display:none;justify-content:space-between;align-items:center;font-size:0.82rem;font-weight:600;color:var(--on-surface);">
+                                    <span id="itin-travel-label" style="display:flex;align-items:center;gap:0.4rem;"></span>
+                                    <span id="itin-travel-cost" style="font-family:var(--font-display);color:var(--primary);font-weight:700;"></span>
+                                </div>
+                                <div id="itin-hotel-row" style="display:none;justify-content:space-between;align-items:center;font-size:0.82rem;font-weight:600;color:var(--on-surface);">
+                                    <span id="itin-hotel-label" style="display:flex;align-items:center;gap:0.4rem;"></span>
+                                    <span style="display:flex;align-items:center;gap:0.5rem;">
+                                        <span id="itin-hotel-nights" style="font-size:0.72rem;color:var(--secondary);font-weight:600;"></span>
+                                        <span id="itin-hotel-cost" style="font-family:var(--font-display);color:var(--primary);font-weight:700;"></span>
+                                    </span>
+                                </div>
+                                <div id="itin-total-row" style="display:none;justify-content:space-between;align-items:center;border-top:1px dashed var(--outline-variant);padding-top:0.4rem;margin-top:0.1rem;">
+                                    <span style="font-family:var(--font-display);font-size:0.78rem;font-weight:700;color:var(--on-surface);">Package Total</span>
+                                    <span id="itin-total-cost" style="font-family:var(--font-display);font-size:1rem;font-weight:800;color:var(--primary);"></span>
+                                </div>
+                            </div>
+                            <div id="itin-hint" style="font-size:0.75rem;color:var(--secondary);font-weight:600;margin-top:0.5rem;display:none;">
+                                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px;">hotel</span>
+                                Select a hotel below to add accommodation to your booking.
+                            </div>
+                        </div>
+
+                        <div id="trip-options-loader" style="display:none;text-align:center;padding:2rem;">
+                            <span class="material-symbols-outlined" style="font-size:2.5rem;animation:bounce 1s infinite;color:var(--primary);">travel_explore</span>
+                            <p style="font-family:var(--font-display);font-weight:600;margin-top:0.5rem;">AI AGENT ANALYZING FARES &amp; ITINERARIES…</p>
+                        </div>
+
+                        <!-- Tab bar: Flights / Trains / Hotels -->
+                        <div id="fare-tabs" style="display:none;border-bottom:2px solid var(--outline-variant);margin-bottom:1.25rem;display:none;">
+                            <div style="display:flex;gap:0.25rem;">
+                                <button id="tab-btn-flights" class="fare-tab-btn active" onclick="switchFareTab('flights')">
+                                    <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;">flight_takeoff</span> Flights
+                                    <span id="tab-count-flights" class="fare-tab-count"></span>
+                                </button>
+                                <button id="tab-btn-trains" class="fare-tab-btn" onclick="switchFareTab('trains')">
+                                    <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;">train</span> Trains
+                                    <span id="tab-count-trains" class="fare-tab-count"></span>
+                                </button>
+                                <button id="tab-btn-hotels" class="fare-tab-btn" onclick="switchFareTab('hotels')">
+                                    <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;">hotel</span> Hotels
+                                    <span id="tab-count-hotels" class="fare-tab-count"></span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="fare-tab-flights" class="fare-tab-panel"></div>
+                        <div id="fare-tab-trains"  class="fare-tab-panel" style="display:none;"></div>
+                        <div id="fare-tab-hotels"  class="fare-tab-panel" style="display:none;"></div>
+                        <!-- Legacy container kept for backward compat (hidden) -->
+                        <div id="req-planner-results" style="display:none;"></div>
+                    </div>
+
+                    <!-- STEP 3 CARD (COSTS) -->
+                    <div class="card" id="step-3-card" style="padding:2.5rem 2rem;display:none;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--outline-variant);padding-bottom:0.75rem;">
+                            <span class="material-symbols-outlined" style="color:var(--danger-text);font-size:1.8rem;">payments</span>
+                            <h2 style="font-size:1.35rem;margin:0;">Trip Cost &amp; Submit</h2>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:1.25rem;">
+                            <div id="step3-summary"></div>
+                            <div class="field-group">
+                                <label style="font-size:0.8rem;font-weight:600;color:var(--on-surface-variant);">Trip Cost (auto-calculated)</label>
+                                <div id="cost-display" style="display:flex;align-items:center;gap:0.75rem;background:var(--surface-container-low);border:1px solid var(--outline-variant);border-radius:var(--radius-md);padding:0.65rem 0.85rem;font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--primary);">
+                                    <span class="material-symbols-outlined" style="font-size:20px;color:var(--secondary);">calculate</span>
+                                    <span id="cost-display-text">Select a travel option above</span>
+                                </div>
+                                <input type="number" id="estimated-cost" style="display:none;">
+                            </div>
+                            <div style="background:var(--warning-bg);color:var(--warning-text);padding:1rem;font-family:var(--font-display);font-size:0.85rem;font-weight:600;border-radius:var(--radius-md);display:flex;align-items:center;gap:0.5rem;">
+                                <span class="material-symbols-outlined">info</span>
+                                CONFIRM: BY SUBMITTING, YOU AGREE COMPLIANCE WITH CORPORATE POLICY.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:1.5rem;border-top:1px solid var(--outline-variant);">
+                        <button class="secondary" type="button" onclick="window.location.href='mytrips.html'">
+                            <span class="material-symbols-outlined" style="font-size:16px;">close</span>Cancel
+                        </button>
+                        <div style="display:flex;gap:0.75rem;">
+                            <button type="button" id="next-btn" onclick="goToNextStep()">
+                                Next: Preferences <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+                            </button>
+                            <button type="button" id="submit-btn" onclick="submitRequest()" style="display:none;">
+                                Submit Request <span class="material-symbols-outlined" style="font-size:18px;">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Status Info -->
+                <aside style="display:flex;flex-direction:column;gap:1.5rem;">
+                    <!-- Policy Status Card -->
+                    <div class="policy-card">
+                        <h3>Travel Policy · Band <span id="policy-band-label">–</span></h3>
+                        <div id="policy-limits" style="margin:0.75rem 0 0.25rem;display:none;"></div>
+                        <p id="policy-text" style="margin-bottom:1rem;">Loading your policy limits…</p>
+                        <div id="policy-status-badge" style="display:flex;align-items:center;gap:0.25rem;font-family:var(--font-display);font-size:0.75rem;font-weight:700;background:#ffffff;color:var(--success-text);width:fit-content;padding:0.25rem 0.75rem;border-radius:4px;">
+                            <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">check_circle</span>
+                            <span id="policy-status-text">POLICY COMPLIANT</span>
+                        </div>
+                    </div>
+
+                    <!-- Required Approvers Checklist -->
+                    <div class="card" style="padding:1.25rem;">
+                        <span style="font-family:var(--font-display);font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);letter-spacing:0.05em;">Required Approvers</span>
+                        <div id="approvers-list" style="display:flex;flex-direction:column;gap:0.25rem;margin-top:0.5rem;">
+                            <div class="approver-item">
+                                <div class="approver-avatar" style="background:var(--surface-container);"><span class="material-symbols-outlined" style="font-size:16px;">hourglass_empty</span></div>
+                                <div style="flex:1;">
+                                    <p style="font-size:0.8rem;font-weight:600;margin:0;color:var(--secondary);">Loading…</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Contextual Help Grid -->
+            <div class="help-grid">
+                <div class="help-card">
+                    <span class="material-symbols-outlined icon">schedule</span>
+                    <div>
+                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Advance Booking Rule</p>
+                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">Domestic trips require 30 days advance notice; international trips require 45 days. Urgent travel needs a written justification.</p>
+                    </div>
+                </div>
+                <div class="help-card">
+                    <span class="material-symbols-outlined icon">receipt_long</span>
+                    <div>
+                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Expense Submission</p>
+                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">All receipts must be submitted within 7 days of returning. Meal claims must include trip duration (days) for cap calculation.</p>
+                    </div>
+                </div>
+                <div class="help-card">
+                    <span class="material-symbols-outlined icon">info</span>
+                    <div>
+                        <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:600;margin:0 0 0.25rem;">Hotel City Caps (T&amp;E §6.2)</p>
+                        <p style="font-size:0.8rem;font-weight:500;color:var(--secondary);margin:0;">Hotel limits vary by city category. Metro cities (Cat A) have the highest cap; other towns (Cat C) the lowest. Caps shown in the policy card.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JS Hooks -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentUser = null;
+        let selectedFares = { FLIGHT: 0, HOTEL: 0, TRAIN: 0 };
+        let activeStep = 1;
+        let _userMe = null;
+        let _bookingCategory = 'TRIP'; // 'TRIP' or 'MEAL'
+
+        // Default policy limits — overridden by backend data in loadApprovers()
+        const POLICY = {
+            hotelCaps: {
+                1: { A: 5000, B: 4500, C: 4000 },
+                2: { A: 3000, B: 2500, C: 2500 },
+                3: { A: 2000, B: 2000, C: 2000 }
+            },
+            trainEntitled: {
+                1: ['1A', 'FC'],
+                2: ['2A', '3A'],
+                3: ['3A', 'SL', 'CC']
+            },
+            trainLabel: {
+                1: '1AC / First Class',
+                2: '2AC / 3AC',
+                3: '3AC / Sleeper / Chair'
+            },
+            catACities: ['mumbai','delhi','new delhi','bangalore','bengaluru','chennai','kolkata','hyderabad'],
+            catBCities: ['jaipur','lucknow','patna','bhubaneswar','guwahati','ranchi','raipur','dehradun',
+                'shimla','gandhinagar','thiruvananthapuram','trivandrum','jammu','varanasi','agra','kanpur',
+                'meerut','faridabad','jalandhar','chandigarh','amritsar','cuttack','indore','bhopal',
+                'gwalior','pune','ahmedabad','baroda','vadodara','surat','nagpur','nashik','nasik',
+                'cochin','kochi','vijayawada'],
+            cityCategory(city) {
+                const c = (city || '').toLowerCase();
+                if (this.catACities.some(x => c.includes(x))) return 'A';
+                if (this.catBCities.some(x => c.includes(x))) return 'B';
+                return 'C';
+            },
+            cityLabel: { A: 'Metro City', B: 'State Capital / Major City', C: 'Other Town' },
+            hotelCap(band, city) {
+                const caps = this.hotelCaps[band] || this.hotelCaps[3];
+                return caps[this.cityCategory(city)] || 2000;
+            },
+            advanceDays: 30,
+            foreignAdvanceDays: 45
+        };
+
+        function onBookingCategoryChange(val) {
+            _bookingCategory = val;
+            const isMeal = val === 'MEAL';
+            document.getElementById('origin-dest-row').style.display = isMeal ? 'none' : 'grid';
+            document.getElementById('meal-dest-row').style.display   = isMeal ? 'grid' : 'none';
+            document.getElementById('return-date-label').textContent  = isMeal ? 'End Date (optional)' : 'Return Date';
+            // MEAL skips Step 2 (trip planner)
+            const nextBtn = document.getElementById('next-btn');
+            if (nextBtn) nextBtn.innerHTML = isMeal
+                ? 'Next: Enter Cost <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>'
+                : 'Next: Preferences <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>';
+            updatePolicyStatus();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('main-sidebar').classList.toggle('open');
+            document.getElementById('sidebar-backdrop').classList.toggle('open');
+        }
+
+        async function init() {
+            currentUser = checkAuth();
+            if (!currentUser) return;
+            document.getElementById('user-name').innerText = currentUser.name.toUpperCase();
+            loadApprovers();
+
+            // cost is auto-calculated only — no manual input
+        }
+        init();
+
+        async function loadApprovers() {
+            try {
+                const me = await apiRequest('/auth/me');
+                _userMe = me;
+
+                // Override POLICY from backend data if available
+                if (me.policyRules) {
+                    const r = me.policyRules;
+                    if (r.hotelCapsByCity) {
+                        const band = me.band || 3;
+                        POLICY.hotelCaps[band] = r.hotelCapsByCity;
+                    }
+                    if (r.trainClassEntitlement) {
+                        const band = me.band || 3;
+                        const cls = r.trainClassEntitlement.toUpperCase();
+                        // Build entitled list: everything at or below this class rank
+                        const rank = { '1A':1,'FC':1,'2A':2,'3A':3,'SL':4,'CC':4,'2S':5 };
+                        const myRank = rank[cls] || 3;
+                        POLICY.trainEntitled[band] = Object.keys(rank).filter(k => rank[k] >= myRank);
+                        const labels = { 1:'1AC / First Class', 2:'2AC / 3AC', 3:'3AC / Sleeper / Chair', 4:'Sleeper / Chair Car', 5:'Second Class' };
+                        POLICY.trainLabel[band] = labels[myRank] || cls;
+                    }
+                    if (r.advanceBookingDays) POLICY.advanceDays = r.advanceBookingDays;
+                    if (r.foreignTravelAdvanceDays) POLICY.foreignAdvanceDays = r.foreignTravelAdvanceDays;
+                }
+
+                updatePolicyStatus();
+                const list = document.getElementById('approvers-list');
+                const initials = n => n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+                let html = '';
+                if (me.manager) {
+                    html += `<div class="approver-item">
+                        <div class="approver-avatar">${initials(me.manager.name)}</div>
+                        <div style="flex:1;">
+                            <p style="font-size:0.8rem;font-weight:600;margin:0;">${me.manager.name}</p>
+                            <p style="font-size:0.7rem;font-weight:500;color:var(--secondary);margin:0;">Direct Manager</p>
+                        </div>
+                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--secondary);">lock</span>
+                    </div>`;
+                }
+                html += `<div class="approver-item">
+                    <div class="approver-avatar" style="background:var(--info-bg);color:var(--info-text);">HR</div>
+                    <div style="flex:1;">
+                        <p style="font-size:0.8rem;font-weight:600;margin:0;">HR Representative</p>
+                        <p style="font-size:0.7rem;font-weight:500;color:var(--secondary);margin:0;">Final Approval</p>
+                    </div>
+                    <span class="material-symbols-outlined" style="font-size:16px;color:var(--secondary);">lock</span>
+                </div>`;
+                list.innerHTML = html;
+            } catch {
+                document.getElementById('approvers-list').innerHTML =
+                    '<p style="font-size:0.8rem;color:var(--secondary);padding:0.5rem 0;">Approval chain loaded at submission.</p>';
+            }
+        }
+
+        const _fpFrom = flatpickr('#req-from-date', {
+            dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+            minDate: 'today',
+            onChange() {
+                updatePolicyStatus();
+            }
+        });
+        const _fpTo = flatpickr('#req-to-date', {
+            dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+            minDate: 'today',
+            onReady(_, __, fp) {
+                _fpFrom.config.onChange.push(() => { fp.set('minDate', _fpFrom.selectedDates[0]); });
+            }
+        });
+
+        // City List Autosuggest
+        const CITY_LIST = [
+          {n:'Mumbai',c:'BOM',s:'Maharashtra'},{n:'Delhi',c:'DEL',s:'Delhi'},{n:'Bangalore',c:'BLR',s:'Karnataka'},
+          {n:'Hyderabad',c:'HYD',s:'Telangana'},{n:'Chennai',c:'MAA',s:'Tamil Nadu'},{n:'Kolkata',c:'CCU',s:'West Bengal'},
+          {n:'Pune',c:'PNQ',s:'Maharashtra'},{n:'Ahmedabad',c:'AMD',s:'Gujarat'},{n:'Goa',c:'GOI',s:'Goa'},
+          {n:'Jaipur',c:'JAI',s:'Rajasthan'},{n:'Lucknow',c:'LKO',s:'Uttar Pradesh'},{n:'Kochi',c:'COK',s:'Kerala'},
+          {n:'Chandigarh',c:'IXC',s:'Punjab'},{n:'Bhubaneswar',c:'BBI',s:'Odisha'},{n:'Indore',c:'IDR',s:'Madhya Pradesh'},
+          {n:'Nagpur',c:'NAG',s:'Maharashtra'},{n:'Coimbatore',c:'CJB',s:'Tamil Nadu'},{n:'Visakhapatnam',c:'VTZ',s:'Andhra Pradesh'},
+          {n:'Amritsar',c:'ATQ',s:'Punjab'},{n:'Varanasi',c:'VNS',s:'Uttar Pradesh'},{n:'Patna',c:'PAT',s:'Bihar'},
+          {n:'Raipur',c:'RPR',s:'Chhattisgarh'},{n:'Mangalore',c:'IXE',s:'Karnataka'},{n:'Madurai',c:'IXM',s:'Tamil Nadu'},
+          {n:'Trichy',c:'TRZ',s:'Tamil Nadu'},{n:'Ranchi',c:'IXR',s:'Jharkhand'},{n:'Bhopal',c:'BHO',s:'Madhya Pradesh'},
+          {n:'Agra',c:'AGR',s:'Uttar Pradesh'},{n:'Leh',c:'IXL',s:'Ladakh'},{n:'Srinagar',c:'SXR',s:'J&K'},
+          {n:'Darbhanga',c:'DBR',s:'Bihar'},{n:'Vadodara',c:'BDQ',s:'Gujarat'},{n:'Rajkot',c:'RAJ',s:'Gujarat'},
+          {n:'Jodhpur',c:'JDH',s:'Rajasthan'},{n:'Udaipur',c:'UDR',s:'Rajasthan'},{n:'Dehradun',c:'DED',s:'Uttarakhand'},
+          {n:'Gorakhpur',c:'GOP',s:'Uttar Pradesh'},{n:'Prayagraj',c:'IXD',s:'Uttar Pradesh'},{n:'Guwahati',c:'GAU',s:'Assam'},
+          // Uttar Pradesh
+          {n:'Mathura',c:'MTJ',s:'Uttar Pradesh'},{n:'Aligarh',c:'ALJN',s:'Uttar Pradesh'},{n:'Bareilly',c:'BE',s:'Uttar Pradesh'},
+          {n:'Moradabad',c:'MB',s:'Uttar Pradesh'},{n:'Saharanpur',c:'SRE',s:'Uttar Pradesh'},{n:'Meerut',c:'MTC',s:'Uttar Pradesh'},
+          {n:'Ghaziabad',c:'GZB',s:'Uttar Pradesh'},{n:'Jhansi',c:'JHS',s:'Uttar Pradesh'},{n:'Ayodhya',c:'AY',s:'Uttar Pradesh'},
+          {n:'Gonda',c:'GD',s:'Uttar Pradesh'},{n:'Basti',c:'BST',s:'Uttar Pradesh'},{n:'Sultanpur',c:'SLN',s:'Uttar Pradesh'},
+          {n:'Rae Bareli',c:'RBL',s:'Uttar Pradesh'},{n:'Mau',c:'MAU',s:'Uttar Pradesh'},{n:'Ballia',c:'BUI',s:'Uttar Pradesh'},
+          {n:'Deoria',c:'DEE',s:'Uttar Pradesh'},{n:'Sitapur',c:'STP',s:'Uttar Pradesh'},{n:'Faizabad',c:'FD',s:'Uttar Pradesh'},
+          // Bihar
+          {n:'Gaya',c:'GAYA',s:'Bihar'},{n:'Bhagalpur',c:'BGP',s:'Bihar'},{n:'Katihar',c:'KIR',s:'Bihar'},
+          {n:'Samastipur',c:'SPJ',s:'Bihar'},{n:'Hajipur',c:'HJP',s:'Bihar'},{n:'Begusarai',c:'BGS',s:'Bihar'},
+          {n:'Siwan',c:'SV',s:'Bihar'},{n:'Purnea',c:'PRNA',s:'Bihar'},{n:'Arrah',c:'ARA',s:'Bihar'},
+          {n:'Sasaram',c:'SSM',s:'Bihar'},{n:'Buxar',c:'BXR',s:'Bihar'},{n:'Muzaffarpur',c:'MFP',s:'Bihar'},{n:'Motihari',c:'MHNI',s:'Bihar'},
+          // West Bengal
+          {n:'Howrah',c:'HWH',s:'West Bengal'},{n:'Asansol',c:'ASN',s:'West Bengal'},{n:'Durgapur',c:'DGR',s:'West Bengal'},
+          {n:'New Jalpaiguri',c:'NJP',s:'West Bengal'},{n:'Siliguri',c:'IXB',s:'West Bengal'},{n:'Kharagpur',c:'KGP',s:'West Bengal'},
+          {n:'Malda',c:'MLDT',s:'West Bengal'},{n:'Burdwan',c:'BWN',s:'West Bengal'},{n:'Midnapore',c:'MDP',s:'West Bengal'},
+          {n:'Purulia',c:'PUI',s:'West Bengal'},{n:'Haldia',c:'HAP',s:'West Bengal'},
+          // Rajasthan
+          {n:'Ajmer',c:'AII',s:'Rajasthan'},{n:'Bikaner',c:'BKN',s:'Rajasthan'},{n:'Kota',c:'KOTA',s:'Rajasthan'},
+          {n:'Alwar',c:'AWR',s:'Rajasthan'},{n:'Bharatpur',c:'BTE',s:'Rajasthan'},{n:'Bhilwara',c:'BHL',s:'Rajasthan'},
+          {n:'Sikar',c:'SIKR',s:'Rajasthan'},{n:'Sawai Madhopur',c:'SWM',s:'Rajasthan'},{n:'Hanumangarh',c:'HMH',s:'Rajasthan'},
+          // Madhya Pradesh
+          {n:'Jabalpur',c:'JBP',s:'Madhya Pradesh'},{n:'Gwalior',c:'GWL',s:'Madhya Pradesh'},{n:'Ujjain',c:'UJN',s:'Madhya Pradesh'},
+          {n:'Satna',c:'STA',s:'Madhya Pradesh'},{n:'Itarsi',c:'ET',s:'Madhya Pradesh'},{n:'Katni',c:'KTE',s:'Madhya Pradesh'},
+          {n:'Rewa',c:'REWA',s:'Madhya Pradesh'},{n:'Sagar',c:'SGO',s:'Madhya Pradesh'},{n:'Chhindwara',c:'CHNW',s:'Madhya Pradesh'},
+          // Maharashtra
+          {n:'Aurangabad',c:'AWB',s:'Maharashtra'},{n:'Solapur',c:'SUR',s:'Maharashtra'},{n:'Kolhapur',c:'KOP',s:'Maharashtra'},
+          {n:'Nanded',c:'NED',s:'Maharashtra'},{n:'Amravati',c:'AMI',s:'Maharashtra'},{n:'Akola',c:'AK',s:'Maharashtra'},
+          {n:'Jalgaon',c:'JL',s:'Maharashtra'},{n:'Wardha',c:'WR',s:'Maharashtra'},{n:'Latur',c:'LUR',s:'Maharashtra'},
+          {n:'Bhusawal',c:'BSL',s:'Maharashtra'},{n:'Dhule',c:'DU',s:'Maharashtra'},{n:'Gondia',c:'GDYN',s:'Maharashtra'},
+          {n:'Sangli',c:'SLI',s:'Maharashtra'},{n:'Satara',c:'STR',s:'Maharashtra'},{n:'Chandrapur',c:'CD',s:'Maharashtra'},
+          // Gujarat
+          {n:'Surat',c:'STV',s:'Gujarat'},{n:'Gandhinagar',c:'GNC',s:'Gujarat'},{n:'Anand',c:'ANND',s:'Gujarat'},
+          {n:'Bhavnagar',c:'BVC',s:'Gujarat'},{n:'Gandhidham',c:'GIMB',s:'Gujarat'},{n:'Junagadh',c:'JND',s:'Gujarat'},
+          {n:'Bharuch',c:'BH',s:'Gujarat'},{n:'Mehsana',c:'MSH',s:'Gujarat'},{n:'Porbandar',c:'PBR',s:'Gujarat'},
+          {n:'Navsari',c:'NVS',s:'Gujarat'},{n:'Valsad',c:'BL',s:'Gujarat'},{n:'Bhuj',c:'BHUJ',s:'Gujarat'},
+          // Andhra Pradesh
+          {n:'Vijayawada',c:'BZA',s:'Andhra Pradesh'},{n:'Guntur',c:'GNT',s:'Andhra Pradesh'},{n:'Tirupati',c:'TPTY',s:'Andhra Pradesh'},
+          {n:'Nellore',c:'NLR',s:'Andhra Pradesh'},{n:'Rajahmundry',c:'RJY',s:'Andhra Pradesh'},{n:'Kurnool',c:'KRNT',s:'Andhra Pradesh'},
+          {n:'Kadapa',c:'HX',s:'Andhra Pradesh'},{n:'Vizianagaram',c:'VZM',s:'Andhra Pradesh'},{n:'Eluru',c:'EE',s:'Andhra Pradesh'},
+          {n:'Ongole',c:'OGL',s:'Andhra Pradesh'},{n:'Anantapur',c:'ATP',s:'Andhra Pradesh'},
+          // Telangana
+          {n:'Warangal',c:'WL',s:'Telangana'},{n:'Nizamabad',c:'NZB',s:'Telangana'},{n:'Karimnagar',c:'KMC',s:'Telangana'},
+          {n:'Khammam',c:'KMT',s:'Telangana'},{n:'Secunderabad',c:'SC',s:'Telangana'},
+          // Karnataka
+          {n:'Hubli',c:'UBL',s:'Karnataka'},{n:'Belagavi',c:'IXG',s:'Karnataka'},{n:'Davangere',c:'DVG',s:'Karnataka'},
+          {n:'Bellary',c:'BAY',s:'Karnataka'},{n:'Kalaburagi',c:'GR',s:'Karnataka'},{n:'Vijayapura',c:'BJP',s:'Karnataka'},
+          {n:'Tumkur',c:'TK',s:'Karnataka'},{n:'Hassan',c:'HAS',s:'Karnataka'},{n:'Shimoga',c:'RQM',s:'Karnataka'},
+          {n:'Hospet',c:'HPT',s:'Karnataka'},{n:'Gadag',c:'GDG',s:'Karnataka'},{n:'Raichur',c:'RC',s:'Karnataka'},
+          // Tamil Nadu
+          {n:'Salem',c:'SXV',s:'Tamil Nadu'},{n:'Erode',c:'ED',s:'Tamil Nadu'},{n:'Tirunelveli',c:'TEN',s:'Tamil Nadu'},
+          {n:'Thoothukudi',c:'TCN',s:'Tamil Nadu'},{n:'Nagercoil',c:'NCJ',s:'Tamil Nadu'},{n:'Vellore',c:'KPD',s:'Tamil Nadu'},
+          {n:'Karur',c:'KRR',s:'Tamil Nadu'},{n:'Villupuram',c:'VM',s:'Tamil Nadu'},{n:'Dindigul',c:'DG',s:'Tamil Nadu'},
+          {n:'Thanjavur',c:'TJ',s:'Tamil Nadu'},{n:'Tirupur',c:'TUP',s:'Tamil Nadu'},{n:'Kumbakonam',c:'KMU',s:'Tamil Nadu'},
+          {n:'Cuddalore',c:'CDL',s:'Tamil Nadu'},{n:'Tiruvannamalai',c:'TNM',s:'Tamil Nadu'},
+          // Kerala
+          {n:'Thiruvananthapuram',c:'TVC',s:'Kerala'},{n:'Kozhikode',c:'CCJ',s:'Kerala'},{n:'Thrissur',c:'TCR',s:'Kerala'},
+          {n:'Kollam',c:'QLN',s:'Kerala'},{n:'Palakkad',c:'PGT',s:'Kerala'},{n:'Alappuzha',c:'ALLP',s:'Kerala'},
+          {n:'Kannur',c:'CNN',s:'Kerala'},{n:'Kottayam',c:'KTYM',s:'Kerala'},{n:'Kasaragod',c:'KGQ',s:'Kerala'},
+          // Odisha
+          {n:'Cuttack',c:'CTC',s:'Odisha'},{n:'Berhampur',c:'BAM',s:'Odisha'},{n:'Sambalpur',c:'SBP',s:'Odisha'},
+          {n:'Rourkela',c:'ROU',s:'Odisha'},{n:'Balasore',c:'BLS',s:'Odisha'},{n:'Puri',c:'PURI',s:'Odisha'},
+          {n:'Jharsuguda',c:'JSG',s:'Odisha'},{n:'Angul',c:'ANGL',s:'Odisha'},{n:'Brahmapur',c:'BAM',s:'Odisha'},
+          // Jharkhand
+          {n:'Dhanbad',c:'DHN',s:'Jharkhand'},{n:'Jamshedpur',c:'TATA',s:'Jharkhand'},{n:'Bokaro',c:'BKSC',s:'Jharkhand'},
+          {n:'Hazaribagh',c:'HZB',s:'Jharkhand'},{n:'Deoghar',c:'DGHR',s:'Jharkhand'},{n:'Giridih',c:'GRD',s:'Jharkhand'},
+          // Chhattisgarh
+          {n:'Bilaspur',c:'BSP',s:'Chhattisgarh'},{n:'Durg',c:'DURG',s:'Chhattisgarh'},{n:'Bhilai',c:'BIA',s:'Chhattisgarh'},
+          {n:'Korba',c:'KRBA',s:'Chhattisgarh'},{n:'Rajnandgaon',c:'RJN',s:'Chhattisgarh'},
+          // Punjab
+          {n:'Ludhiana',c:'LUH',s:'Punjab'},{n:'Jalandhar',c:'JUC',s:'Punjab'},{n:'Patiala',c:'PTA',s:'Punjab'},
+          {n:'Bathinda',c:'BTI',s:'Punjab'},{n:'Pathankot',c:'IXP',s:'Punjab'},{n:'Firozpur',c:'FZR',s:'Punjab'},
+          // Haryana
+          {n:'Ambala',c:'UMB',s:'Haryana'},{n:'Panipat',c:'PNP',s:'Haryana'},{n:'Faridabad',c:'FDB',s:'Haryana'},
+          {n:'Rohtak',c:'ROK',s:'Haryana'},{n:'Hisar',c:'HSR',s:'Haryana'},{n:'Karnal',c:'KUN',s:'Haryana'},
+          {n:'Rewari',c:'RE',s:'Haryana'},{n:'Sonipat',c:'SNP',s:'Haryana'},{n:'Kurukshetra',c:'KKDE',s:'Haryana'},
+          {n:'Yamunanagar',c:'YNRK',s:'Haryana'},
+          // Himachal Pradesh & J&K
+          {n:'Shimla',c:'SML',s:'Himachal Pradesh'},{n:'Kalka',c:'KLK',s:'Himachal Pradesh'},
+          {n:'Jammu',c:'IXJ',s:'J&K'},{n:'Udhampur',c:'UHP',s:'J&K'},{n:'Kathua',c:'KTHU',s:'J&K'},
+          // Uttarakhand
+          {n:'Rishikesh',c:'RKSH',s:'Uttarakhand'},{n:'Roorkee',c:'RK',s:'Uttarakhand'},
+          {n:'Haldwani',c:'HDW',s:'Uttarakhand'},{n:'Kathgodam',c:'KGM',s:'Uttarakhand'},
+          {n:'Ramnagar',c:'RMR',s:'Uttarakhand'},{n:'Tanakpur',c:'TPU',s:'Uttarakhand'},
+          // Assam & Northeast
+          {n:'Dibrugarh',c:'DIB',s:'Assam'},{n:'Silchar',c:'IXS',s:'Assam'},{n:'Tinsukia',c:'TSK',s:'Assam'},
+          {n:'Lumding',c:'LMG',s:'Assam'},{n:'Dimapur',c:'DMU',s:'Nagaland'},{n:'Agartala',c:'IXA',s:'Tripura'},
+          // International — Middle East
+          {n:'Dubai',c:'DXB',s:'UAE'},{n:'Abu Dhabi',c:'AUH',s:'UAE'},{n:'Doha',c:'DOH',s:'Qatar'},
+          {n:'Riyadh',c:'RUH',s:'Saudi Arabia'},{n:'Jeddah',c:'JED',s:'Saudi Arabia'},{n:'Muscat',c:'MCT',s:'Oman'},
+          {n:'Kuwait City',c:'KWI',s:'Kuwait'},{n:'Bahrain',c:'BAH',s:'Bahrain'},
+          // International — South & Southeast Asia
+          {n:'Singapore',c:'SIN',s:'Singapore'},{n:'Bangkok',c:'BKK',s:'Thailand'},
+          {n:'Kuala Lumpur',c:'KUL',s:'Malaysia'},{n:'Jakarta',c:'CGK',s:'Indonesia'},
+          {n:'Manila',c:'MNL',s:'Philippines'},{n:'Ho Chi Minh City',c:'SGN',s:'Vietnam'},
+          {n:'Hanoi',c:'HAN',s:'Vietnam'},{n:'Colombo',c:'CMB',s:'Sri Lanka'},
+          {n:'Dhaka',c:'DAC',s:'Bangladesh'},{n:'Kathmandu',c:'KTM',s:'Nepal'},
+          {n:'Karachi',c:'KHI',s:'Pakistan'},{n:'Islamabad',c:'ISB',s:'Pakistan'},
+          // International — East Asia
+          {n:'Tokyo',c:'NRT',s:'Japan'},{n:'Osaka',c:'KIX',s:'Japan'},
+          {n:'Beijing',c:'PEK',s:'China'},{n:'Shanghai',c:'PVG',s:'China'},
+          {n:'Hong Kong',c:'HKG',s:'Hong Kong'},{n:'Seoul',c:'ICN',s:'South Korea'},
+          {n:'Taipei',c:'TPE',s:'Taiwan'},
+          // International — Europe
+          {n:'London',c:'LHR',s:'UK'},{n:'Paris',c:'CDG',s:'France'},
+          {n:'Frankfurt',c:'FRA',s:'Germany'},{n:'Amsterdam',c:'AMS',s:'Netherlands'},
+          {n:'Zurich',c:'ZRH',s:'Switzerland'},{n:'Milan',c:'MXP',s:'Italy'},
+          {n:'Rome',c:'FCO',s:'Italy'},{n:'Barcelona',c:'BCN',s:'Spain'},
+          {n:'Madrid',c:'MAD',s:'Spain'},{n:'Brussels',c:'BRU',s:'Belgium'},
+          {n:'Vienna',c:'VIE',s:'Austria'},{n:'Stockholm',c:'ARN',s:'Sweden'},
+          {n:'Copenhagen',c:'CPH',s:'Denmark'},
+          // International — Americas
+          {n:'New York',c:'JFK',s:'USA'},{n:'Los Angeles',c:'LAX',s:'USA'},
+          {n:'Chicago',c:'ORD',s:'USA'},{n:'San Francisco',c:'SFO',s:'USA'},
+          {n:'Washington DC',c:'IAD',s:'USA'},{n:'Boston',c:'BOS',s:'USA'},
+          {n:'Toronto',c:'YYZ',s:'Canada'},{n:'Vancouver',c:'YVR',s:'Canada'},
+          {n:'Sao Paulo',c:'GRU',s:'Brazil'},
+          // International — Africa & Oceania
+          {n:'Sydney',c:'SYD',s:'Australia'},{n:'Melbourne',c:'MEL',s:'Australia'},
+          {n:'Auckland',c:'AKL',s:'New Zealand'},
+          {n:'Nairobi',c:'NBO',s:'Kenya'},{n:'Johannesburg',c:'JNB',s:'South Africa'},
+          {n:'Cairo',c:'CAI',s:'Egypt'},
+        ];
+
+        function showCitySuggestions(input, listId) {
+            const q = input.value.toLowerCase().trim();
+            const list = document.getElementById(listId);
+            if (!q) { list.classList.remove('open'); return; }
+            const startsWith = [], contains = [];
+            for (const c of CITY_LIST) {
+                const name = c.n.toLowerCase();
+                const code = c.c.toLowerCase();
+                if (name.startsWith(q) || code.startsWith(q)) startsWith.push(c);
+                else if (name.includes(q) || code.includes(q)) contains.push(c);
+            }
+            const matches = [...startsWith, ...contains].slice(0, 10);
+            if (!matches.length) { list.classList.remove('open'); return; }
+            list.innerHTML = matches.map(c => `
+                <div class="city-option" onmousedown="selectCity('${c.n}','${listId}','${input.id}')">
+                    <span>${c.n}</span>
+                    <span class="city-code">${c.c}</span>
+                    <span class="city-state">${c.s}</span>
+                </div>`).join('');
+            list.classList.add('open');
+        }
+        function selectCity(name, listId, inputId) {
+            document.getElementById(inputId).value = name;
+            hideCityList(listId);
+            updatePolicyStatus();
+        }
+        function hideCityList(id) { document.getElementById(id)?.classList.remove('open'); }
+
+        // When user types a station code (e.g. "MFP") and leaves the field, auto-resolve to city name
+        function resolveStationCodeInput(input) {
+            const v = input.value.trim();
+            if (!v) return;
+            const upper = v.toUpperCase();
+            const match = CITY_LIST.find(c => c.c.toUpperCase() === upper);
+            if (match) { input.value = match.n; updatePolicyStatus(); }
+        }
+
+        function updateCharCount(textarea) {
+            const count = textarea.value.length;
+            document.getElementById('char-counter').innerText = `${count} / 500 characters`;
+        }
+
+        function updatePolicyStatus() {
+            const fromDate = document.getElementById('req-from-date').value;
+            const isForeign = document.getElementById('is-foreign-travel')?.checked || false;
+            const dest = _bookingCategory === 'MEAL'
+                ? document.getElementById('req-meal-destination')?.value.trim()
+                : document.getElementById('req-destination').value.trim();
+            const band = _userMe?.band || 3;
+            const requiredDays = isForeign ? (POLICY.foreignAdvanceDays || 45) : (POLICY.advanceDays || 30);
+
+            const bandLabelEl = document.getElementById('policy-band-label');
+            if (bandLabelEl) bandLabelEl.textContent = band;
+
+            // Limits table
+            const limitsEl = document.getElementById('policy-limits');
+            if (limitsEl && _userMe) {
+                const cat = dest ? POLICY.cityCategory(dest) : null;
+                const capLine = dest
+                    ? `₹${POLICY.hotelCap(band, dest).toLocaleString('en-IN')}/night`
+                    : Object.entries(POLICY.hotelCaps[band] || {}).map(([k,v])=>`${k}: ₹${v.toLocaleString('en-IN')}`).join(' · ') || '—';
+                const catLine = dest ? `${cat} — ${POLICY.cityLabel[cat]}` : 'Select destination';
+                limitsEl.style.display = 'block';
+                limitsEl.innerHTML = `
+                    <div class="policy-limits-row"><span>Hotel cap${dest ? ' (' + dest + ')' : ''}</span><strong>${capLine}</strong></div>
+                    <div class="policy-limits-row"><span>City category</span><strong>${catLine}</strong></div>
+                    <div class="policy-limits-row"><span>Train entitlement</span><strong>${POLICY.trainLabel[band] || '3AC / Sleeper'}</strong></div>
+                    <div class="policy-limits-row"><span>Advance notice</span><strong>${requiredDays} days ${isForeign ? '(intl)' : ''}</strong></div>
+                    <div class="policy-limits-row"><span>Expense submission</span><strong>Within 7 days of return</strong></div>
+                `;
+            }
+
+            // Urgency reason field: show when departure is within required advance window
+            const urgencyGroup = document.getElementById('urgency-reason-group');
+            let daysAhead = null;
+            let tooSoon = false;
+            if (fromDate) {
+                daysAhead = Math.ceil((new Date(fromDate) - new Date()) / 86400000);
+                tooSoon = daysAhead < requiredDays;
+            }
+            if (urgencyGroup) {
+                urgencyGroup.style.display = tooSoon ? 'flex' : 'none';
+            }
+
+            const textEl = document.getElementById('policy-text');
+            const badgeEl = document.getElementById('policy-status-badge');
+            const badgeTextEl = document.getElementById('policy-status-text');
+            const badgeIcon = badgeEl?.querySelector('.material-symbols-outlined');
+
+            // Check selected fare against per-type policy limits from backend
+            const pr = _userMe?.policyRules || {};
+            const fareTypeKey = { FLIGHT: 'flightLimit', CAB: 'cabLimit', TRAIN: 'trainLimit' };
+            const activeFare = _travelFare || _selectedFare;
+            const fareOverLimit = activeFare && fareTypeKey[activeFare.type]
+                && pr[fareTypeKey[activeFare.type]]
+                && activeFare.price > pr[fareTypeKey[activeFare.type]];
+
+            if (tooSoon) {
+                const dayWord = daysAhead === 1 ? 'day' : 'days';
+                textEl.innerHTML = `⚠️ Travel in ${daysAhead} ${dayWord} — policy requires ${requiredDays} days notice. Fill in the <strong>Urgent Travel Justification</strong> above to continue. Your manager will review.`;
+                if (badgeEl) badgeEl.style.color = 'var(--warning-text)';
+                if (badgeTextEl) badgeTextEl.textContent = 'URGENCY REASON REQUIRED';
+                if (badgeIcon) badgeIcon.textContent = 'warning';
+            } else if (fareOverLimit) {
+                const lKey = fareTypeKey[activeFare.type];
+                textEl.innerHTML = `⚠️ Selected ${activeFare.type.toLowerCase()} fare ₹${activeFare.price.toLocaleString('en-IN')} exceeds your policy limit of ₹${pr[lKey].toLocaleString('en-IN')}. Manager approval required.`;
+                if (badgeEl) badgeEl.style.color = 'var(--warning-text)';
+                if (badgeTextEl) badgeTextEl.textContent = 'EXCEEDS POLICY LIMIT';
+                if (badgeIcon) { badgeIcon.textContent = 'warning'; badgeIcon.style.fontVariationSettings = "'FILL' 1"; }
+            } else if (isForeign) {
+                textEl.textContent = 'International travel confirmed. 45-day advance notice rule applies.';
+                if (badgeEl) badgeEl.style.color = 'var(--info-text)';
+                if (badgeTextEl) badgeTextEl.textContent = 'INTERNATIONAL TRIP';
+                if (badgeIcon) badgeIcon.textContent = 'flight_takeoff';
+            } else {
+                textEl.textContent = dest ? `Destination confirmed. Your limits for ${dest} are shown above.` : 'Select a destination to see your hotel and travel limits.';
+                if (badgeEl) badgeEl.style.color = 'var(--success-text)';
+                if (badgeTextEl) badgeTextEl.textContent = 'POLICY COMPLIANT';
+                if (badgeIcon) { badgeIcon.textContent = 'check_circle'; badgeIcon.style.fontVariationSettings = "'FILL' 1"; }
+            }
+        }
+
+        async function goToNextStep() {
+            if (activeStep === 1) {
+                const isMeal = _bookingCategory === 'MEAL';
+                const origin = isMeal ? null : document.getElementById('req-origin').value.trim();
+                const dest = isMeal
+                    ? document.getElementById('req-meal-destination').value.trim()
+                    : document.getElementById('req-destination').value.trim();
+                const fromDate = document.getElementById('req-from-date').value;
+
+                if (!dest || !fromDate) {
+                    showToast('Please fill in Destination City and Departure Date.', 'warning');
+                    return;
+                }
+                if (!isMeal && !origin) {
+                    showToast('Please fill in Origin City.', 'warning');
+                    return;
+                }
+                if (isMeal) {
+                    const dur = parseInt(document.getElementById('meal-duration-days').value);
+                    if (!dur || dur < 1 || dur > 20) {
+                        showToast('Please enter trip duration in days (1–20) for the meal claim.', 'warning');
+                        return;
+                    }
+                }
+
+                // Check urgency: if short notice, urgencyReason must be filled
+                const isForeign = document.getElementById('is-foreign-travel')?.checked || false;
+                const requiredDays = isForeign ? (POLICY.foreignAdvanceDays || 45) : (POLICY.advanceDays || 30);
+                const daysAhead = Math.ceil((new Date(fromDate) - new Date()) / 86400000);
+                if (daysAhead < requiredDays) {
+                    const urgency = document.getElementById('urgency-reason')?.value.trim() || '';
+                    if (urgency.length < 10) {
+                        showToast(`Travel in ${daysAhead} days — you need to fill the Urgent Travel Justification (min 10 characters) to proceed.`, 'warning');
+                        document.getElementById('urgency-reason')?.focus();
+                        return;
+                    }
+                }
+
+                document.getElementById('step-1-indicator').classList.remove('active');
+                document.getElementById('step-1-indicator').classList.add('completed');
+
+                if (isMeal) {
+                    // MEAL skips Step 2 — jump straight to Step 3
+                    document.getElementById('step-2-indicator').classList.add('completed');
+                    document.getElementById('step-3-indicator').classList.add('active');
+                    document.getElementById('step-1-card').style.display = 'none';
+                    document.getElementById('step-3-card').style.display = 'block';
+                    activeStep = 3;
+                    document.getElementById('next-btn').style.display = 'none';
+                    document.getElementById('submit-btn').style.display = 'flex';
+                    selectedType = 'MEAL';
+                    updateStep3Summary();
+                } else {
+                    document.getElementById('step-2-indicator').classList.add('active');
+                    document.getElementById('step-1-card').style.display = 'none';
+                    document.getElementById('step-2-card').style.display = 'block';
+                    document.getElementById('trip-options-loader').style.display = 'block';
+                    activeStep = 2;
+                    document.getElementById('next-btn').innerHTML = 'Next: Submit Costs <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>';
+
+                    try {
+                        const params = new URLSearchParams({ from: origin, to: dest, fromDate });
+                        const plan = await apiRequest(`/bookings/trip-plan?${params}`);
+                        renderTripFares(plan, dest, fromDate);
+                    } catch (err) {
+                        document.getElementById('req-planner-results').innerHTML = `<p style="color:var(--accent-red);font-weight:700;">Could not load fares: ${err.message}</p>`;
+                    } finally {
+                        document.getElementById('trip-options-loader').style.display = 'none';
+                    }
+                }
+            } else if (activeStep === 2) {
+                document.getElementById('step-2-indicator').classList.remove('active');
+                document.getElementById('step-2-indicator').classList.add('completed');
+                document.getElementById('step-3-indicator').classList.add('active');
+                document.getElementById('step-2-card').style.display = 'none';
+                document.getElementById('step-3-card').style.display = 'block';
+                activeStep = 3;
+                document.getElementById('next-btn').style.display = 'none';
+                document.getElementById('submit-btn').style.display = 'flex';
+                updateStep3Summary();
+            }
+        }
+
+        // Stores all flights per group so filter/sort can re-render without re-fetching
+        const FLIGHT_LIMIT = 5;
+        const TRAIN_LIMIT = 4;
+        const HOTEL_LIMIT = 3;
+        let _flightGroups = [];
+        let _expandedGroups = {};
+        let _filterState = {}; // { [groupCode]: { slot, sortBy } }
+
+        function toggleShowAll(btn) {
+            const section = btn.closest('[data-expandable]');
+            const isExpanded = btn.dataset.expanded === 'true';
+            section.querySelectorAll('[data-extra]').forEach(el => {
+                el.classList.toggle('extra-item', isExpanded);
+            });
+            btn.textContent = isExpanded ? btn.dataset.expandText : 'Show less';
+            btn.dataset.expanded = isExpanded ? 'false' : 'true';
+            const groupId = section.id || '';
+            if (groupId.startsWith('flight-group-')) {
+                _expandedGroups[groupId.replace('flight-group-', '')] = !isExpanded;
+            }
+        }
+
+        function timeSlot(timeStr) {
+            if (!timeStr) return 'unknown';
+            // departure may be "HH:MM" or "YYYY-M-D HH:MM" — extract only the time portion
+            const timePart = timeStr.includes(' ') ? timeStr.split(' ').pop() : timeStr;
+            const h = parseInt(timePart.split(':')[0], 10);
+            if (h >= 6  && h < 12) return 'morning';
+            if (h >= 12 && h < 17) return 'afternoon';
+            if (h >= 17 && h < 21) return 'evening';
+            return 'night';
+        }
+
+        function renderFlightGroup(group, dest, filterSlot, sortBy, expanded = false, directOnly = true) {
+            let flights = Array.isArray(group.results) ? [...group.results] : [];
+            if (!flights.length) {
+                if (group.km > 0) {
+                    return `<div class="trip-section">
+                        <div class="trip-section-header">✈ Flights via ${group.via} Airport <span style="font-weight:500;font-size:0.7rem;opacity:0.7;">(${group.km} km from ${dest})</span></div>
+                        <p class="no-result">No flights found for this date. Try an adjacent date.</p>
+                    </div>`;
+                }
+                return '';
+            }
+
+            // Filter: direct only
+            if (directOnly) flights = flights.filter(f => (f.stops ?? 0) === 0);
+
+            // Filter by time slot
+            const filtered = filterSlot === 'all'
+                ? flights
+                : flights.filter(f => timeSlot(f.departure) === filterSlot);
+
+            // Sort
+            if (sortBy === 'time') {
+                filtered.sort((a, b) => (a.departure || '99:99').localeCompare(b.departure || '99:99'));
+            } else {
+                filtered.sort((a, b) => a.price - b.price);
+            }
+
+            const label = group.km > 0
+                ? `✈ Flights via ${group.via} Airport <span style="font-weight:500;font-size:0.7rem;opacity:0.7;">(nearest to ${dest}, ${group.km} km away)</span>`
+                : `✈ Flights to ${dest}`;
+
+            let html = `<div class="trip-section" id="flight-group-${group.code || 'direct'}" data-expandable>
+                <div class="trip-section-header">${label}</div>
+                <div class="flight-filter-bar">
+                    <span>Depart</span>
+                    ${['all','morning','afternoon','evening','night'].map(s =>
+                        `<button class="time-filter-btn ${filterSlot===s?'active':''}"
+                            onclick="applyFlightFilter('${group.code||'direct'}','${s}',document.getElementById('sort-${group.code||'direct'}').value)">
+                            ${{ all:'All', morning:'Morning 6–12', afternoon:'Afternoon 12–17', evening:'Evening 17–21', night:'Night 21–6' }[s]}
+                        </button>`
+                    ).join('')}
+                    <select class="flight-sort-select" id="sort-${group.code||'direct'}"
+                        onchange="applyFlightFilter('${group.code||'direct'}',(_filterState['${group.code||'direct'}']||{}).slot||'all',this.value)">
+                        <option value="price" ${sortBy==='price'?'selected':''}>Sort: Cheapest</option>
+                        <option value="time"  ${sortBy==='time'?'selected':''}>Sort: Earliest</option>
+                    </select>
+                    <button class="time-filter-btn ${directOnly?'active':''}" style="margin-left:auto;"
+                        onclick="applyFlightFilter('${group.code||'direct'}',(_filterState['${group.code||'direct'}']||{}).slot||'all',null,${!directOnly})">
+                        Direct only
+                    </button>
+                </div>
+                <p class="flight-count-label" id="count-${group.code||'direct'}">${filtered.length} of ${flights.length} flights shown</p>
+                <div id="flights-${group.code||'direct'}">`;
+
+            if (!filtered.length) {
+                html += `<p class="no-result">No flights in this time window. Try "All" or a different slot.</p>`;
+            } else {
+                filtered.forEach((f, i) => {
+                    const cheapest = i === 0 && sortBy === 'price';
+                    const stops = f.stops === 0 ? 'Non-stop' : `${f.stops} stop${f.stops > 1 ? 's' : ''}`;
+                    const isExtra = !expanded && i >= FLIGHT_LIMIT;
+                    const _ffd = encodeURIComponent(JSON.stringify({airline:f.airline,flightNumber:f.flightNumber,departure:f.departure,arrival:f.arrival,duration:f.duration,stops:f.stops}));
+                    html += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectFare(${f.price},'FLIGHT',JSON.parse(decodeURIComponent('${_ffd}')))">
+                        <div style="display:flex;flex-direction:column;gap:0.2rem;flex:1;min-width:0;">
+                            <span>${cheapest ? '<span class="best-tag">CHEAPEST</span>' : ''}<strong>${f.airline}</strong> <span style="color:var(--secondary)">${f.flightNumber}</span></span>
+                            <span style="font-size:0.78rem;color:var(--on-surface);font-weight:600;">${f.departure || '?'} → ${f.arrival || '?'}${f.duration ? ' · ' + f.duration : ''} · ${stops}</span>
+                        </div>
+                        <span class="price" style="flex-shrink:0;">₹${f.price?.toLocaleString('en-IN')}</span>
+                    </div>`;
+                });
+            }
+            html += `</div>`;
+            if (filtered.length > FLIGHT_LIMIT) {
+                const expandText = `Show all ${filtered.length} flights`;
+                html += `<button class="show-all-btn" data-expanded="${expanded ? 'true' : 'false'}" data-expand-text="${expandText}" onclick="toggleShowAll(this)">${expanded ? 'Show less' : expandText}</button>`;
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        function applyFlightFilter(groupCode, slotOrLabel, sortByOverride, directOnlyOverride) {
+            // Accept both raw slot keys ('morning') and button labels ('Morning 6–12')
+            const slotMap = { 'All': 'all', 'Morning 6–12': 'morning', 'Afternoon 12–17': 'afternoon', 'Evening 17–21': 'evening', 'Night 21–6': 'night' };
+            const slot = slotMap[slotOrLabel] || slotOrLabel || 'all';
+            const prev = _filterState[groupCode] || { slot: 'all', sortBy: 'price', directOnly: true };
+            const sortBy = sortByOverride || prev.sortBy;
+            const directOnly = directOnlyOverride !== undefined ? directOnlyOverride : prev.directOnly;
+            _filterState[groupCode] = { slot, sortBy, directOnly };
+
+            const group = _flightGroups.find(g => (g.code || 'direct') === groupCode);
+            if (!group) return;
+            const dest = document.getElementById('req-destination').value.trim();
+            const expanded = _expandedGroups[groupCode] || false;
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = renderFlightGroup(group, dest, slot, sortBy, expanded, directOnly);
+            const existing = document.getElementById(`flight-group-${groupCode}`);
+            if (existing) existing.replaceWith(tempDiv.firstElementChild);
+        }
+
+        function switchFareTab(name) {
+            ['flights','trains','hotels'].forEach(t => {
+                document.getElementById(`fare-tab-${t}`).style.display    = t === name ? 'block' : 'none';
+                document.getElementById(`tab-btn-${t}`).classList.toggle('active', t === name);
+            });
+        }
+
+        function renderTripFares(plan, dest, date) {
+            _flightGroups = [];
+            _filterState = {};
+            const estRailHours   = plan.distanceKm ? Math.round(plan.distanceKm / 70) : null;
+            const flightPermitted = estRailHours === null || estRailHours >= 12;
+            const tBand = _userMe?.band || 3;
+
+            // ── Flights tab ─────────────────────────────────────────────────────
+            let flightHtml = '';
+            let flightCount = 0;
+            if (!flightPermitted) {
+                flightHtml = `
+                    <div style="background:#fffbeb;color:#b45309;border:2px solid #fef3c7;padding:1.25rem;border-radius:12px;margin-bottom:1rem;font-family:var(--font-display);font-size:0.85rem;font-weight:600;display:flex;flex-direction:column;gap:0.5rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <span class="material-symbols-outlined" style="font-size:22px;color:#b45309;">warning</span>
+                            <span style="font-size:0.9rem;font-weight:800;">AIR TRAVEL NOT PERMITTED (T&amp;E §5.1.1)</span>
+                        </div>
+                        <p style="margin:0;line-height:1.5;">
+                            Air travel is only allowed when the surface journey exceeds <strong>12 hours</strong>.
+                            Estimated rail time: <strong>~${estRailHours} hrs</strong> (${plan.distanceKm} km).
+                            Please select a train instead.
+                        </p>
+                    </div>`;
+            } else if (plan.outboundFlights?.length) {
+                _flightGroups = plan.outboundFlights;
+                plan.outboundFlights.forEach(group => {
+                    _filterState[group.code || 'direct'] = { slot: 'all', sortBy: 'price', directOnly: true };
+                    const directFlights = (group.results || []).filter(f => (f.stops ?? 0) === 0);
+                    const part = renderFlightGroup(group, dest, 'all', 'price', false, true);
+                    if (part) { flightHtml += part; flightCount += directFlights.length; }
+                });
+            }
+            if (!flightHtml) flightHtml = `<p class="no-result">No flights found for this route and date.</p>`;
+            document.getElementById('fare-tab-flights').innerHTML = flightHtml;
+            document.getElementById('tab-count-flights').textContent = flightCount || '';
+
+            // ── Trains tab ──────────────────────────────────────────────────────
+            let trainHtml = '';
+            let trainCount = 0;
+            const trains = Array.isArray(plan.trains) ? plan.trains : [];
+            if (trains.length) {
+                const tEntitled = POLICY.trainEntitled[tBand] || [];
+                const note = flightPermitted
+                    ? `<span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Economical alternative · Entitled: ${POLICY.trainLabel[tBand]}</span>`
+                    : `<span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Entitled: ${POLICY.trainLabel[tBand]}</span>`;
+                trainHtml += `<div class="trip-section" data-expandable><div class="trip-section-header">🚆 Trains to ${dest} ${note}</div>`;
+                trains.forEach((t, i) => {
+                    const meta = [t.departure, t.arrival].filter(Boolean).join(' → ');
+                    const isEstimated = t.note && t.note.toLowerCase().includes('verify');
+                    const isLive = t.note && t.note.includes('Live');
+                    const isExtra = i >= TRAIN_LIMIT;
+                    const classStr = (t.classes || []).join(' ').toUpperCase();
+                    const entitledAvail = tEntitled.filter(c => classStr.includes(c));
+                    const trainBadge = entitledAvail.length
+                        ? `<span class="policy-badge ok">${entitledAvail.join(' · ')} ENTITLED</span>`
+                        : (t.classes?.length ? `<span class="policy-badge warn">CHECK ${POLICY.trainLabel[tBand]}</span>` : '');
+                    const _tfd = encodeURIComponent(JSON.stringify({trainNumber:t.trainNumber,trainName:t.trainName,departure:t.departure,arrival:t.arrival,duration:t.duration,classes:t.classes||[],classFares:t.classFares||{}}));
+                    const fareChips = t.classFares && Object.keys(t.classFares).length
+                        ? Object.entries(t.classFares).map(([cls,price]) =>
+                            `<span style="font-size:0.68rem;font-weight:700;background:var(--surface-container-low);border:1px solid var(--outline-variant);border-radius:6px;padding:0.15rem 0.45rem;white-space:nowrap;">${cls} ₹${price.toLocaleString('en-IN')}</span>`
+                          ).join('')
+                        : '';
+                    trainHtml += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} onclick="selectTrainFare(this,JSON.parse(decodeURIComponent('${_tfd}')))" style="flex-direction:column;align-items:flex-start;gap:0.35rem;">
+                        <div style="display:flex;justify-content:space-between;width:100%;align-items:center;gap:0.5rem;">
+                            <span><strong>${t.trainNumber}</strong> · ${t.trainName}</span>
+                            ${isLive ? `<span style="font-size:0.65rem;font-weight:700;background:var(--success-bg);color:var(--success-text);padding:0.15rem 0.5rem;border-radius:4px;white-space:nowrap;">LIVE</span>` : ''}
+                        </div>
+                        ${meta ? `<span style="font-size:0.8rem;color:var(--secondary);">${meta}${t.duration ? ' · ' + t.duration : ''}</span>` : ''}
+                        <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+                            <span style="font-size:0.72rem;color:var(--secondary);">${t.classes?.join(' · ') || ''}</span>
+                            ${t.runDays ? `<span style="font-size:0.65rem;color:var(--secondary);">${t.runDays}</span>` : ''}
+                        </div>
+                        ${fareChips ? `<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.2rem;">${fareChips}</div>` : ''}
+                        ${trainBadge ? `<div>${trainBadge}</div>` : ''}
+                        ${isEstimated ? `<span style="font-size:0.7rem;color:var(--warning-text);font-weight:600;">Estimated — verify at IRCTC.co.in</span>` : `<span style="font-size:0.7rem;color:var(--success-text);font-weight:600;">${isLive ? 'Live data' : 'Confirmed route'} — book at IRCTC.co.in</span>`}
+                    </div>`;
+                });
+                if (trains.length > TRAIN_LIMIT) {
+                    const expandText = `Show all ${trains.length} trains`;
+                    trainHtml += `<button class="show-all-btn" data-expanded="false" data-expand-text="${expandText}" onclick="toggleShowAll(this)">${expandText}</button>`;
+                }
+                trainHtml += `</div>`;
+                trainCount = trains.length;
+            } else {
+                trainHtml = `<p class="no-result">${plan.trainNote || 'No trains found for this route and date.'}</p>`;
+            }
+            document.getElementById('fare-tab-trains').innerHTML = trainHtml;
+            document.getElementById('tab-count-trains').textContent = trainCount || '';
+
+            // ── Hotels tab ──────────────────────────────────────────────────────
+            let hotelHtml = '';
+            const hotels = Array.isArray(plan.hotels) ? plan.hotels : [];
+            const hCap = POLICY.hotelCap(tBand, dest);
+            if (hotels.length === 0) {
+                hotelHtml = `<p class="no-result">No hotels found for ${dest}. Try searching directly on Booking.com or OYO.</p>`;
+            } else {
+                hotelHtml += `<div class="trip-section" data-expandable><div class="trip-section-header">🏨 Lodging in ${dest} <span style="font-size:0.72rem;font-weight:500;opacity:0.7;">· Policy cap ₹${hCap.toLocaleString('en-IN')}/night · Select to add to booking</span></div>`;
+                hotels.forEach((h, i) => {
+                    const isExtra = i >= HOTEL_LIMIT;
+                    const overCap = h.pricePerNight > hCap;
+                    const badge = overCap
+                        ? `<span class="policy-badge warn">₹${(h.pricePerNight - hCap).toLocaleString('en-IN')} ABOVE CAP — needs exception</span>`
+                        : `<span class="policy-badge ok">WITHIN POLICY</span>`;
+                    const _hfd = encodeURIComponent(JSON.stringify({name:h.name,rating:h.rating,pricePerNight:h.pricePerNight}));
+                    hotelHtml += `<div class="trip-card${isExtra ? ' extra-item' : ''}" ${isExtra ? 'data-extra' : ''} data-fare-type="hotel" onclick="selectFare(${h.pricePerNight},'HOTEL',JSON.parse(decodeURIComponent('${_hfd}')))">
+                        <div style="display:flex;flex-direction:column;flex:1;min-width:0;gap:0.25rem;">
+                            <span><strong>${h.name}</strong> · ★${h.rating || '—'}</span>
+                            ${badge}
+                        </div>
+                        <span class="price" style="flex-shrink:0;${overCap ? 'color:var(--warning-text);' : ''}">₹${h.pricePerNight?.toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:normal;">/night</span></span>
+                    </div>`;
+                });
+                if (hotels.length > HOTEL_LIMIT) {
+                    const expandText = `Show all ${hotels.length} hotels`;
+                    hotelHtml += `<button class="show-all-btn" data-expanded="false" data-expand-text="${expandText}" onclick="toggleShowAll(this)">${expandText}</button>`;
+                }
+                hotelHtml += `</div>`;
+            }
+            document.getElementById('fare-tab-hotels').innerHTML = hotelHtml;
+            document.getElementById('tab-count-hotels').textContent = hotels.length || '';
+
+            // Show tab bar, default to flights (or trains if flight not permitted)
+            const fareTabsEl = document.getElementById('fare-tabs');
+            fareTabsEl.style.display = 'block';
+            switchFareTab(flightPermitted ? 'flights' : 'trains');
+        }
+
+        let selectedType = 'FLIGHT';
+        let _selectedFare = null;
+        let _travelFare = null;
+        let _hotelFare = null;
+
+        function updateStep3Summary() {
+            const el = document.getElementById('step3-summary');
+            if (!el) return;
+
+            // MEAL type: no fare to select — show simplified summary
+            if (_bookingCategory === 'MEAL') {
+                const dest = document.getElementById('req-meal-destination')?.value.trim() || '—';
+                const dur  = document.getElementById('meal-duration-days')?.value || '—';
+                const date = document.getElementById('req-from-date').value || '—';
+                el.innerHTML = `
+                    <div style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Meal Expense Claim:</div>
+                    <div style="display:flex;flex-direction:column;padding:1.25rem;background:var(--primary-bg);border:2px solid var(--primary);border-radius:var(--radius-lg);">
+                        <div style="display:flex;align-items:center;gap:0.75rem;">
+                            <span class="material-symbols-outlined" style="color:var(--primary);font-size:2rem;background:#ffffff;border:2px solid var(--primary);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">restaurant</span>
+                            <div style="flex:1;">
+                                <p style="font-family:var(--font-display);font-weight:800;font-size:1rem;margin:0;color:var(--on-surface);">Meal Expense — ${dest}</p>
+                                <p style="font-size:0.75rem;color:var(--secondary);margin:0.2rem 0 0;font-weight:600;">${date} · ${dur} day${dur !== '1' ? 's' : ''}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            // TRIP_PACKAGE: both travel and hotel selected
+            if (_travelFare && _hotelFare) {
+                const nights     = _getNights();
+                const hotelTotal = _hotelFare.pricePerNight * nights;
+                const total      = _travelFare.price + hotelTotal;
+                const travelIcon = _travelFare.type === 'FLIGHT' ? 'flight_takeoff' : 'train';
+                const travelLabel = _travelFare.type === 'FLIGHT'
+                    ? (`${_travelFare.airline || ''} ${_travelFare.flightNumber || ''}`.trim() || 'Flight')
+                    : (`${_travelFare.trainNumber || ''} ${_travelFare.trainName || ''}`.trim() || 'Train');
+                setCost(total);
+                el.innerHTML = `
+                    <div style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Travel + Hotel Package:</div>
+                    <div style="display:flex;flex-direction:column;gap:0;border:2px solid var(--primary);border-radius:var(--radius-lg);overflow:hidden;">
+                        <div style="display:flex;align-items:center;gap:0.75rem;padding:1rem 1.25rem;background:var(--primary-bg);">
+                            <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.5rem;">${travelIcon}</span>
+                            <div style="flex:1;"><p style="font-family:var(--font-display);font-weight:700;font-size:0.9rem;margin:0;">${travelLabel}</p>
+                            <p style="font-size:0.72rem;color:var(--secondary);margin:0.1rem 0 0;font-weight:600;">${document.getElementById('req-origin').value.trim()} → ${document.getElementById('req-destination').value.trim()}</p></div>
+                            <span style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${_travelFare.price.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.75rem;padding:1rem 1.25rem;background:#ffffff;border-top:1px dashed var(--outline-variant);">
+                            <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.5rem;">hotel</span>
+                            <div style="flex:1;"><p style="font-family:var(--font-display);font-weight:700;font-size:0.9rem;margin:0;">${_hotelFare.name || 'Hotel'} · ★${_hotelFare.rating || '—'}</p>
+                            <p style="font-size:0.72rem;color:var(--secondary);margin:0.1rem 0 0;font-weight:600;">₹${_hotelFare.pricePerNight.toLocaleString('en-IN')}/night × ${nights} night${nights > 1 ? 's' : ''}</p></div>
+                            <span style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${hotelTotal.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding:0.75rem 1.25rem;background:var(--primary);color:#ffffff;">
+                            <span style="font-family:var(--font-display);font-weight:700;font-size:0.85rem;">Package Total</span>
+                            <span style="font-family:var(--font-display);font-weight:800;font-size:1.1rem;">₹${total.toLocaleString('en-IN')}</span>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            if (!_selectedFare) {
+                el.innerHTML = '<div style="padding:1rem;background:var(--surface-container-low);border-radius:var(--radius-md);color:var(--secondary);font-size:0.85rem;font-weight:500;">No fare selected — go back to Step 2 and pick a fare from the results.</div>';
+                return;
+            }
+            const f = _selectedFare;
+            let icon = 'flight_takeoff', title = '', sub = '', extraDetails = '';
+            
+            const origin = document.getElementById('req-origin').value.trim();
+            const dest = document.getElementById('req-destination').value.trim();
+            const travelDate = document.getElementById('req-from-date').value;
+
+            if (f.type === 'FLIGHT') {
+                icon = 'flight_takeoff';
+                title = `${f.airline || ''} ${f.flightNumber || ''}`.trim() || 'Flight Option';
+                const stopsLabel = f.stops === 0 ? 'Non-stop' : `${f.stops} stop${f.stops > 1 ? 's' : ''}`;
+                sub = `${origin} → ${dest} • ${travelDate}`;
+                extraDetails = `
+                    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--outline-variant);display:flex;flex-wrap:wrap;gap:1rem;font-size:0.75rem;color:var(--secondary);font-weight:600;">
+                        <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">schedule</span> ${f.departure || '—'} to ${f.arrival || '—'} (${f.duration || '—'})</span>
+                        <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">flight</span> ${stopsLabel}</span>
+                    </div>`;
+            } else if (f.type === 'TRAIN') {
+                icon = 'train';
+                title = [f.trainNumber, f.trainName].filter(Boolean).join(' · ') || 'Train Option';
+                sub = `${origin} → ${dest} • ${travelDate}`;
+                
+                // Create dropdown options for all classes in f.classes, highlighting entitled classes based on employee band
+                const tBand = _userMe?.band || 3;
+                const entitledList = POLICY.trainEntitled[tBand] || [];
+                const availableClasses = f.classes || [];
+                
+                if (!f.class && availableClasses.length > 0) {
+                    const firstEntitled = availableClasses.find(c => entitledList.includes(c.toUpperCase()));
+                    f.class = firstEntitled || availableClasses[0];
+                }
+
+                let classOptions = '';
+                availableClasses.forEach(c => {
+                    const isEntitled = entitledList.includes(c.toUpperCase());
+                    const isSel = c === f.class ? ' selected' : '';
+                    const fare = f.classFares?.[c] ? ` · ₹${f.classFares[c].toLocaleString('en-IN')}` : '';
+                    classOptions += `<option value="${c}"${isSel} ${isEntitled ? '' : 'style="color:var(--danger-text)"'}>Class ${c}${fare} ${isEntitled ? '(Entitled)' : '(Approval Needed)'}</option>`;
+                });
+
+                extraDetails = `
+                    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--outline-variant);display:flex;flex-direction:column;gap:0.75rem;">
+                        <div style="display:flex;flex-wrap:wrap;gap:1rem;font-size:0.75rem;color:var(--secondary);font-weight:600;">
+                            <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">schedule</span> ${f.departure || '—'} to ${f.arrival || '—'} (${f.duration || '—'})</span>
+                        </div>
+                        <div class="field-group" style="margin-top:0.25rem;">
+                            <label for="preferred-train-class" style="font-size:0.75rem;font-weight:700;color:var(--primary);margin-bottom:0.25rem;display:block;">Preferred Train Class</label>
+                            <select id="preferred-train-class" class="brutalist-input" style="height:38px;padding:0.4rem 0.75rem;background:#ffffff;font-size:0.85rem;font-weight:600;width:100%;border:2px solid var(--primary);" onchange="updateTrainClass(this.value)">
+                                ${classOptions}
+                            </select>
+                        </div>
+                    </div>`;
+            } else {
+                icon = 'hotel';
+                title = f.name || 'Hotel Selection';
+                sub = `${dest} Accommodation • ${travelDate}`;
+                
+                const tBand = _userMe?.band || 3;
+                const hCap = POLICY.hotelCap(tBand, dest);
+                const overCap = f.pricePerNight > hCap;
+                const capLabel = overCap 
+                    ? `<span style="color:var(--danger-text);font-weight:700;">⚠️ ₹${(f.pricePerNight - hCap).toLocaleString('en-IN')} Over Cap</span>`
+                    : `<span style="color:var(--success-text);font-weight:700;">✓ Compliant</span>`;
+
+                extraDetails = `
+                    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--outline-variant);display:flex;flex-wrap:wrap;gap:1.5rem;font-size:0.75rem;color:var(--secondary);font-weight:600;">
+                        <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">grade</span> Rating: ★${f.rating || '—'}</span>
+                        <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">payments</span> ₹${(f.pricePerNight || 0).toLocaleString('en-IN')}/night</span>
+                        <span style="display:flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary);">verified</span> ${capLabel}</span>
+                    </div>`;
+            }
+            
+            if (f.price > 0) setCost(f.price);
+            const costVal = Number(document.getElementById('estimated-cost').value || 0);
+            const priceStr = costVal > 0 ? `₹${costVal.toLocaleString('en-IN')}` : '—';
+
+            el.innerHTML = `
+                <div style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">You're requesting:</div>
+                <div style="display:flex;flex-direction:column;padding:1.25rem;background:var(--primary-bg);border:2px solid var(--primary);border-radius:var(--radius-lg);box-shadow:var(--shadow-level-1);">
+                    <div style="display:flex;align-items:center;gap:0.75rem;">
+                        <span class="material-symbols-outlined" style="color:var(--primary);font-size:2rem;background:#ffffff;border:2px solid var(--primary);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon}</span>
+                        <div style="flex:1;min-width:0;">
+                            <p style="font-family:var(--font-display);font-weight:800;font-size:1rem;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--on-surface);">${title}</p>
+                            <p style="font-size:0.75rem;color:var(--secondary);margin:0.2rem 0 0;font-weight:600;">${sub}</p>
+                        </div>
+                        <span id="summary-price-tag" style="flex-shrink:0;font-family:var(--font-display);font-weight:800;font-size:1.15rem;color:var(--primary);">${priceStr}</span>
+                    </div>
+                    ${extraDetails}
+                </div>`;
+        }
+
+        function setCost(val) {
+            const n = Number(val) || 0;
+            document.getElementById('estimated-cost').value = n || '';
+            const el = document.getElementById('cost-display-text');
+            if (el) el.innerText = n > 0 ? `₹${n.toLocaleString('en-IN')}` : 'Select a travel option above';
+            const priceTag = document.getElementById('summary-price-tag');
+            if (priceTag) priceTag.innerText = n > 0 ? `₹${n.toLocaleString('en-IN')}` : '—';
+        }
+
+        function updateTrainClass(value) {
+            if (!(_selectedFare && _selectedFare.type === 'TRAIN')) return;
+            _selectedFare.class = value;
+            _travelFare = _selectedFare;
+
+            const trainFare = (_selectedFare.classFares && _selectedFare.classFares[value])
+                ? _selectedFare.classFares[value]
+                : (_selectedFare.price || 0);
+            _selectedFare.price = trainFare;
+
+            const hotelTotal = _hotelFare ? (_hotelFare.pricePerNight || 0) * _getNights() : 0;
+            setCost(trainFare + hotelTotal);
+            updateItineraryBar();
+            updatePolicyStatus();
+        }
+
+        function _getNights() {
+            const from = document.getElementById('req-from-date').value;
+            const to   = document.getElementById('req-to-date').value;
+            return (from && to) ? Math.max(1, Math.ceil((new Date(to) - new Date(from)) / 86400000)) : 1;
+        }
+
+        function updateItineraryBar() {
+            const bar       = document.getElementById('itinerary-bar');
+            const tRow      = document.getElementById('itin-travel-row');
+            const hRow      = document.getElementById('itin-hotel-row');
+            const totalRow  = document.getElementById('itin-total-row');
+            const hint      = document.getElementById('itin-hint');
+            if (!bar) return;
+
+            if (!_travelFare && !_hotelFare) { bar.style.display = 'none'; return; }
+            bar.style.display = 'block';
+
+            if (_travelFare) {
+                tRow.style.display = 'flex';
+                const icon  = _travelFare.type === 'FLIGHT' ? 'flight_takeoff' : 'train';
+                const label = _travelFare.type === 'FLIGHT'
+                    ? (`${_travelFare.airline || ''} ${_travelFare.flightNumber || ''}`.trim() || 'Flight')
+                    : (`${_travelFare.trainNumber || ''} ${_travelFare.trainName || ''}`.trim() || 'Train');
+                document.getElementById('itin-travel-label').innerHTML =
+                    `<span class="material-symbols-outlined" style="font-size:16px;">${icon}</span> ${label}`;
+                document.getElementById('itin-travel-cost').textContent =
+                    `₹${(_travelFare.price || 0).toLocaleString('en-IN')}`;
+            } else {
+                tRow.style.display = 'none';
+            }
+
+            if (_hotelFare) {
+                hRow.style.display = 'flex';
+                const nights = _getNights();
+                const hotelTotal = (_hotelFare.pricePerNight || 0) * nights;
+                document.getElementById('itin-hotel-label').innerHTML =
+                    `<span class="material-symbols-outlined" style="font-size:16px;">hotel</span> ${_hotelFare.name || 'Hotel'}`;
+                document.getElementById('itin-hotel-nights').textContent =
+                    `₹${(_hotelFare.pricePerNight || 0).toLocaleString('en-IN')}/night × ${nights}`;
+                document.getElementById('itin-hotel-cost').textContent =
+                    `₹${hotelTotal.toLocaleString('en-IN')}`;
+                hint.style.display = 'none';
+            } else {
+                hRow.style.display = 'none';
+                hint.style.display = _travelFare ? 'block' : 'none';
+            }
+
+            if (_travelFare && _hotelFare) {
+                const total = (_travelFare.price || 0) + (_hotelFare.pricePerNight || 0) * _getNights();
+                totalRow.style.display = 'flex';
+                document.getElementById('itin-total-cost').textContent = `₹${total.toLocaleString('en-IN')}`;
+            } else {
+                totalRow.style.display = 'none';
+            }
+        }
+
+        function selectFare(price, type, fareDetails) {
+            const fare = Object.assign({ type, price: Number(price) }, fareDetails || {});
+            if (type === 'HOTEL') {
+                _hotelFare = fare;
+                document.querySelectorAll('[data-fare-type="hotel"]').forEach(c => c.classList.remove('selected'));
+                event.currentTarget?.classList?.add('selected');
+                showToast(`Hotel added: ${fareDetails?.name || 'Hotel'} · ₹${Number(price).toLocaleString('en-IN')}/night`, 'success');
+            } else {
+                selectedType = type;
+                _travelFare = fare;
+                _selectedFare = fare;
+                document.querySelectorAll('.trip-card:not([data-fare-type="hotel"])').forEach(c => c.classList.remove('selected'));
+                event.currentTarget?.classList?.add('selected');
+                const label = type === 'FLIGHT'
+                    ? (`${fareDetails?.airline || ''} ${fareDetails?.flightNumber || ''}`.trim() || 'Flight')
+                    : (fareDetails?.name || 'Option');
+                showToast(`Selected: ${label} · ₹${Number(price).toLocaleString('en-IN')}`, 'success');
+            }
+            updateItineraryBar();
+            updateStep3Summary();
+            updatePolicyStatus();
+        }
+
+        function selectTrainFare(el, fareDetails) {
+            selectedType = 'TRAIN';
+            _selectedFare = Object.assign({ type: 'TRAIN', price: 0 }, fareDetails || {});
+            _travelFare   = _selectedFare;
+
+            const tBand2 = _userMe?.band || 3;
+            const entitledList2 = POLICY.trainEntitled[tBand2] || [];
+            const availCls = _selectedFare.classes || [];
+            const entitledDefault = availCls.find(c => entitledList2.includes(c.toUpperCase()));
+            const defaultClass = _selectedFare.class || entitledDefault || availCls[0] || '3A';
+            _selectedFare.class = defaultClass;
+            const fareVal = (_selectedFare.classFares && _selectedFare.classFares[defaultClass])
+                ? _selectedFare.classFares[defaultClass] : 0;
+            _selectedFare.price = fareVal;
+            _travelFare.price   = fareVal;
+            const hotelTotal0 = _hotelFare ? (_hotelFare.pricePerNight || 0) * _getNights() : 0;
+            setCost(fareVal + hotelTotal0);
+
+            document.querySelectorAll('.trip-card:not([data-fare-type="hotel"])').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            showToast('Train selected! Budget auto-calculated based on class.', 'success');
+            updateItineraryBar();
+            updateStep3Summary();
+            updatePolicyStatus();
+        }
+
+        async function submitRequest() {
+            const isMeal = _bookingCategory === 'MEAL';
+            const isTripPackage = !isMeal && _travelFare && _hotelFare;
+            const origin = isMeal ? null : document.getElementById('req-origin').value.trim();
+            const dest = isMeal
+                ? document.getElementById('req-meal-destination').value.trim()
+                : document.getElementById('req-destination').value.trim();
+            const date    = document.getElementById('req-from-date').value;
+            const toDate  = document.getElementById('req-to-date').value;
+            const purpose = document.getElementById('req-purpose').value;
+            const justification = document.getElementById('req-justification').value.trim();
+            const isForeign = document.getElementById('is-foreign-travel')?.checked || false;
+            const urgencyReason = document.getElementById('urgency-reason')?.value.trim() || '';
+            const durationDays = isMeal ? parseInt(document.getElementById('meal-duration-days')?.value) || null : null;
+
+            let submittedType, submittedCost, details;
+
+            if (isTripPackage) {
+                const nights     = _getNights();
+                const hotelTotal = _hotelFare.pricePerNight * nights;
+                const trainClass = (_travelFare.type === 'TRAIN' && _travelFare.class) ? _travelFare.class : null;
+                submittedType = 'TRIP_PACKAGE';
+                submittedCost = _travelFare.price + hotelTotal;
+                details = {
+                    origin, destination: dest, date, checkOut: toDate, nights,
+                    purpose, justification,
+                    travelType: _travelFare.type,
+                    travelCost: _travelFare.price,
+                    hotelPerNight: _hotelFare.pricePerNight,
+                    hotelCost: hotelTotal,
+                    selectedFare: _travelFare,
+                    hotelFare: _hotelFare,
+                    ...(trainClass ? { trainClass } : {}),
+                    ...(isForeign ? { isForeignTravel: true } : {}),
+                    ...(urgencyReason.length >= 10 ? { urgencyReason } : {})
+                };
+            } else {
+                const cost = document.getElementById('estimated-cost').value;
+                if (!cost || parseFloat(cost) <= 0) {
+                    showToast('Please enter or select a cost.', 'warning');
+                    return;
+                }
+                const trainClass = (selectedType === 'TRAIN' && _selectedFare?.class) ? _selectedFare.class : null;
+                submittedType = isMeal ? 'MEAL' : selectedType;
+                submittedCost = parseFloat(cost);
+                details = {
+                    destination: dest, date, purpose, justification,
+                    ...(origin ? { origin } : {}),
+                    ...(isForeign ? { isForeignTravel: true } : {}),
+                    ...(urgencyReason.length >= 10 ? { urgencyReason } : {}),
+                    ...(trainClass ? { trainClass } : {}),
+                    ...(durationDays ? { durationDays } : {}),
+                    ...(_selectedFare ? { selectedFare: _selectedFare } : {})
+                };
+                if (isMeal && (!durationDays || durationDays < 1)) {
+                    showToast('Please enter trip duration in days for the meal claim.', 'warning');
+                    return;
+                }
+            }
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true; btn.textContent = 'Submitting…';
+
+            try {
+                await apiRequest('/bookings', {
+                    method: 'POST',
+                    body: { type: submittedType, details, cost: submittedCost }
+                });
+                showToast('Travel request submitted successfully!', 'success');
+                setTimeout(() => { window.location.href = 'mytrips.html'; }, 1500);
+            } catch (err) {
+                showToast(err.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Request <span class="material-symbols-outlined" style="font-size:18px;">send</span>';
+            }
+        }
+    </script>
+    <nav class="side-bottom-nav">
+        <a href="employee.html">
+            <span class="material-symbols-outlined">dashboard</span>
+            Dashboard
+        </a>
+        <a href="mytrips.html">
+            <span class="material-symbols-outlined">luggage</span>
+            My Trips
+        </a>
+        <a href="request.html" data-active="true">
+            <span class="material-symbols-outlined">add_circle</span>
+            New Booking
+        </a>
+    </nav>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+</body>
+</html>

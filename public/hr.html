@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripFlow | HR Travel Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        /* ── Sidebar Navigation ── */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 240px;
+            background: #ffffff;
+            border-right: var(--border-thin);
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            padding: 1.5rem 1rem;
+        }
+        .sidebar-brand {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--outline-variant);
+        }
+        .sidebar-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+        }
+        .sidebar-nav-links a {
+            text-decoration: none;
+            color: var(--secondary);
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+        }
+        .sidebar-nav-links a:hover {
+            background: var(--surface-container-low);
+            color: var(--on-surface);
+        }
+        .sidebar-nav-links a.active {
+            background: var(--secondary-container, #dce2f3);
+            color: var(--primary);
+        }
+
+        /* ── Layout Overrides ── */
+        .main-wrapper {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+        .top-appbar {
+            height: 70px;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border-bottom: var(--border-thin);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            box-shadow: var(--shadow-level-1);
+        }
+
+        /* ── Tab Switchers ── */
+        .brutalist-tabs {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--outline-variant);
+            padding-bottom: 0.75rem;
+        }
+        .tab-btn {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.85rem;
+            background: #ffffff;
+            color: var(--secondary);
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
+            padding: 0.6rem 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .tab-btn:hover {
+            background: var(--surface-container-low);
+        }
+        .tab-btn.active {
+            background: var(--secondary-container, #dce2f3);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* ── Quick Info Lists ── */
+        .resource-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: #ffffff;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
+            margin-top: 0.5rem;
+            text-decoration: none;
+            color: var(--on-surface);
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        .resource-card:hover {
+            background: var(--surface-container-low);
+        }
+
+        /* ── Progress Indicators ── */
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--surface-container-low);
+            border: 1px solid var(--outline-variant);
+            border-radius: 4px;
+            margin-top: 0.25rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+        }
+
+        /* ── Dropdown styled Neo-Brutalist ── */
+        select.brutalist-select {
+            padding: 0.45rem 1rem;
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
+            background: #ffffff;
+            color: var(--on-surface);
+            cursor: pointer;
+        }
+
+        @media (max-width: 640px) {
+            [style*="grid-template-columns: 1fr 1fr"],
+            [style*="grid-template-columns:1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+    <meta name="theme-color" content="#003d9b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body class="bg-background text-on-surface">
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="main-sidebar">
+        <div class="sidebar-brand">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+                <img src="images/Logo.png" alt="TripFlow" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; flex-shrink: 0;">
+                <span style="font-family:var(--font-display);font-size:1.35rem;font-weight:700;letter-spacing:-0.02em;color:var(--primary);">TripFlow</span>
+            </div>
+            <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);letter-spacing:0.05em;">Enterprise</p>
+        </div>
+
+        <nav class="sidebar-nav-links">
+            <a href="#" class="active" id="snav-employees" onclick="switchTab('employees',this);return false;">
+                <span class="material-symbols-outlined">group</span>
+                Employee Directory
+            </a>
+            <a href="#" id="snav-vendor-assign" onclick="switchTab('vendor-assign',this);return false;">
+                <span class="material-symbols-outlined">assignment_turned_in</span>
+                Assign Vendors
+                <span id="vendor-assign-badge" style="display:none;margin-left:auto;background:var(--primary);color:#fff;font-size:0.65rem;font-weight:700;padding:0.15rem 0.45rem;border-radius:10px;"></span>
+            </a>
+            <a href="#" id="snav-bookings" onclick="switchTab('bookings',this);return false;">
+                <span class="material-symbols-outlined">luggage</span>
+                Travel Requests
+            </a>
+            <a href="#" id="snav-policies" onclick="switchTab('policies',this);return false;">
+                <span class="material-symbols-outlined">policy</span>
+                Travel Policies
+            </a>
+            <a href="#" id="snav-add-employee" onclick="switchTab('add-employee',this);return false;">
+                <span class="material-symbols-outlined">person_add</span>
+                Add Employee
+            </a>
+            <a href="#" id="snav-analytics" onclick="switchTab('analytics',this);return false;">
+                <span class="material-symbols-outlined">bar_chart</span>
+                Analytics
+            </a>
+        </nav>
+
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.25rem;">
+            <a href="#" onclick="logout(); return false;" style="text-decoration:none;color:var(--danger-text);font-family:var(--font-display);font-weight:600;font-size:0.8rem;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">logout</span>Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+        <!-- Top App Bar -->
+        <header class="top-appbar">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <button class="sidebar-mobile-btn" onclick="toggleSidebar()" aria-label="Open menu">
+                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                </button>
+                <h1 id="page-section-title" style="font-size:1.25rem;font-weight:600;margin:0;color:var(--on-surface);">Employee Directory</h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:1.5rem;">
+                <div style="display:flex;align-items:center;gap:1rem;">
+                    <span id="user-name" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;border:1px solid var(--outline-variant);background:var(--surface-container-low);padding:0.25rem 0.75rem;border-radius:var(--radius-md);">HR Officer</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <div class="container" style="padding-top:2rem;">
+
+            <!-- Greeting Banner -->
+            <div class="greeting-banner animate-fadein" style="margin-bottom:1.75rem;">
+                <div class="gb-inner">
+                    <div class="gb-text">
+                        <div class="gb-eyebrow" id="greeting-eyebrow">Good morning</div>
+                        <div class="gb-name" id="greeting-name">HR Manager</div>
+                        <div class="gb-role">HR Mobility Dashboard · Global Operations</div>
+                    </div>
+                    <div class="gb-action">
+                        <button class="gb-btn primary" onclick="switchTab('add-employee', document.getElementById('snav-add-employee'))">
+                            <span class="material-symbols-outlined" style="font-size:17px;">person_add</span>
+                            Add Employee
+                        </button>
+                        <button class="gb-btn white" onclick="switchTab('analytics', document.getElementById('snav-analytics'))">
+                            <span class="material-symbols-outlined" style="font-size:17px;">bar_chart</span>
+                            Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bento Stats Matrix -->
+            <div class="stats-grid-4 stagger animate-fadein" style="margin-bottom:2rem;">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon-wrap blue">
+                        <span class="material-symbols-outlined">group</span>
+                    </div>
+                    <div class="stat-label">Registered Users</div>
+                    <div class="stat-value" id="stat-emp">—</div>
+                </div>
+                <div class="stat-card stat-card-amber">
+                    <div class="stat-icon-wrap amber">
+                        <span class="material-symbols-outlined">pending_actions</span>
+                    </div>
+                    <div class="stat-label">Active Approvals</div>
+                    <div class="stat-value" id="stat-active">—</div>
+                </div>
+                <div class="stat-card stat-card-green">
+                    <div class="stat-icon-wrap green">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <div class="stat-label">Completed Trips</div>
+                    <div class="stat-value" id="stat-completed">—</div>
+                </div>
+                <div class="stat-card stat-card-purple">
+                    <div class="stat-icon-wrap purple">
+                        <span class="material-symbols-outlined">currency_rupee</span>
+                    </div>
+                    <div class="stat-label">Total Spend</div>
+                    <div class="stat-value" id="stat-spend">—</div>
+                </div>
+            </div>
+
+            <!-- Main Layout Split -->
+            <div style="display:grid;grid-template-columns: 2fr 1fr;gap:2rem;margin-bottom:3rem;" class="mobile-stack">
+                
+                <!-- Left Column Directories -->
+                <div>
+                    <!-- Brutalist Tab bar -->
+
+                    <!-- Directory 1: Employees -->
+                    <div id="tab-employees" class="tab-content active">
+                        <div class="table-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Department</th>
+                                        <th>Manager</th>
+                                        <th>Policy</th>
+                                        <th>Assign Policy</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="emp-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Directory: Vendor Assignment (PENDING_HR) -->
+                    <div id="tab-vendor-assign" class="tab-content">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                            <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--on-surface);">Pending Vendor Assignment</h3>
+                            <button onclick="loadVendorAssignQueue()" class="secondary" style="font-size:0.75rem;padding:0.4rem 0.8rem;">Refresh</button>
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Type</th>
+                                        <th>Route</th>
+                                        <th>Cost</th>
+                                        <th>Date</th>
+                                        <th>Assign Vendor</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vendor-assign-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Directory 2: Bookings -->
+                    <div id="tab-bookings" class="tab-content">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                            <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--on-surface);">Active Booking Queue</h3>
+                            <select id="stage-filter" onchange="filterBookings()" class="brutalist-select">
+                                <option value="">All Stages</option>
+                                <option value="PENDING_MANAGER">Pending Manager</option>
+                                <option value="PENDING_HR">Pending HR</option>
+                                <option value="PENDING_VENDOR">Pending Vendor</option>
+                                <option value="COMPLETED">Completed</option>
+                                <option value="REJECTED">Rejected</option>
+                                <option value="CANCELLED">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Type</th>
+                                        <th>Route</th>
+                                        <th>Stage</th>
+                                        <th>Cost</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bookings-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Directory 3: Policies -->
+                    <div id="tab-policies" class="tab-content">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                            <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--on-surface);">Company Allowance Caps</h3>
+                            <button class="secondary" onclick="showPolicyModal()" style="font-size:0.75rem;padding:0.4rem 0.8rem;">+ Create New Policy</button>
+                        </div>
+                        <div class="table-card" style="margin-bottom:2rem;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Flight limit</th>
+                                        <th>Hotel Limit</th>
+                                        <th>Train limit</th>
+                                        <th>Cab Limit</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="policy-list"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- AI Policy Analyzer Widget -->
+                        <div class="card" style="padding:1.5rem;background:#ffffff;">
+                            <span class="page-label" style="color:var(--primary);">AI Extraction Engine</span>
+                            <h3 style="font-size:1.3rem;margin:0.25rem 0 0.5rem;font-weight:600;color:var(--on-surface);">Claude Policy Parser</h3>
+                            <p style="font-size:0.85rem;font-weight:500;margin-bottom:1rem;color:var(--secondary);">Paste a raw corporate policy document (PDF text or guidelines). Our dynamic LLM parses flight, hotel, train and cab limits automatically.</p>
+                            <textarea id="policy-text" rows="5" placeholder="e.g. Sales team employees can book flights up to ₹50,000. Lodging allowances are capped at ₹10,000 per night. Train tickets have a limit of ₹4,000..." style="width:100%;border:1px solid var(--outline-variant);border-radius:var(--radius-md);padding:0.75rem;font-family:inherit;font-size:0.85rem;font-weight:500;margin-bottom:1rem;outline:none;"></textarea>
+                            <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                                <button onclick="analyzePolicy()" id="analyze-btn" style="background:var(--primary);color:#ffffff;border-color:transparent;width:auto;padding:0.6rem 1.25rem;">
+                                    Analyze with Claude
+                                </button>
+                                <span id="analyze-status" style="font-size:0.8rem;font-weight:700;color:var(--primary);"></span>
+                            </div>
+                            <div id="policy-results" style="display:none;margin-top:1.5rem;border:1px dashed var(--outline-variant);border-radius:8px;padding:1rem;background:var(--surface-container-low);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Directory 4: Add Employee -->
+                    <div id="tab-add-employee" class="tab-content">
+                        <div class="card" style="padding:1.75rem;max-width:560px;">
+                            <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--on-surface);margin-bottom:1.5rem;">Create New User Account</h3>
+                            <form id="create-user-form" style="display:flex;flex-direction:column;gap:1rem;">
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" class="mobile-stack">
+                                    <div class="form-group">
+                                        <label style="font-family:var(--font-display);font-weight:700;font-size:0.75rem;text-transform:uppercase;color:var(--secondary);display:block;margin-bottom:0.25rem;">Full Name</label>
+                                        <input type="text" id="cu-name" required placeholder="e.g. Rahul Sharma" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="font-family:var(--font-display);font-weight:700;font-size:0.75rem;text-transform:uppercase;color:var(--secondary);display:block;margin-bottom:0.25rem;">Email</label>
+                                        <input type="email" id="cu-email" required placeholder="rahul@company.in" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
+                                    </div>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" class="mobile-stack">
+                                    <div class="form-group">
+                                        <label style="font-family:var(--font-display);font-weight:700;font-size:0.75rem;text-transform:uppercase;color:var(--secondary);display:block;margin-bottom:0.25rem;">Password</label>
+                                        <input type="password" id="cu-password" required placeholder="Welcome@2026" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="font-family:var(--font-display);font-weight:700;font-size:0.75rem;text-transform:uppercase;color:var(--secondary);display:block;margin-bottom:0.25rem;">Phone (optional)</label>
+                                        <input type="tel" id="cu-phone" placeholder="+91 98765 43210" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
+                                    </div>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" class="mobile-stack">
+                                    <div class="form-group">
+                                        <label style="font-family:var(--font-display);font-weight:700;font-size:0.75rem;text-transform:uppercase;color:var(--secondary);display:block;margin-bottom:0.25rem;">Role</label>
+                                        <select id="cu-role" onchange="toggleEmployeeFields()" class="brutalist-select" style="width:100%;padding:0.55rem;border:1px solid var(--outline-variant);border-radius:var(--radius-md);font-size:0.85rem;">
+                                            <option value="EMPLOYEE">Employee</option>
+                                            <option value="MANAGER">Manager</option>
+                                            <option value="HR">HR</option>
+                                            <option value="ADMIN">Admin</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="cu-dept-wrap">
+                                        <label style="font-family:var(--font-display);font-weight:700;font-size:0.75rem;text-transform:uppercase;color:var(--secondary);display:block;margin-bottom:0.25rem;">Department</label>
+                                        <input type="text" id="cu-dept" placeholder="e.g. Sales, Engineering" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
+                                    </div>
+                                </div>
+                                <div class="form-group" id="cu-manager-wrap">
+                                    <label style="font-family:var(--font-display);font-weight:700;font-size:0.75rem;text-transform:uppercase;color:var(--secondary);display:block;margin-bottom:0.25rem;">Reports To (Manager)</label>
+                                    <select id="cu-manager" class="brutalist-select" style="width:100%;padding:0.55rem;border:1px solid var(--outline-variant);border-radius:var(--radius-md);font-size:0.85rem;">
+                                        <option value="">No Manager</option>
+                                    </select>
+                                </div>
+                                <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+                                    <button type="submit" id="cu-submit-btn" style="flex:1;background:var(--primary);color:#ffffff;border-color:transparent;">Create Account</button>
+                                    <button type="reset" class="secondary" style="flex:0.4;" onclick="resetCreateForm()">Clear</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Directory 5: Analytics -->
+                    <div id="tab-analytics" class="tab-content">
+                        <!-- KPI row -->
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;" id="analytics-kpi-row">
+                            <div class="card" style="padding:1.25rem;text-align:center;">
+                                <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);margin-bottom:0.4rem;">Total Bookings</div>
+                                <div style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--on-surface);" id="an-total">—</div>
+                            </div>
+                            <div class="card" style="padding:1.25rem;text-align:center;">
+                                <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);margin-bottom:0.4rem;">Total Spend</div>
+                                <div style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--primary);" id="an-spend">—</div>
+                            </div>
+                            <div class="card" style="padding:1.25rem;text-align:center;">
+                                <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);margin-bottom:0.4rem;">Pending</div>
+                                <div style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:#d97706;" id="an-pending">—</div>
+                            </div>
+                            <div class="card" style="padding:1.25rem;text-align:center;">
+                                <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);margin-bottom:0.4rem;">Completed</div>
+                                <div style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:#16a34a;" id="an-completed">—</div>
+                            </div>
+                            <div class="card" style="padding:1.25rem;text-align:center;">
+                                <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);margin-bottom:0.4rem;">Rejected</div>
+                                <div style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:#dc2626;" id="an-rejected">—</div>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;" class="mobile-stack">
+                            <!-- By Travel Type -->
+                            <div class="card" style="padding:1.25rem;">
+                                <h4 style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--secondary);margin-bottom:1rem;">Spend by Travel Type</h4>
+                                <div id="an-by-type" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+                            </div>
+                            <!-- By Stage -->
+                            <div class="card" style="padding:1.25rem;">
+                                <h4 style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--secondary);margin-bottom:1rem;">Bookings by Status</h4>
+                                <div id="an-by-stage" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Top Spenders -->
+                        <div class="card" style="padding:1.25rem;">
+                            <h4 style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--secondary);margin-bottom:1rem;">Top Travelers by Spend</h4>
+                            <div class="table-card" style="border:none;padding:0;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Employee</th>
+                                            <th>Trips</th>
+                                            <th>Total Spend</th>
+                                            <th>Avg per Trip</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="an-top-spenders"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column Widget Panels -->
+                <div style="display:flex;flex-direction:column;gap:1.5rem;">
+                    
+                    <!-- Policy Breakdown visualizer -->
+                    <div class="card" style="padding:1.5rem;">
+                        <h3 style="font-family:var(--font-display);font-size:0.85rem;font-weight:700;text-transform:uppercase;margin-bottom:1rem;letter-spacing:0.05em;color:var(--secondary);">Policy Adherence</h3>
+                        <div style="display:flex;justify-content:center;align-items:center;height:120px;position:relative;">
+                            <div id="adherence-pct" style="width:100px;height:100px;border-radius:50%;border:8px solid var(--primary);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:1.3rem;color:var(--primary);">
+                                —
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:1rem;font-size:0.8rem;font-weight:600;">
+                            <div style="display:flex;justify-content:space-between;color:var(--on-surface);">
+                                <span style="display:flex;align-items:center;gap:0.25rem;"><span style="width:8px;height:8px;background:var(--primary);border-radius:50%;display:inline-block;"></span>Flight Rates</span>
+                                <span id="flight-compliance">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;color:var(--on-surface);">
+                                <span style="display:flex;align-items:center;gap:0.25rem;"><span style="width:8px;height:8px;background:var(--secondary-container);border-radius:50%;display:inline-block;"></span>Hotel Allowances</span>
+                                <span id="hotel-compliance">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Top Travel Destinations visualizer -->
+                    <div class="card" style="padding:1.25rem;">
+                        <h3 style="font-family:var(--font-display);font-size:0.85rem;font-weight:700;text-transform:uppercase;margin-bottom:1rem;letter-spacing:0.05em;color:var(--secondary);">Top Hub Destinations</h3>
+                        <div style="display:flex;flex-direction:column;gap:0.75rem;font-size:0.8rem;font-weight:600;color:var(--on-surface);" id="top-destinations-container">
+                            <div style="text-align:center;color:var(--secondary);font-size:0.8rem;padding:0.5rem 0;">No active hub travel logs yet.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Policy Modal -->
+    <div id="policy-modal" class="modal">
+        <div class="modal-content" style="max-width:480px;border:1px solid var(--outline-variant);border-radius:var(--radius-lg);box-shadow:var(--shadow-level-2);padding:2rem;">
+            <h2 style="font-family:var(--font-display);font-size:1.4rem;font-weight:600;margin-bottom:1.5rem;color:var(--on-surface);">New Travel Policy</h2>
+            <form id="policy-form" style="display:flex;flex-direction:column;gap:1rem;">
+                <div class="form-group">
+                    <label style="font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:0.75rem;display:block;margin-bottom:0.25rem;color:var(--secondary);">Policy Name</label>
+                    <input type="text" id="p-name" required placeholder="e.g. Executive 2026" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="form-group">
+                        <label style="font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:0.75rem;display:block;margin-bottom:0.25rem;color:var(--secondary);">Flight Cap (₹)</label>
+                        <input type="number" id="p-flight" placeholder="60000" min="0" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:0.75rem;display:block;margin-bottom:0.25rem;color:var(--secondary);">Hotel / Night (₹)</label>
+                        <input type="number" id="p-hotel" placeholder="8000" min="0" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:0.75rem;display:block;margin-bottom:0.25rem;color:var(--secondary);">Train Cap (₹)</label>
+                        <input type="number" id="p-train" placeholder="3000" min="0" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:0.75rem;display:block;margin-bottom:0.25rem;color:var(--secondary);">Cab Cap (₹)</label>
+                        <input type="number" id="p-cab" placeholder="1500" min="0" style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);width:100%;padding:0.55rem;font-size:0.85rem;">
+                    </div>
+                </div>
+                <div style="display:flex;gap:0.75rem;margin-top:1.5rem;">
+                    <button type="submit" style="flex:1;background:var(--primary);color:#ffffff;border-color:transparent;">Save Policy</button>
+                    <button type="button" onclick="hideModal('policy-modal')" class="secondary" style="flex:0.4;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script imports and logic -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let allBookings = [], allPolicies = [];
+
+        function toggleSidebar() {
+            document.getElementById('main-sidebar').classList.toggle('open');
+            document.getElementById('sidebar-backdrop').classList.toggle('open');
+        }
+
+        async function init() {
+            const user = checkAuth();
+            if (!user) return;
+            document.getElementById('user-name').innerText = user.name.toUpperCase();
+            const hr = new Date().getHours();
+            const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+            document.getElementById('greeting-eyebrow').textContent = greet;
+            document.getElementById('greeting-name').textContent = user.name;
+            showTableSkeleton('emp-list', 6);
+            showTableSkeleton('bookings-list', 6);
+            showTableSkeleton('policy-list', 6);
+            loadStats();
+            loadEmployees();
+            loadBookings();
+            loadPolicies();
+            loadManagerOptions();
+            loadVendorAssignQueue();
+            toggleEmployeeFields();
+        }
+        init();
+
+        const tabTitles = {
+            'employees':     'Employee Directory',
+            'vendor-assign': 'Assign Vendors',
+            'bookings':      'All Travel Requests',
+            'policies':      'Travel Policies',
+            'add-employee':  'Add Employee',
+            'analytics':     'Analytics'
+        };
+        function switchTab(name, el) {
+            document.querySelectorAll('.sidebar-nav-links a, .side-bottom-nav a').forEach(a => a.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            (el || document.getElementById('snav-' + name)).classList.add('active');
+            const bnavEl = document.getElementById('bnav-' + name);
+            if (bnavEl) bnavEl.classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+            document.getElementById('page-section-title').innerText = tabTitles[name] || 'HR Portal';
+            if (window.innerWidth <= 768) toggleSidebar();
+        }
+
+        async function loadStats() {
+            try {
+                const s = await apiRequest('/admin/stats');
+                document.getElementById('stat-emp').innerText       = s.totalUsers || '—';
+                document.getElementById('stat-active').innerText    = s.pendingApprovals;
+                document.getElementById('stat-completed').innerText = s.completedTrips || '—';
+                document.getElementById('stat-spend').innerText     = '₹' + (s.totalCost || 0).toLocaleString('en-IN');
+            } catch(e) {}
+        }
+
+        async function loadEmployees() {
+            try {
+                allPolicies = await apiRequest('/admin/policies');
+                const emps  = await apiRequest('/admin/employees');
+                const list  = document.getElementById('emp-list');
+                if (!emps.length) {
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👥</div><p>No employees found</p></div></td></tr>'; return;
+                }
+                list.innerHTML = emps.map(e => {
+                    const currentPolicy = allPolicies.find(p => p.id === e.policyId);
+                    return `
+                    <tr>
+                        <td data-label="Name" style="font-weight:700;color:var(--on-surface);">${e.user.name}</td>
+                        <td data-label="Email" style="color:var(--secondary);font-size:0.82rem;font-weight:600;">${e.user.email}</td>
+                        <td data-label="Department" style="color:var(--on-surface);font-weight:600;">${e.department}</td>
+                        <td data-label="Manager" style="color:var(--secondary);font-weight:600;">${e.manager?.name || '—'}</td>
+                        <td data-label="Policy">
+                            <span class="badge badge-pending-vendor" style="font-size:0.7rem;">
+                                ${currentPolicy ? currentPolicy.name : 'NO POLICY'}
+                            </span>
+                        </td>
+                        <td data-label="Assign">
+                            <select onchange="assignPolicy('${e.id}', this.value)" class="brutalist-select" style="font-size:0.75rem;padding:0.25rem 0.5rem;width:100%;">
+                                <option value="">Assign Allowances…</option>
+                                ${allPolicies.map(p => `<option value="${p.id}" ${p.id === e.policyId?'selected':''}>${p.name}</option>`).join('')}
+                            </select>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function assignPolicy(employeeId, policyId) {
+            if (!policyId) return;
+            try {
+                await apiRequest('/admin/policies/assign', { method: 'POST', body: { employeeId, policyId } });
+                showToast('Travel policy assigned successfully.', 'success');
+                await loadEmployees();
+            } catch(err) {
+                showToast('Failed to assign policy: ' + err.message, 'error');
+            }
+        }
+
+        async function loadBookings() {
+            try {
+                allBookings = await apiRequest('/admin/bookings');
+                renderBookings(allBookings);
+                updateRightColumnStats(allBookings);
+                renderAnalytics(allBookings);
+            } catch(e) { console.error(e); }
+        }
+
+        function updateRightColumnStats(bookings) {
+            const total = bookings.length;
+            const rejected = bookings.filter(b => b.stage === 'REJECTED').length;
+            const adherence = total > 0 ? Math.round(((total - rejected) / total) * 100) : 100;
+            
+            document.getElementById('adherence-pct').innerText = adherence + '%';
+            document.getElementById('flight-compliance').innerText = (total > 0 ? Math.round((bookings.filter(b => b.type === 'FLIGHT' && b.stage !== 'REJECTED').length / Math.max(1, bookings.filter(b => b.type === 'FLIGHT').length)) * 100) : 100) + '% compliant';
+            document.getElementById('hotel-compliance').innerText = (total > 0 ? Math.round((bookings.filter(b => b.type === 'HOTEL' && b.stage !== 'REJECTED').length / Math.max(1, bookings.filter(b => b.type === 'HOTEL').length)) * 100) : 100) + '% compliant';
+
+            const dests = {};
+            bookings.forEach(b => {
+                const dest = b.details?.destination;
+                if (dest) {
+                    dests[dest] = (dests[dest] || 0) + 1;
+                }
+            });
+            const sortedDests = Object.entries(dests).sort((a,b) => b[1] - a[1]).slice(0, 3);
+            const container = document.getElementById('top-destinations-container');
+            if (!sortedDests.length) {
+                container.innerHTML = `<div style="text-align:center;color:var(--secondary);font-size:0.8rem;padding:0.5rem 0;">No active hub travel logs yet.</div>`;
+                return;
+            }
+            const maxCount = sortedDests[0][1];
+            container.innerHTML = sortedDests.map(([name, count]) => {
+                const pct = Math.round((count / maxCount) * 100);
+                return `
+                    <div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:0.25rem;">
+                            <span>${name}</span>
+                            <span>${count} Trip${count > 1 ? 's' : ''}</span>
+                        </div>
+                        <div class="progress-bar-container" style="background:var(--surface-container-highest);height:8px;border-radius:var(--radius-sm);overflow:hidden;"><div class="progress-bar" style="width:${pct}%;background:var(--primary);height:100%;"></div></div>
+                    </div>`;
+            }).join('');
+        }
+
+        function renderBookings(list) {
+            const el = document.getElementById('bookings-list');
+            if (!list.length) {
+                el.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>No bookings found</p></div></td></tr>'; return;
+            }
+            el.innerHTML = list.map(b => {
+                let actionCell;
+                if (b.stage === 'PENDING_HR') {
+                    actionCell = `<td data-label="Action" style="white-space:nowrap;">
+                        <button onclick="switchTab('vendor-assign',document.getElementById('snav-vendor-assign'))" style="font-size:0.72rem;padding:0.3rem 0.6rem;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Assign Vendor</button>
+                    </td>`;
+                } else {
+                    actionCell = `<td data-label="Action" style="color:var(--secondary);font-size:0.75rem;font-weight:600;">—</td>`;
+                }
+                return `
+                <tr>
+                    <td data-label="Employee" style="font-weight:700;color:var(--on-surface);">${b.employee?.user?.name || '—'}</td>
+                    <td data-label="Type"><span class="role-badge role-VENDOR">${b.type}</span></td>
+                    <td data-label="Route">
+                        <a href="detail.html?id=${b.id}" style="text-decoration:none;color:inherit;display:block;">
+                            <div style="font-weight:700;color:var(--on-surface);text-decoration:underline;text-underline-offset:2px;">${b.details?.origin || '—'} → ${b.details?.destination || '—'}</div>
+                        </a>
+                    </td>
+                    <td data-label="Stage"><span class="badge badge-${b.stage.toLowerCase().replace(/_/g,'-')}">${b.stage.replace(/_/g,' ')}</span></td>
+                    <td data-label="Cost" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                    <td data-label="Date" style="color:var(--secondary);font-size:0.78rem;font-weight:600;">${new Date(b.createdAt).toLocaleDateString('en-IN')}</td>
+                    ${actionCell}
+                </tr>`;
+            }).join('');
+        }
+
+        function filterBookings() {
+            const stage = document.getElementById('stage-filter').value;
+            renderBookings(stage ? allBookings.filter(b => b.stage === stage) : allBookings);
+        }
+
+        async function loadPolicies() {
+            try {
+                allPolicies = await apiRequest('/admin/policies');
+                const list  = document.getElementById('policy-list');
+                if (!allPolicies.length) {
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><p>No policies yet. Create one to enforce spending limits.</p></div></td></tr>'; return;
+                }
+                list.innerHTML = allPolicies.map(p => `
+                    <tr>
+                        <td data-label="Name" style="font-weight:700;color:var(--on-surface);">${p.name}</td>
+                        <td data-label="Flight" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${(p.rules.flightLimit || 0).toLocaleString('en-IN')}</td>
+                        <td data-label="Hotel/Night" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${(p.rules.hotelLimit || 0).toLocaleString('en-IN')}</td>
+                        <td data-label="Train" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${(p.rules.trainLimit || 0).toLocaleString('en-IN')}</td>
+                        <td data-label="Cab" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${(p.rules.cabLimit || 0).toLocaleString('en-IN')}</td>
+                    </tr>`).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        function showPolicyModal() { document.getElementById('policy-modal').style.display = 'flex'; }
+        function hideModal(id)      { document.getElementById(id).style.display = 'none'; }
+
+        document.getElementById('policy-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type=submit]');
+            btn.disabled = true; btn.innerText = 'Saving Allowances…';
+            try {
+                await apiRequest('/admin/policies', { method: 'POST', body: {
+                    name: document.getElementById('p-name').value,
+                    flightLimit: document.getElementById('p-flight').value,
+                    hotelLimit:  document.getElementById('p-hotel').value,
+                    trainLimit:  document.getElementById('p-train').value,
+                    cabLimit:    document.getElementById('p-cab').value,
+                }});
+                hideModal('policy-modal');
+                e.target.reset();
+                showToast('Travel policy allowance rule created successfully!', 'success');
+                await loadPolicies(); await loadEmployees();
+            } catch(err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false; btn.innerText = 'Save Policy';
+            }
+        });
+
+        // HR approval actions are now handled in the Assign Vendors tab (loadVendorAssignQueue)
+
+        // ── Add Employee Tab ──
+        async function loadManagerOptions() {
+            try {
+                const users = await apiRequest('/admin/users');
+                const managers = users.filter(u => u.role === 'MANAGER' || u.role === 'HR' || u.role === 'ADMIN');
+                const sel = document.getElementById('cu-manager');
+                managers.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.employee?.id || '';
+                    opt.textContent = m.name + ' (' + m.role + ')';
+                    if (!opt.value) return;
+                    sel.appendChild(opt);
+                });
+            } catch(e) {}
+        }
+
+        function toggleEmployeeFields() {
+            const role = document.getElementById('cu-role').value;
+            const showEmpFields = role === 'EMPLOYEE' || role === 'MANAGER';
+            document.getElementById('cu-dept-wrap').style.display = showEmpFields ? '' : 'none';
+            document.getElementById('cu-manager-wrap').style.display = role === 'EMPLOYEE' ? '' : 'none';
+        }
+
+        function resetCreateForm() {
+            document.getElementById('create-user-form').reset();
+            toggleEmployeeFields();
+        }
+
+        document.getElementById('create-user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('cu-submit-btn');
+            btn.disabled = true; btn.innerText = 'Creating…';
+            try {
+                const role = document.getElementById('cu-role').value;
+                const body = {
+                    name:       document.getElementById('cu-name').value.trim(),
+                    email:      document.getElementById('cu-email').value.trim(),
+                    password:   document.getElementById('cu-password').value,
+                    phone:      document.getElementById('cu-phone').value.trim() || undefined,
+                    role,
+                    department: document.getElementById('cu-dept').value.trim() || 'General',
+                    managerId:  document.getElementById('cu-manager').value || undefined,
+                };
+                await apiRequest('/admin/users', { method: 'POST', body });
+                showToast('Account created successfully for ' + body.name, 'success');
+                e.target.reset();
+                toggleEmployeeFields();
+                await loadEmployees();
+                await loadManagerOptions();
+            } catch(err) {
+                showToast(err.message || 'Failed to create account', 'error');
+            } finally {
+                btn.disabled = false; btn.innerText = 'Create Account';
+            }
+        });
+
+        // ── Analytics Tab ──
+        function renderAnalytics(bookings) {
+            const total = bookings.length;
+            const spend = bookings.reduce((s, b) => s + (Number(b.cost) || 0), 0);
+            const pending   = bookings.filter(b => ['PENDING_MANAGER','PENDING_HR','PENDING_VENDOR'].includes(b.stage)).length;
+            const completed = bookings.filter(b => b.stage === 'COMPLETED').length;
+            const rejected  = bookings.filter(b => b.stage === 'REJECTED').length;
+
+            document.getElementById('an-total').innerText     = total;
+            document.getElementById('an-spend').innerText     = '₹' + spend.toLocaleString('en-IN');
+            document.getElementById('an-pending').innerText   = pending;
+            document.getElementById('an-completed').innerText = completed;
+            document.getElementById('an-rejected').innerText  = rejected;
+
+            // By type
+            const typeColors = { FLIGHT:'#6366f1', TRAIN:'#0ea5e9', CAB:'#f59e0b', HOTEL:'#10b981' };
+            const byType = {};
+            bookings.forEach(b => {
+                if (!byType[b.type]) byType[b.type] = { count: 0, spend: 0 };
+                byType[b.type].count++;
+                byType[b.type].spend += Number(b.cost) || 0;
+            });
+            const maxTypeSpend = Math.max(1, ...Object.values(byType).map(v => v.spend));
+            document.getElementById('an-by-type').innerHTML = Object.entries(byType).length
+                ? Object.entries(byType).sort((a,b) => b[1].spend - a[1].spend).map(([type, v]) => `
+                    <div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.8rem;font-weight:600;margin-bottom:0.2rem;">
+                            <span style="color:var(--on-surface);">${type}</span>
+                            <span style="color:var(--primary);">₹${v.spend.toLocaleString('en-IN')} &nbsp;(${v.count} trip${v.count>1?'s':''})</span>
+                        </div>
+                        <div style="height:7px;background:var(--surface-container-low);border-radius:4px;overflow:hidden;">
+                            <div style="width:${Math.round(v.spend/maxTypeSpend*100)}%;height:100%;background:${typeColors[type]||'var(--primary)'};border-radius:4px;"></div>
+                        </div>
+                    </div>`).join('')
+                : '<div style="color:var(--secondary);font-size:0.85rem;">No data yet.</div>';
+
+            // By stage
+            const stageLabel = { PENDING_MANAGER:'Pending Manager', PENDING_HR:'Pending HR', PENDING_VENDOR:'Pending Vendor', COMPLETED:'Completed', REJECTED:'Rejected', CANCELLED:'Cancelled' };
+            const stageColor = { PENDING_MANAGER:'#f59e0b', PENDING_HR:'#8b5cf6', PENDING_VENDOR:'#6366f1', COMPLETED:'#16a34a', REJECTED:'#dc2626', CANCELLED:'#6b7280' };
+            const byStage = {};
+            bookings.forEach(b => {
+                byStage[b.stage] = (byStage[b.stage] || 0) + 1;
+            });
+            const maxStageCount = Math.max(1, ...Object.values(byStage));
+            document.getElementById('an-by-stage').innerHTML = Object.entries(byStage).length
+                ? Object.entries(byStage).sort((a,b) => b[1]-a[1]).map(([stage, count]) => `
+                    <div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.8rem;font-weight:600;margin-bottom:0.2rem;">
+                            <span style="color:var(--on-surface);">${stageLabel[stage]||stage}</span>
+                            <span>${count} booking${count>1?'s':''}</span>
+                        </div>
+                        <div style="height:7px;background:var(--surface-container-low);border-radius:4px;overflow:hidden;">
+                            <div style="width:${Math.round(count/maxStageCount*100)}%;height:100%;background:${stageColor[stage]||'var(--secondary)'};border-radius:4px;"></div>
+                        </div>
+                    </div>`).join('')
+                : '<div style="color:var(--secondary);font-size:0.85rem;">No data yet.</div>';
+
+            // Top spenders
+            const empSpend = {};
+            bookings.forEach(b => {
+                const name = b.employee?.user?.name || 'Unknown';
+                if (!empSpend[name]) empSpend[name] = { count: 0, spend: 0 };
+                empSpend[name].count++;
+                empSpend[name].spend += Number(b.cost) || 0;
+            });
+            const sorted = Object.entries(empSpend).sort((a,b) => b[1].spend - a[1].spend).slice(0, 8);
+            document.getElementById('an-top-spenders').innerHTML = sorted.length
+                ? sorted.map(([name, v], i) => `
+                    <tr>
+                        <td style="font-weight:700;color:var(--secondary);">${i+1}</td>
+                        <td style="font-weight:700;color:var(--on-surface);">${name}</td>
+                        <td>${v.count}</td>
+                        <td style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${v.spend.toLocaleString('en-IN')}</td>
+                        <td style="color:var(--secondary);font-weight:600;">₹${Math.round(v.spend/v.count).toLocaleString('en-IN')}</td>
+                    </tr>`).join('')
+                : '<tr><td colspan="5"><div class="empty-state"><p>No bookings yet.</p></div></td></tr>';
+        }
+
+        // ── Vendor Assignment Queue (PENDING_HR) ──
+        let allVendors = [];
+
+        async function loadVendorAssignQueue() {
+            try {
+                const [pendingHr, vendors] = await Promise.all([
+                    apiRequest('/approvals/hr/pending'),
+                    apiRequest('/approvals/vendors')
+                ]);
+                allVendors = vendors;
+
+                const badge = document.getElementById('vendor-assign-badge');
+                if (pendingHr.length) {
+                    badge.innerText = pendingHr.length;
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                const list = document.getElementById('vendor-assign-list');
+                if (!pendingHr.length) {
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✅</div><p>No bookings awaiting vendor assignment</p></div></td></tr>';
+                    return;
+                }
+                list.innerHTML = pendingHr.map(b => {
+                    const typeVendors = allVendors.filter(v =>
+                        !v.serviceType || v.serviceType.toUpperCase() === b.type
+                    );
+                    const vendorOptions = typeVendors.length
+                        ? typeVendors.map(v => `<option value="${v.id}">${v.companyName} (${v.serviceType})</option>`).join('')
+                        : allVendors.map(v => `<option value="${v.id}">${v.companyName} (${v.serviceType})</option>`).join('');
+                    return `
+                    <tr>
+                        <td data-label="Employee" style="font-weight:700;">${b.employee?.user?.name || '—'}<br><span style="font-size:0.75rem;color:var(--secondary);font-weight:600;">${b.employee?.department || ''}</span></td>
+                        <td data-label="Type"><span class="role-badge role-VENDOR">${b.type}</span></td>
+                        <td data-label="Route" style="font-weight:700;">${b.details?.origin || '—'} → ${b.details?.destination || '—'}<br><span style="font-size:0.75rem;color:var(--secondary);">${b.details?.date || ''}</span></td>
+                        <td data-label="Cost" style="font-family:var(--font-display);font-weight:700;color:var(--primary);">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                        <td data-label="Submitted" style="color:var(--secondary);font-size:0.78rem;font-weight:600;">${new Date(b.createdAt).toLocaleDateString('en-IN')}</td>
+                        <td data-label="Assign Vendor" style="white-space:nowrap;">
+                            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+                                <select id="vendor-sel-${b.id}" class="brutalist-select" style="font-size:0.75rem;padding:0.25rem 0.5rem;">
+                                    <option value="">Select vendor…</option>
+                                    ${vendorOptions}
+                                </select>
+                                <button onclick="assignVendor('${b.id}')" style="font-size:0.72rem;padding:0.3rem 0.6rem;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;white-space:nowrap;">Assign</button>
+                                <button onclick="hrRejectPendingHr('${b.id}')" style="font-size:0.72rem;padding:0.3rem 0.6rem;background:#dc2626;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Reject</button>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function assignVendor(bookingId) {
+            const sel = document.getElementById('vendor-sel-' + bookingId);
+            const vendorId = sel ? sel.value : '';
+            if (!vendorId) { showToast('Please select a vendor first.', 'warning'); return; }
+            try {
+                await apiRequest(`/approvals/${bookingId}/assign-vendor`, { method: 'POST', body: { vendorId } });
+                showToast('Vendor assigned successfully. Vendor has been notified.', 'success');
+                await loadVendorAssignQueue();
+                await loadStats();
+            } catch(err) {
+                showToast(err.message || 'Failed to assign vendor', 'error');
+            }
+        }
+
+        async function hrRejectPendingHr(bookingId) {
+            const reason = prompt('Reason for rejection (required):');
+            if (!reason || !reason.trim()) return;
+            try {
+                await apiRequest(`/approvals/${bookingId}/reject`, { method: 'POST', body: { reason } });
+                showToast('Booking rejected.', 'success');
+                await loadVendorAssignQueue();
+                await loadStats();
+            } catch(err) {
+                showToast(err.message || 'Rejection failed', 'error');
+            }
+        }
+
+        async function analyzePolicy() {
+            const text = document.getElementById('policy-text').value;
+            if (!text.trim()) { showToast('Please paste corporate policy rules text first.', 'warning'); return; }
+            const btn    = document.getElementById('analyze-btn');
+            const status = document.getElementById('analyze-status');
+            btn.disabled = true; btn.innerText = 'Extracting…';
+            status.innerText = 'Claude is extracting limits…';
+            try {
+                const r   = await apiRequest('/admin/policies/analyze', { method: 'POST', body: { text } });
+                const div = document.getElementById('policy-results');
+                div.style.display = 'block';
+                div.innerHTML = `
+                    <p style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--on-surface);margin-bottom:1rem;border-bottom:var(--border-thin);padding-bottom:0.25rem;">Extracted Policy Thresholds</p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;">
+                        ${[
+                            ['Flights Cap','flightLimit'],
+                            ['Hotels / Night','hotelLimit'],
+                            ['Trains Cap','trainLimit'],
+                            ['Cabs Cap','cabLimit']
+                        ].map(([label,key]) => `
+                        <div style="padding:0.75rem;background:var(--surface-container-low);border:var(--border-thin);border-radius:var(--radius-md);box-shadow:var(--shadow-level-1);">
+                            <p style="font-family:var(--font-display);font-size:0.6rem;font-weight:700;text-transform:uppercase;color:var(--secondary);margin:0 0 0.25rem;">${label}</p>
+                            <strong style="font-size:1.05rem;color:var(--primary);font-family:var(--font-display);">₹${(r[key] || 0).toLocaleString('en-IN')}</strong>
+                        </div>`).join('')}
+                    </div>`;
+                status.innerText = 'Claude Extraction Complete!';
+                showToast('Limits extracted successfully. Copying them to values is recommended.', 'success');
+            } catch(err) {
+                status.innerText = 'Extraction failed: ' + err.message;
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false; btn.innerText = 'Analyze with Claude';
+            }
+        }
+    </script>
+    <nav class="side-bottom-nav">
+        <a href="#" id="bnav-employees" class="active" onclick="switchTab('employees',document.getElementById('snav-employees'));return false;">
+            <span class="material-symbols-outlined">group</span>
+            Employees
+        </a>
+        <a href="#" id="bnav-vendor-assign" onclick="switchTab('vendor-assign',document.getElementById('snav-vendor-assign'));return false;">
+            <span class="material-symbols-outlined">assignment_turned_in</span>
+            Assign
+        </a>
+        <a href="#" id="bnav-bookings" onclick="switchTab('bookings',document.getElementById('snav-bookings'));return false;">
+            <span class="material-symbols-outlined">luggage</span>
+            Requests
+        </a>
+        <a href="#" id="bnav-analytics" onclick="switchTab('analytics',document.getElementById('snav-analytics'));return false;">
+            <span class="material-symbols-outlined">bar_chart</span>
+            Analytics
+        </a>
+    </nav>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+</body>
+</html>

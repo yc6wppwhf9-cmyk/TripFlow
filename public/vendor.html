@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripFlow | Vendor Fulfillment & Performance</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        /* ── Sidebar Navigation ── */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 240px;
+            background: #ffffff;
+            border-right: var(--border-thin);
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            padding: 1.5rem 1rem;
+        }
+        .sidebar-brand {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--outline-variant);
+        }
+        .sidebar-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+        }
+        .sidebar-nav-links a {
+            text-decoration: none;
+            color: var(--secondary);
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+        }
+        .sidebar-nav-links a:hover {
+            background: var(--surface-container-low);
+            color: var(--on-surface);
+        }
+        .sidebar-nav-links a.active {
+            background: var(--secondary-container, #dce2f3);
+            color: var(--primary);
+        }
+
+        /* ── Layout Overrides ── */
+        .main-wrapper {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+        .top-appbar {
+            height: 70px;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border-bottom: var(--border-thin);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            box-shadow: var(--shadow-level-1);
+        }
+
+        /* ── Tab Switchers ── */
+        .brutalist-tabs {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--outline-variant);
+            padding-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.85rem;
+            background: transparent;
+            color: var(--secondary);
+            border: 1px solid transparent;
+            padding: 0.5rem 1.25rem;
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+        }
+        .tab-btn:hover {
+            background: var(--surface-container-low);
+            color: var(--on-surface);
+        }
+        .tab-btn.active {
+            background: #ffffff;
+            border-color: var(--outline-variant);
+            color: var(--primary);
+            box-shadow: var(--shadow-level-1);
+        }
+
+        /* ── Bento Grid ── */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .fleet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+        .fleet-btn {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: var(--radius-md);
+            gap: 0.25rem;
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.75rem;
+            transition: var(--transition);
+        }
+        .fleet-btn:hover {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: var(--shadow-level-1);
+        }
+
+        @media (max-width: 1024px) {
+            .main-wrapper { margin-left: 0; }
+            .analytics-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+    <meta name="theme-color" content="#003d9b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body class="bg-background text-on-surface">
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="main-sidebar">
+        <div class="sidebar-brand">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+                <img src="images/Logo.png" alt="TripFlow" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; flex-shrink: 0;">
+                <span style="font-family:var(--font-display);font-size:1.35rem;font-weight:700;letter-spacing:-0.02em;color:var(--primary);">TripFlow</span>
+            </div>
+            <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);letter-spacing:0.05em;">Vendor Desk</p>
+        </div>
+
+        <nav class="sidebar-nav-links">
+            <a href="vendor.html" class="active">
+                <span class="material-symbols-outlined">confirmation_number</span>
+                Fulfillment Suite
+            </a>
+        </nav>
+
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.25rem;">
+            <a href="#" onclick="logout(); return false;" style="text-decoration:none;color:var(--danger-text);font-family:var(--font-display);font-weight:600;font-size:0.8rem;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">logout</span>Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+        <!-- Top App Bar -->
+        <header class="top-appbar">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <button class="sidebar-mobile-btn" onclick="toggleSidebar()" aria-label="Open menu">
+                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                </button>
+                <h1 style="font-size:1.25rem;font-weight:600;margin:0;">Fulfillment Center</h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:1.5rem;">
+                <div style="display:flex;align-items:center;gap:1rem;">
+                    <span id="user-name" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;border:1px solid var(--outline-variant);background:var(--surface-container-low);padding:0.25rem 0.75rem;border-radius:var(--radius-md);">Fulfillment Partner</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <div class="container" style="padding-top:2rem;">
+
+            <!-- Greeting Banner -->
+            <div class="greeting-banner animate-fadein" style="margin-bottom:1.75rem;">
+                <div class="gb-inner">
+                    <div class="gb-text">
+                        <div class="gb-eyebrow" id="greeting-eyebrow">Good morning</div>
+                        <div class="gb-name" id="welcome-heading">Partner</div>
+                        <div class="gb-role" id="company-name">Fulfillment Center · Vendor Desk</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bento Performance Metrics -->
+            <div class="stats-grid-4 stagger animate-fadein" style="margin-bottom:2rem;">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon-wrap blue">
+                        <span class="material-symbols-outlined">calendar_month</span>
+                    </div>
+                    <div class="stat-label">Total Bookings</div>
+                    <div class="stat-value" id="stat-total">0</div>
+                </div>
+                <div class="stat-card stat-card-green">
+                    <div class="stat-icon-wrap green">
+                        <span class="material-symbols-outlined">payments</span>
+                    </div>
+                    <div class="stat-label">Avg Ticket Value</div>
+                    <div class="stat-value" id="stat-rate">₹0</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="brutalist-tabs tab-nav">
+                <button class="tab-btn active" id="tab-btn-pending" onclick="switchTab('pending',this)">
+                    Pending Fulfillment Queue
+                    <span id="pending-badge" style="background:var(--danger-bg);color:var(--danger-text);padding:0.15rem 0.45rem;border-radius:10px;font-size:0.7rem;margin-left:0.35rem;display:none;font-weight:800;font-family:var(--font-display);"></span>
+                </button>
+                <button class="tab-btn" id="tab-btn-completed" onclick="switchTab('completed',this)">Completed Logs</button>
+            </div>
+
+            <!-- Double Column Matrix -->
+            <div class="analytics-grid">
+                
+                <!-- Left Panel: Lists -->
+                <div>
+                    <!-- Tab Content 1: Pending -->
+                    <div id="tab-pending" class="tab-content active">
+                        <div class="card" style="padding:1.5rem;background:#ffffff;">
+                            <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:600;margin-bottom:1rem;">Active Assigned Travel Requests</h3>
+                            <div class="table-card" style="box-shadow:none;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Type</th>
+                                            <th>Route Node</th>
+                                            <th>Travel Date</th>
+                                            <th>Est. Budget</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="requests-list"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content 2: Completed -->
+                    <div id="tab-completed" class="tab-content">
+                        <div class="card" style="padding:1.5rem;background:#ffffff;">
+                            <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:600;margin-bottom:1rem;">Verified Booking Archive</h3>
+                            <div class="table-card" style="box-shadow:none;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Type</th>
+                                            <th>Itinerary Route</th>
+                                            <th>PNR Reference</th>
+                                            <th>Final Billing</th>
+                                            <th>Attachment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="completed-list"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Payments & Fleet -->
+                <div style="display:flex;flex-direction:column;gap:1.5rem;">
+                    
+                    <!-- Recent Payments -->
+                    <div class="card" style="padding:1.5rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;border-bottom:1px solid var(--outline-variant);padding-bottom:0.5rem;">
+                            <h3 style="font-family:var(--font-display);font-size:0.9rem;font-weight:600;margin:0;">Recent Invoices</h3>
+                            <span class="material-symbols-outlined" style="color:var(--secondary);">more_horiz</span>
+                        </div>
+                        
+                        <div style="display:flex;flex-direction:column;gap:0.75rem;" id="invoices-container">
+                            <div style="text-align:center;padding:1rem;color:var(--secondary);font-size:0.8rem;font-weight:500;">
+                                No pending or processed payouts.
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+        </div>
+    </main>
+
+    <!-- Upload Ticket Modal -->
+    <div id="upload-modal" class="modal">
+        <div class="modal-content" style="max-width:460px;padding:2rem;">
+            <h2 style="font-family:var(--font-display);font-size:1.25rem;font-weight:600;margin:0 0 0.5rem;">Fulfill Booking</h2>
+            <p style="color:var(--on-surface-variant);font-size:0.85rem;margin-bottom:1.5rem;font-weight:400;">Upload verified traveler boarding passes/ticket PDFs and input PNR reference codes.</p>
+            <form id="upload-form" style="display:flex;flex-direction:column;gap:1.25rem;">
+                <input type="hidden" id="booking-id">
+                
+                <div class="form-group">
+                    <label style="font-family:var(--font-display);font-weight:600;font-size:0.8rem;display:block;margin-bottom:0.35rem;">Boarding Pass / E-Ticket PDF</label>
+                    <label id="file-drop-zone" style="display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1rem;border:1.5px dashed var(--outline-variant);border-radius:10px;cursor:pointer;background:#f8f9ff;transition:all 0.2s ease;">
+                        <span class="material-symbols-outlined" style="font-size:22px;color:var(--primary);flex-shrink:0;" id="file-icon">upload_file</span>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:0.85rem;font-weight:600;color:var(--on-surface);" id="file-label">Click to choose a PDF or image</div>
+                            <div style="font-size:0.72rem;color:var(--secondary);font-weight:500;margin-top:0.1rem;">PDF files are scanned for PNR automatically</div>
+                        </div>
+                        <input type="file" id="ticket-file" required accept=".pdf,image/*" style="display:none;">
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;">
+                        <label style="font-family:var(--font-display);font-weight:600;font-size:0.8rem;">PNR / Booking Reference</label>
+                        <span id="pnr-auto-tag" style="display:none;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;background:var(--success-bg);color:var(--success-text);padding:0.15rem 0.5rem;border-radius:4px;">Auto-filled from PDF</span>
+                    </div>
+                    <input type="text" id="pnr" required placeholder="e.g. TF876X or BOM982 — or upload PDF above" style="width:100%;font-weight:600;font-family:monospace;font-size:0.95rem;">
+                    <div id="pnr-scan-status" style="display:none;margin-top:0.5rem;font-size:0.78rem;font-weight:600;color:var(--secondary);display:flex;align-items:center;gap:0.4rem;"></div>
+                </div>
+
+                <div id="upload-progress" style="display:none;padding:0.75rem;background:var(--warning-bg);color:var(--warning-text);font-size:0.8rem;font-weight:600;border-radius:var(--radius-md);">
+                    Saving verification to cloud storage…
+                </div>
+
+                <div style="display:flex;gap:0.75rem;margin-top:1rem;">
+                    <button type="submit" id="upload-btn" style="flex:1;">Complete Issue</button>
+                    <button type="button" onclick="hideUploadModal()" class="secondary" style="flex:0.5;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripting logic links -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('main-sidebar').classList.toggle('open');
+            document.getElementById('sidebar-backdrop').classList.toggle('open');
+        }
+
+        async function init() {
+            const user = checkAuth();
+            if (!user) return;
+            document.getElementById('user-name').innerText = user.name;
+
+            const companyName = user.vendor?.companyName || user.name || "Partner";
+            const hr = new Date().getHours();
+            const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+            document.getElementById('greeting-eyebrow').textContent = greet;
+            document.getElementById('welcome-heading').textContent = companyName;
+            document.getElementById('company-name').textContent = 'Fulfillment Center · ' + companyName.toUpperCase();
+
+            showTableSkeleton('requests-list', 6);
+            showTableSkeleton('completed-list', 6);
+            loadRequests();
+            loadCompleted();
+        }
+        init();
+
+        function switchTab(name, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+        }
+
+        function fareLabel(f) {
+            if (!f) return '';
+            if (f.type === 'FLIGHT') {
+                return `✈ ${f.airline || ''} ${f.flightNumber || ''}${f.departure && f.arrival ? ` (${f.departure} → ${f.arrival})` : f.departure ? ` (dep ${f.departure})` : ''}`.trim();
+            }
+            if (f.type === 'TRAIN') {
+                return `🚂 Train: ${f.trainNumber || ''} ${f.trainName || ''}${f.class ? ` [Class ${f.class}]` : ''}${f.departure && f.arrival ? ` (${f.departure} → ${f.arrival})` : ''}`.trim();
+            }
+            if (f.type === 'HOTEL') {
+                return `🏨 ${f.name || ''}${f.rating ? ` · ★${f.rating}` : ''}${f.pricePerNight ? ` (₹${f.pricePerNight}/night)` : ''}`.trim();
+            }
+            return '';
+        }
+
+        let _pendingCount = 0;
+
+        async function loadRequests() {
+            try {
+                const requests = await apiRequest('/vendor/requests');
+                const badge    = document.getElementById('pending-badge');
+
+                const list = document.getElementById('requests-list');
+                _pendingCount = requests.length;
+                if (!requests.length) {
+                    badge.style.display = 'none';
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">check_circle</div><p>No active tickets awaiting fulfillment</p></div></td></tr>'; return;
+                }
+                badge.innerText = requests.length;
+                badge.style.display = 'inline';
+
+                list.innerHTML = requests.map(b => `
+                    <tr>
+                        <td data-label="Employee">
+                            <div style="font-weight:600;color:var(--on-surface);">${b.employee.user.name}</div>
+                            <div style="font-size:0.75rem;color:var(--secondary);">${b.employee.department}</div>
+                        </td>
+                        <td data-label="Type"><span class="badge badge-pending-vendor" style="font-size:0.7rem;">${b.type}</span></td>
+                        <td data-label="Route">
+                            <div style="font-weight:700;">${b.details.origin} → ${b.details.destination}</div>
+                            ${b.details.selectedFare ? `<div style="font-size:0.72rem;color:var(--primary);font-weight:600;margin-top:0.15rem;">${fareLabel(b.details.selectedFare)}</div>` : ''}
+                        </td>
+                        <td data-label="Date" style="color:var(--secondary);font-size:0.82rem;">${b.details.date}</td>
+                        <td data-label="Est. Cost Share" class="numeric" style="color:var(--primary);font-weight:600;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                        <td data-label="Action"><button onclick="showUploadModal('${b.id}')" style="font-size:0.78rem;padding:0.4rem 0.8rem;width:100%;">Process &amp; Issue</button></td>
+                    </tr>`).join('');
+            } catch(err) { console.error(err.message); }
+        }
+
+        async function loadCompleted() {
+            try {
+                const completed = await apiRequest('/vendor/completed');
+                
+                updateVendorMetrics(completed, _pendingCount);
+
+                const list = document.getElementById('completed-list');
+                if (!completed.length) {
+                    list.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">receipt_long</div><p>No fulfilled travel files in archive</p></div></td></tr>'; return;
+                }
+                list.innerHTML = completed.map(b => `
+                    <tr>
+                        <td data-label="Employee" style="font-weight:600;">${b.employee.user.name}</td>
+                        <td data-label="Type" style="font-size:0.72rem;color:var(--primary);font-weight:600;">${b.type}</td>
+                        <td data-label="Route" style="font-weight:600;">${b.details.origin} → ${b.details.destination}</td>
+                        <td data-label="PNR" style="font-family:monospace;color:var(--success-text);font-weight:700;font-size:0.85rem;">${b.pnr || '—'}</td>
+                        <td data-label="Cost" class="numeric" style="font-weight:600;">₹${b.cost ? Number(b.cost).toLocaleString('en-IN') : '—'}</td>
+                        <td data-label="Ticket">${b.ticketUrl ? `<a href="${b.ticketUrl}" target="_blank" style="color:var(--primary);font-weight:600;text-decoration:underline;font-size:0.82rem;">View Pass ↗</a>` : '—'}</td>
+                    </tr>`).join('');
+            } catch(err) { console.error(err.message); }
+        }
+
+        function updateVendorMetrics(completed, pendingCount) {
+            const total = completed.length + pendingCount;
+            document.getElementById('stat-total').innerText = total.toLocaleString('en-IN');
+
+            const avgRate = completed.length > 0 ? Math.round(completed.reduce((acc, curr) => acc + Number(curr.cost || 0), 0) / completed.length) : 0;
+            document.getElementById('stat-rate').innerText = '₹' + avgRate.toLocaleString('en-IN');
+
+            // Invoices Container
+            const container = document.getElementById('invoices-container');
+            if (!completed.length) {
+                container.innerHTML = `
+                    <div style="text-align:center;padding:1rem;color:var(--secondary);font-size:0.85rem;font-weight:500;">
+                        No pending or processed payouts.
+                    </div>`;
+                return;
+            }
+            container.innerHTML = completed.slice(0, 3).map((b, idx) => `
+                <div style="border:1px solid var(--outline-variant);border-radius:var(--radius-md);padding:0.75rem;background:var(--success-bg);display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <span class="material-symbols-outlined" style="color:var(--success-text);font-size:18px;">check_circle</span>
+                        <div>
+                            <strong style="font-size:0.65rem;color:var(--success-text);display:block;">INV-2026-${String(idx + 1).padStart(3, '0')}</strong>
+                            <span style="font-size:0.8rem;font-weight:600;color:var(--on-surface);">Fulfillment Payout</span>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <strong style="font-family:var(--font-display);font-size:0.85rem;color:var(--on-surface);display:block;">₹${Number(b.cost).toLocaleString('en-IN')}</strong>
+                        <span style="font-size:0.7rem;color:var(--secondary);font-weight:500;">Processed</span>
+                    </div>
+                </div>`).join('');
+        }
+
+        // ── PDF.js worker setup ──────────────────────────────────────
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // ── PNR extraction patterns (priority order) ─────────────────
+        const PNR_PATTERNS = [
+            // Labeled: "PNR No: 1234567890" or "PNR: ABC123"
+            /PNR\s*(?:No\.?|Num(?:ber)?|#)?\s*[:\-]?\s*([A-Z0-9]{5,10})/gi,
+            // Indian Railways 10-digit PNR
+            /\bPNR\b[^\d]*(\d{10})\b/gi,
+            // Booking Reference / Confirmation Code
+            /(?:Booking\s*(?:Ref(?:erence)?|Code|ID)|Confirmation\s*(?:No\.?|Code|Num(?:ber)?)|Record\s*Locator)\s*[:\-]?\s*([A-Z0-9]{5,8})/gi,
+            // E-ticket number patterns
+            /E[\-\s]?Ticket\s*(?:No\.?|#|Number)?\s*[:\-]?\s*([A-Z0-9]{6,12})/gi,
+            // Standalone 10-digit number on a line that follows "PNR" nearby
+            /(?:^|\n)\s*(\d{10})\s*(?:\n|$)/gm,
+        ];
+
+        function extractPNRFromText(text) {
+            const upper = text.toUpperCase();
+            // Common column/field header words that are NOT PNR values
+            const BLOCKLIST = new Set(['TRAIN','CLASS','STATUS','NUMBER','QUOTA','COACH','BERTH','SEAT','DATE','FROM','TYPE','VALID','DEPART','ARRIVE','TICKET','BOARDING','STATION']);
+            for (const pattern of PNR_PATTERNS) {
+                pattern.lastIndex = 0;
+                let match;
+                while ((match = pattern.exec(upper)) !== null) {
+                    const candidate = match[1].trim();
+                    // Real PNRs always contain at least one digit; reject pure-letter words and blocklist
+                    const hasDigit = /\d/.test(candidate);
+                    if (hasDigit && candidate !== '0000000000' && candidate.length >= 5 && !BLOCKLIST.has(candidate)) {
+                        return candidate;
+                    }
+                }
+            }
+            return null;
+        }
+
+        async function extractPNRFromPDF(file) {
+            const statusEl = document.getElementById('pnr-scan-status');
+            const autoTag  = document.getElementById('pnr-auto-tag');
+
+            statusEl.style.display = 'flex';
+            statusEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;animation:spinLoad 0.8s linear infinite;display:inline-block;">progress_activity</span> Scanning PDF for PNR…';
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let fullText = '';
+                for (let i = 1; i <= Math.min(pdf.numPages, 4); i++) {
+                    const page    = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    fullText += content.items.map(item => item.str).join(' ') + '\n';
+                }
+
+                const found = extractPNRFromText(fullText);
+                if (found) {
+                    document.getElementById('pnr').value = found;
+                    autoTag.style.display  = 'inline';
+                    statusEl.style.display = 'none';
+                    return;
+                }
+                // Not found — let vendor type it manually
+                statusEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;color:var(--warning-text);">info</span> PNR not detected — please enter it manually.';
+                statusEl.style.color = 'var(--warning-text)';
+            } catch (err) {
+                statusEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;color:var(--secondary);">info</span> Could not read PDF — please enter PNR manually.';
+                statusEl.style.color = 'var(--secondary)';
+            }
+        }
+
+        // ── File input → custom label + auto-PNR ────────────────────
+        document.getElementById('ticket-file').addEventListener('change', async function () {
+            const file    = this.files[0];
+            const label   = document.getElementById('file-label');
+            const icon    = document.getElementById('file-icon');
+            const autoTag = document.getElementById('pnr-auto-tag');
+            const statusEl= document.getElementById('pnr-scan-status');
+
+            if (!file) return;
+
+            label.textContent = file.name;
+            icon.textContent  = 'description';
+            icon.style.color  = 'var(--success-text)';
+
+            // Reset PNR auto state for fresh upload
+            autoTag.style.display   = 'none';
+            statusEl.style.display  = 'none';
+            statusEl.style.color    = 'var(--secondary)';
+
+            if (file.type === 'application/pdf') {
+                await extractPNRFromPDF(file);
+            }
+        });
+
+        // ── File drop zone hover styling ─────────────────────────────
+        document.getElementById('file-drop-zone').addEventListener('dragover', e => {
+            e.preventDefault();
+            e.currentTarget.style.borderColor  = 'var(--primary)';
+            e.currentTarget.style.background   = '#eef1ff';
+        });
+        document.getElementById('file-drop-zone').addEventListener('dragleave', e => {
+            e.currentTarget.style.borderColor  = 'var(--outline-variant)';
+            e.currentTarget.style.background   = '#f8f9ff';
+        });
+        document.getElementById('file-drop-zone').addEventListener('drop', async e => {
+            e.preventDefault();
+            e.currentTarget.style.borderColor  = 'var(--outline-variant)';
+            e.currentTarget.style.background   = '#f8f9ff';
+            const file = e.dataTransfer.files[0];
+            if (!file) return;
+            const dt = new DataTransfer(); dt.items.add(file);
+            document.getElementById('ticket-file').files = dt.files;
+            document.getElementById('ticket-file').dispatchEvent(new Event('change'));
+        });
+
+        function showUploadModal(id) {
+            document.getElementById('booking-id').value = id;
+            document.getElementById('pnr').value = '';
+            document.getElementById('ticket-file').value = '';
+            document.getElementById('file-label').textContent = 'Click to choose a PDF or image';
+            document.getElementById('file-icon').textContent  = 'upload_file';
+            document.getElementById('file-icon').style.color  = 'var(--primary)';
+            document.getElementById('pnr-auto-tag').style.display  = 'none';
+            document.getElementById('pnr-scan-status').style.display = 'none';
+            document.getElementById('upload-progress').style.display = 'none';
+            document.getElementById('upload-modal').style.display = 'flex';
+        }
+        function hideUploadModal() { document.getElementById('upload-modal').style.display = 'none'; }
+
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id   = document.getElementById('booking-id').value;
+            const pnr  = document.getElementById('pnr').value;
+            const file = document.getElementById('ticket-file').files[0];
+            const btn  = document.getElementById('upload-btn');
+            const prog = document.getElementById('upload-progress');
+            const formData = new FormData();
+            formData.append('pnr', pnr);
+            formData.append('ticket', file);
+            btn.disabled = true; btn.innerText = 'Uploading verification…';
+            prog.style.display = 'block';
+            try {
+                await apiRequest(`/vendor/${id}/upload-ticket`, { method: 'POST', body: formData });
+                hideUploadModal();
+                showToast('Ticket file issued! Employee boarding pass is active.', 'success');
+                await loadRequests(); await loadCompleted();
+            } catch(err) {
+                showToast('Verification upload failed: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false; btn.innerText = 'Complete Issue';
+                prog.style.display = 'none';
+            }
+        });
+    </script>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+</body>
+</html>

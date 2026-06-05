@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripFlow | My Trips</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        /* ── Flatpickr Modern Override ── */
+        .flatpickr-calendar {
+            background: #ffffff !important;
+            border: 1px solid var(--outline-variant) !important;
+            box-shadow: var(--shadow-level-2) !important;
+            font-family: var(--font-body) !important;
+            border-radius: var(--radius-lg) !important;
+        }
+        .flatpickr-day {
+            color: var(--on-surface) !important;
+            border-radius: var(--radius-md) !important;
+            font-weight: 500;
+        }
+        .flatpickr-day:hover, .flatpickr-day.selected {
+            background: var(--primary) !important;
+            color: #ffffff !important;
+            border-color: var(--primary) !important;
+        }
+        .flatpickr-day.today {
+            border-color: var(--outline) !important;
+            background: var(--surface-container-low);
+        }
+        .flatpickr-months .flatpickr-month, .flatpickr-weekday {
+            color: var(--secondary) !important;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months,
+        .flatpickr-current-month input.cur-year {
+            color: var(--on-surface) !important;
+            background: transparent !important;
+        }
+
+        /* ── City Dropdown ── */
+        .city-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            min-width: 280px;
+            background: #ffffff;
+            border: 1px solid var(--outline-variant);
+            box-shadow: var(--shadow-level-2);
+            border-radius: var(--radius-md);
+            z-index: 9999;
+            max-height: 220px;
+            overflow-y: auto;
+            display: none;
+        }
+        .city-dropdown.open { display: block; }
+        .city-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border-bottom: 1px solid var(--surface-container);
+            color: var(--on-surface);
+            transition: var(--transition);
+        }
+        .city-option:last-child { border-bottom: none; }
+        .city-option:hover {
+            background: var(--surface-container-low);
+            color: var(--primary);
+        }
+        .city-code {
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: var(--info-bg);
+            color: var(--info-text);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .city-state {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            margin-left: auto;
+        }
+
+        /* ── Trip Planner Cards ── */
+        .trip-section { margin-bottom: 1.5rem; }
+        .trip-section-header {
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--secondary);
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid var(--outline-variant);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .trip-card {
+            padding: 1rem;
+            border: 1px solid var(--outline-variant);
+            border-radius: var(--radius-md);
+            background: #ffffff;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--on-surface);
+        }
+        .trip-card:hover {
+            background: var(--surface-container-low);
+            border-color: var(--outline);
+        }
+        .trip-card.selected {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+        .trip-card.selected span { color: #ffffff !important; }
+        .trip-card .price {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--danger-text);
+            white-space: nowrap;
+            margin-left: 1rem;
+            font-size: 0.95rem;
+        }
+        .trip-card.selected .price { color: #ffffff; }
+        .best-tag {
+            font-family: var(--font-display);
+            font-size: 0.65rem;
+            color: var(--success-text);
+            background: var(--success-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-right: 0.5rem;
+        }
+        .via-label {
+            font-family: var(--font-display);
+            font-size: 0.72rem;
+            color: var(--secondary);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+        }
+        .no-result {
+            color: var(--secondary);
+            font-size: 0.85rem;
+            padding: 0.5rem 0;
+            font-style: italic;
+        }
+
+        /* ── Side Nav Bar ── */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 240px;
+            background: #ffffff;
+            border-right: var(--border-thin);
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            padding: 1.5rem 1rem;
+        }
+        .sidebar-brand {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--outline-variant);
+        }
+        .sidebar-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+        }
+        .sidebar-nav-links a {
+            text-decoration: none;
+            color: var(--secondary);
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+        }
+        .sidebar-nav-links a:hover {
+            background: var(--surface-container-low);
+            color: var(--on-surface);
+        }
+        .sidebar-nav-links a.active {
+            background: var(--secondary-container, #dce2f3);
+            color: var(--primary);
+        }
+
+        /* ── Layout Overrides ── */
+        .main-wrapper {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+        .top-appbar {
+            height: 70px;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border-bottom: var(--border-thin);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            box-shadow: var(--shadow-level-1);
+        }
+
+        /* ── Bento Grid ── */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .bento-card-greeting {
+            grid-column: span 8;
+            background: #ffffff;
+            border: var(--border-thin);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
+            padding: 2.25rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .bento-card-stats {
+            grid-column: span 4;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .bento-badge-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .bento-badge {
+            border: var(--border-thin);
+            border-radius: var(--radius-md);
+            background: var(--surface-container-low);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+            min-width: 160px;
+        }
+        .bento-badge .bb-label {
+            font-family: var(--font-display);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+        .bento-badge .bb-value {
+            font-family: var(--font-display);
+            font-size: 1.15rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+        }
+        .bento-badge .bb-sub {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+
+        /* ── Q4 Budget Card ── */
+        .budget-card {
+            background: #ffffff;
+            border: var(--border-thin);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .budget-progress-container {
+            width: 100%;
+            height: 12px;
+            background: var(--surface-container-low);
+            border: 1px solid var(--outline-variant);
+            border-radius: 9999px;
+            margin: 0.5rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .budget-progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 9999px;
+        }
+
+        /* ── Concierge Block ── */
+        .concierge-card {
+            background: var(--primary);
+            color: #ffffff;
+            border: 1px solid transparent;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
+            padding: 1.5rem;
+        }
+        .concierge-card h3 { color: #ffffff; }
+        .concierge-card p { color: rgba(255,255,255,0.85); margin-top: 0.5rem; margin-bottom: 1.25rem; font-size: 0.85rem; font-weight: 400; }
+
+        /* ── Section Grid ── */
+        .dashboard-sections {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        /* ── Upcoming Trips Grid ── */
+        .trips-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+        .trip-item-card {
+            background: #ffffff;
+            border: var(--border-thin);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-level-1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+        }
+        .trip-item-card:hover {
+            box-shadow: var(--shadow-level-2);
+        }
+        .trip-item-card .img-wrap {
+            height: 120px;
+            background: var(--surface-container-high);
+            border-bottom: var(--border-thin);
+            position: relative;
+        }
+        .trip-item-card .img-wrap img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: all 0.3s;
+        }
+        .trip-item-card .img-wrap .days-badge {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            font-family: var(--font-display);
+            font-size: 0.65rem; font-weight: 700;
+            background: #ffffff; border: 1px solid var(--outline-variant);
+            border-radius: 4px;
+            padding: 0.15rem 0.45rem; text-transform: uppercase;
+            color: var(--on-surface);
+        }
+        .trip-item-card .content {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .plan-new-card {
+            border: 1px dashed var(--outline);
+            border-radius: var(--radius-lg);
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition);
+            min-height: 200px;
+        }
+        .plan-new-card:hover {
+            background: var(--surface-container-low);
+            box-shadow: var(--shadow-level-1);
+        }
+        .plan-new-card .icon-box {
+            width: 48px; height: 48px;
+            background: var(--primary);
+            color: #ffffff;
+            border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+        .plan-new-card:hover .icon-box {
+            transform: scale(1.05);
+        }
+
+        /* ── Recent Activity ── */
+        .activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            position: relative;
+        }
+        .activity-icon {
+            width: 36px; height: 36px;
+            background: var(--surface-container-low);
+            border: 1px solid var(--outline-variant);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            color: var(--primary);
+            flex-shrink: 0;
+            z-index: 2;
+        }
+        .activity-details {
+            flex: 1;
+        }
+        .activity-details p {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .activity-details .time {
+            font-family: var(--font-display);
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        /* ── AI Orb Assistant ── */
+        @keyframes orb-spin  { to { filter: hue-rotate(360deg); } }
+        @keyframes orb-float { 0%,100%{transform:scale(1) translateY(0);} 50%{transform:scale(1.05) translateY(-5px);} }
+        @keyframes orb-listen{ 0%,100%{box-shadow:0 0 0 0 rgba(161,140,209,.7),0 8px 30px rgba(161,140,209,.4);} 70%{box-shadow:0 0 0 22px rgba(161,140,209,0),0 8px 30px rgba(161,140,209,.4);} }
+        @keyframes orb-think { 0%,100%{opacity:.65;transform:scale(.96);} 50%{opacity:1;transform:scale(1);} }
+        .orb-blob {
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 32%, #ffecd2 0%, #fd79a8 22%, #a18cd1 50%, #2193b0 75%, #6dd5ed 100%);
+            animation: orb-spin 6s linear infinite, orb-float 3s ease-in-out infinite;
+            box-shadow: 0 8px 30px rgba(161,140,209,.45);
+            cursor: pointer; flex-shrink: 0;
+        }
+        .orb-blob.listening { animation: orb-spin 2s linear infinite, orb-listen 1.2s ease-out infinite; }
+        .orb-blob.thinking  { animation: orb-spin 10s linear infinite, orb-think 1.5s ease-in-out infinite; }
+        .ai-action-btn {
+            padding: .45rem 1.1rem;
+            background: rgba(255,255,255,.1);
+            border: 1px solid rgba(255,255,255,.22);
+            border-radius: 20px;
+            color: #fff;
+            font-family: var(--font-display);
+            font-size: .8rem; font-weight: 600;
+            cursor: pointer;
+            transition: background .2s, border-color .2s;
+            backdrop-filter: blur(4px);
+        }
+        .ai-action-btn:hover { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.4); }
+
+        /* ── Responsive ── */
+        @media (max-width: 1024px) {
+            .bento-grid { grid-template-columns: 1fr; }
+            .bento-card-greeting { grid-column: span 12; }
+            .bento-card-stats { grid-column: span 12; }
+            .dashboard-sections { grid-template-columns: 1fr; }
+            .trips-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 640px) {
+            .trips-grid { grid-template-columns: 1fr; }
+            .top-appbar { padding: 0 1rem; }
+            .tp-grid { grid-template-columns: 1fr !important; }
+            .tp-arrow { display: none !important; }
+        }
+        @media (max-width: 480px) {
+            #ai-orb-fab { bottom: 1rem !important; right: 1rem !important; }
+            #chat-messages { height: auto !important; flex: 1; min-height: 180px; }
+        }
+    </style>
+    <meta name="theme-color" content="#003d9b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body class="bg-background text-on-surface">
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="main-sidebar">
+        <div class="sidebar-brand">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+                <img src="images/Logo.png" alt="TripFlow" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; flex-shrink: 0;">
+                <span style="font-family:var(--font-display);font-size:1.35rem;font-weight:700;letter-spacing:-0.02em;color:var(--primary);">TripFlow</span>
+            </div>
+            <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--secondary);letter-spacing:0.05em;">Enterprise</p>
+        </div>
+
+        <nav class="sidebar-nav-links">
+            <a href="#" class="active">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+            <a href="mytrips.html">
+                <span class="material-symbols-outlined">luggage</span>
+                My Trips
+            </a>
+            <a href="request.html">
+                <span class="material-symbols-outlined">add_circle</span>
+                New Booking
+            </a>
+        </nav>
+
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.25rem;">
+            <a href="#" onclick="logout(); return false;" style="text-decoration:none;color:var(--danger-text);font-family:var(--font-display);font-weight:600;font-size:0.8rem;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">logout</span>Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+        <!-- Top App Bar -->
+        <header class="top-appbar">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <button class="sidebar-mobile-btn" onclick="toggleSidebar()" aria-label="Open menu">
+                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                </button>
+                <h1 style="font-size:1.25rem;font-weight:600;margin:0;">Dashboard</h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem;">
+                <!-- Notification bell -->
+                <div style="position:relative;cursor:pointer;" onclick="toggleNotifPanel()" title="Notifications">
+                    <span class="material-symbols-outlined" style="font-size:1.5rem;color:var(--on-surface-variant);vertical-align:middle;">notifications</span>
+                    <span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger,#dc2626);color:#fff;font-size:0.6rem;font-weight:800;font-family:var(--font-display);min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 3px;line-height:1;"></span>
+                </div>
+                <span id="user-name" style="font-family:var(--font-display);font-size:0.8rem;font-weight:600;border:1px solid var(--outline-variant);background:var(--surface-container-low);padding:0.25rem 0.75rem;border-radius:var(--radius-md);">Employee</span>
+            </div>
+        </header>
+
+        <!-- Notification panel (slides in from top-right) -->
+        <div id="notif-panel" style="display:none;position:fixed;top:64px;right:1rem;width:min(360px,92vw);max-height:70vh;overflow-y:auto;background:var(--surface);border:var(--border-thin);border-radius:var(--radius-lg);box-shadow:var(--shadow-level-2);z-index:200;padding:0.75rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:0.5rem;border-bottom:var(--border-thin);margin-bottom:0.5rem;">
+                <span style="font-family:var(--font-display);font-weight:700;font-size:0.85rem;">Notifications</span>
+                <button onclick="markAllRead()" style="font-size:0.72rem;font-weight:600;color:var(--primary);background:none;border:none;cursor:pointer;padding:0;">Mark all read</button>
+            </div>
+            <div id="notif-list"><p style="font-size:0.8rem;color:var(--secondary);text-align:center;padding:1rem 0;">No notifications</p></div>
+        </div>
+
+        <!-- Content Body -->
+        <div class="container" style="padding-top:2rem;">
+
+            <!-- Stats Row -->
+            <div class="stats-grid-4 stagger animate-fadein" style="margin-bottom:2rem;">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon-wrap blue">
+                        <span class="material-symbols-outlined">currency_rupee</span>
+                    </div>
+                    <div class="stat-label">Monthly Spend</div>
+                    <div class="stat-value" id="stat-spend">₹0</div>
+                </div>
+                <div class="stat-card stat-card-amber">
+                    <div class="stat-icon-wrap amber">
+                        <span class="material-symbols-outlined">pending_actions</span>
+                    </div>
+                    <div class="stat-label">Active Requests</div>
+                    <div class="stat-value" id="active-req-count">0</div>
+                </div>
+                <div class="stat-card stat-card-green">
+                    <div class="stat-icon-wrap green">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <div class="stat-label">Completed</div>
+                    <div class="stat-value" id="stat-completed">0</div>
+                </div>
+                <div class="stat-card stat-card-red">
+                    <div class="stat-icon-wrap red">
+                        <span class="material-symbols-outlined">cancel</span>
+                    </div>
+                    <div class="stat-label">Rejected</div>
+                    <div class="stat-value" id="stat-rejected">0</div>
+                </div>
+            </div>
+
+            <!-- Recent Journeys -->
+            <section id="recent-journeys-section" style="display:none;flex-direction:column;gap:1rem;">
+                <div class="section-title-bar">
+                    <h3>Recent Journeys</h3>
+                    <div class="stb-line"></div>
+                    <a href="mytrips.html" style="font-size:0.8rem;font-weight:600;color:var(--primary);text-decoration:none;white-space:nowrap;">View all →</a>
+                </div>
+                <div id="recent-journeys-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem;"></div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Trip Planner Modal -->
+    <div id="booking-modal" class="modal">
+        <div class="modal-content" style="max-width:720px;padding:0;overflow:hidden;max-height:92vh;display:flex;flex-direction:column;border:3px solid #1a1a1a;box-shadow:8px 8px 0px #1a1a1a;">
+            <!-- Modal header -->
+            <div style="padding:1.5rem 2rem;border-bottom:3px solid #1a1a1a;background:#ffcc00;flex-shrink:0;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <div>
+                        <p style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#1a1a1a;margin-bottom:0.25rem;">Trip Planner</p>
+                        <h2 style="font-size:1.5rem;margin:0;text-transform:uppercase;color:#1a1a1a;letter-spacing:-0.02em;">Plan Your Journey</h2>
+                    </div>
+                    <button type="button" onclick="hideBookingModal()" style="background:none;border:none;box-shadow:none;color:#1a1a1a;font-size:1.8rem;padding:0;cursor:pointer;line-height:1;margin-top:-4px;" aria-label="Close">×</button>
+                </div>
+
+                <!-- Search grid -->
+                <div class="tp-grid" style="display:grid;grid-template-columns:1fr auto 1fr 1fr 1fr auto;gap:0.75rem;align-items:end;margin-top:1.25rem;">
+                    <div class="tp-from" style="position:relative;">
+                        <label class="plan-label">From</label>
+                        <input id="tp-from" type="text" placeholder="Mumbai" autocomplete="off" class="plan-input" style="background:#ffffff;border:2px solid #1a1a1a;border-radius:0px;"
+                            oninput="showCitySuggestions(this,'tp-from-list')"
+                            onfocus="showCitySuggestions(this,'tp-from-list')"
+                            onblur="setTimeout(()=>hideCityList('tp-from-list'),200)">
+                        <div id="tp-from-list" class="city-dropdown"></div>
+                    </div>
+                    <div class="tp-arrow" style="padding-bottom:0.6rem;color:#1a1a1a;font-weight:900;font-size:1.2rem;">→</div>
+                    <div class="tp-to" style="position:relative;">
+                        <label class="plan-label">To</label>
+                        <input id="tp-to" type="text" placeholder="Delhi" autocomplete="off" class="plan-input" style="background:#ffffff;border:2px solid #1a1a1a;border-radius:0px;"
+                            oninput="showCitySuggestions(this,'tp-to-list')"
+                            onfocus="showCitySuggestions(this,'tp-to-list')"
+                            onblur="setTimeout(()=>hideCityList('tp-to-list'),200)">
+                        <div id="tp-to-list" class="city-dropdown"></div>
+                    </div>
+                    <div>
+                        <label class="plan-label">Departure</label>
+                        <input id="tp-from-date" type="text" readonly placeholder="YYYY-MM-DD" class="plan-input" style="cursor:pointer;background:#ffffff;border:2px solid #1a1a1a;border-radius:0px;">
+                    </div>
+                    <div>
+                        <label class="plan-label">Return (opt)</label>
+                        <input id="tp-to-date" type="text" readonly placeholder="YYYY-MM-DD" class="plan-input" style="cursor:pointer;background:#ffffff;border:2px solid #1a1a1a;border-radius:0px;">
+                    </div>
+                    <button type="button" onclick="runTripPlan()" id="tp-search-btn" class="tp-search-btn" style="padding:0.75rem 1.25rem;border:2px solid #1a1a1a;background:#1a1a1a;color:#ffffff;box-shadow:none;height:fit-content;">Search</button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="trip-plan-results" style="flex:1;overflow-y:auto;padding:1.5rem 2rem;background:#f5f0e8;">
+                <p style="color:#1a1a1a;font-size:0.9rem;text-align:center;margin-top:2rem;font-weight:600;">Enter trip details above and click <strong style="color:#0055ff;">Search</strong>.</p>
+            </div>
+
+            <!-- Submit bar -->
+            <div id="submit-bar" style="display:none;padding:1.5rem 2rem;border-top:3px solid #1a1a1a;background:#ffffff;flex-shrink:0;">
+                <input type="hidden" id="travel-type" value="FLIGHT">
+                <input type="hidden" id="origin" value="">
+                <input type="hidden" id="destination" value="">
+                <input type="hidden" id="travel-date" value="">
+                <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;">
+                    <div style="flex:1;">
+                        <label class="plan-label">Estimated Cost (₹)</label>
+                        <input type="number" id="estimated-cost" min="1" placeholder="Select an option above or enter manually" class="plan-input" style="border:2px solid #1a1a1a;border-radius:0px;">
+                    </div>
+                    <div style="display:flex;gap:0.75rem;align-items:flex-end;margin-top:1.5rem;">
+                        <button type="button" onclick="submitTripBooking()" style="padding:0.75rem 1.5rem;">Submit Request</button>
+                        <button type="button" onclick="hideBookingModal()" class="secondary" style="padding:0.75rem 1.5rem;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Orb FAB (hidden — re-enable by removing display:none) -->
+    <div id="ai-orb-fab" style="position:fixed;bottom:2rem;right:2rem;z-index:1000;display:none;">
+        <div class="orb-blob" onclick="openAssistant()" title="TripFlow AI" style="width:58px;height:58px;"></div>
+    </div>
+
+    <!-- AI Assistant Overlay -->
+    <div id="ai-assistant-overlay" onclick="handleOverlayClick(event)" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(8,8,18,.78);backdrop-filter:blur(12px);align-items:flex-end;justify-content:center;">
+        <div onclick="event.stopPropagation()" style="width:100%;max-width:520px;background:linear-gradient(170deg,#13131f 0%,#0d0d18 100%);border-radius:28px 28px 0 0;padding:1.25rem 1.5rem 3rem;display:flex;flex-direction:column;align-items:center;gap:1rem;">
+            <!-- Handle -->
+            <div style="width:40px;height:4px;background:rgba(255,255,255,.18);border-radius:2px;"></div>
+            <!-- Top bar -->
+            <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="color:#fff;font-family:var(--font-display);font-weight:700;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase;">TripFlow AI</div>
+                    <div style="color:rgba(255,255,255,.35);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Travel Assistant</div>
+                </div>
+                <button onclick="closeAssistant()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.7);width:32px;height:32px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+            </div>
+            <!-- Reply -->
+            <div id="assistant-reply" style="display:none;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:.875rem 1rem;color:rgba(255,255,255,.85);font-size:.875rem;line-height:1.6;max-height:110px;overflow-y:auto;"></div>
+            <!-- Action buttons -->
+            <div id="assistant-actions" style="display:flex;flex-wrap:wrap;gap:.5rem;width:100%;justify-content:center;min-height:4px;"></div>
+            <!-- Orb -->
+            <div id="assistant-orb" class="orb-blob" onclick="toggleVoice()" style="width:130px;height:130px;margin:.5rem 0;"></div>
+            <!-- Status -->
+            <div id="assistant-status" style="color:rgba(255,255,255,.55);font-family:var(--font-display);font-size:.875rem;font-weight:500;letter-spacing:.03em;">Tap to speak</div>
+            <!-- Text input -->
+            <div id="assistant-input-row" style="display:none;width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:.6rem .875rem;align-items:center;gap:.5rem;">
+                <input id="assistant-text" placeholder="Type your travel request…" style="flex:1;background:none;border:none;color:#fff;font-size:.875rem;outline:none;font-family:var(--font-display);" onkeydown="if(event.key==='Enter')sendAssistantChat();">
+                <button onclick="sendAssistantChat()" style="background:var(--primary);border:none;color:#fff;padding:.35rem .75rem;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;">Send</button>
+            </div>
+            <!-- Controls -->
+            <div style="display:flex;gap:4rem;align-items:center;margin-top:.25rem;">
+                <button id="ai-mic-btn" onclick="toggleVoice()" style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;">
+                    <span class="material-symbols-outlined" style="font-size:26px;">mic</span>
+                </button>
+                <button id="ai-keyboard-btn" onclick="toggleAssistantKeyboard()" style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:26px;">keyboard</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentUser = null;
+        let chatMessages = [];
+        let _selectedFare = null;
+        let _userMe = null;
+
+        function toggleSidebar() {
+            document.getElementById('main-sidebar').classList.toggle('open');
+            document.getElementById('sidebar-backdrop').classList.toggle('open');
+        }
+        let keyboardOpen = false;
+
+        // ── Notification bell ────────────────────────────────────────────
+        let _notifPanelOpen = false;
+        let _notifIds = [];
+
+        function toggleNotifPanel() {
+            _notifPanelOpen = !_notifPanelOpen;
+            document.getElementById('notif-panel').style.display = _notifPanelOpen ? 'block' : 'none';
+            if (_notifPanelOpen) loadNotifications();
+        }
+
+        // Close panel when clicking outside
+        document.addEventListener('click', e => {
+            if (_notifPanelOpen && !e.target.closest('#notif-panel') && !e.target.closest('[onclick="toggleNotifPanel()"]')) {
+                _notifPanelOpen = false;
+                document.getElementById('notif-panel').style.display = 'none';
+            }
+        });
+
+        async function loadNotifications() {
+            try {
+                const data = await apiRequest('/notifications');
+                const notifs = Array.isArray(data) ? data : [];
+                const badge = document.getElementById('notif-badge');
+                const unread = notifs.filter(n => !n.read);
+
+                if (unread.length > 0) {
+                    badge.style.display = 'flex';
+                    badge.textContent = unread.length > 9 ? '9+' : unread.length;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                const list = document.getElementById('notif-list');
+                if (!notifs.length) {
+                    list.innerHTML = '<p style="font-size:0.8rem;color:var(--secondary);text-align:center;padding:1rem 0;">No notifications</p>';
+                    return;
+                }
+                list.innerHTML = notifs.map(n => `
+                    <div onclick="markRead('${n.id}')" style="padding:0.6rem 0.5rem;border-radius:8px;cursor:pointer;background:${n.read ? 'transparent' : 'var(--primary-bg)'};margin-bottom:0.25rem;transition:background 0.15s;">
+                        <p style="margin:0;font-size:0.8rem;font-weight:${n.read ? '500' : '700'};color:var(--on-surface);line-height:1.4;">${n.message}</p>
+                        <p style="margin:0.2rem 0 0;font-size:0.68rem;color:var(--secondary);">${new Date(n.createdAt).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
+                    </div>`).join('');
+            } catch (_) {}
+        }
+
+        async function markRead(id) {
+            try {
+                await apiRequest(`/notifications/${id}/read`, { method: 'PATCH' });
+                loadNotifications();
+            } catch (_) {}
+        }
+
+        async function markAllRead() {
+            try {
+                const data = await apiRequest('/notifications');
+                const unread = Array.isArray(data) ? data.filter(n => !n.read) : [];
+                await Promise.all(unread.map(n => apiRequest(`/notifications/${n.id}/read`, { method: 'PATCH' })));
+                loadNotifications();
+            } catch (_) {}
+        }
+
+        async function init() {
+            currentUser = checkAuth();
+            if (!currentUser) return;
+            document.getElementById('user-name').innerText = currentUser.name.toUpperCase();
+
+            showTableSkeleton('bookings-list', 6);
+            try { _userMe = await apiRequest('/auth/me'); } catch (_) {}
+            await loadBookings();
+            loadNotifications();
+            // Poll every 60s for new notifications
+            setInterval(loadNotifications, 60000);
+        }
+        init();
+
+        const _fpFrom = flatpickr('#tp-from-date', {
+            dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+            minDate: 'today'
+        });
+        const _fpTo = flatpickr('#tp-to-date', {
+            dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+            minDate: 'today',
+            onReady(_, __, fp) {
+                _fpFrom.config.onChange.push(() => { fp.set('minDate', _fpFrom.selectedDates[0]); });
+            }
+        });
+
+        function fmtDate(str) {
+            if (!str) return '';
+            const d = new Date(str);
+            if (isNaN(d)) return str;
+            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function fmtTime(str) {
+            if (!str) return '';
+            const d = new Date(str);
+            if (isNaN(d)) return str.toString().slice(0, 5); // fallback: first 5 chars "HH:MM"
+            return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+
+        function fareLabel(f) {
+            if (!f) return '';
+            if (f.type === 'FLIGHT') {
+                const times = f.departure && f.arrival
+                    ? ` (${fmtTime(f.departure)} → ${fmtTime(f.arrival)})`
+                    : f.departure ? ` (dep ${fmtTime(f.departure)})` : '';
+                return `✈ ${f.airline || ''} ${f.flightNumber || ''}${times}`.trim();
+            }
+            if (f.type === 'TRAIN') {
+                const times = f.departure && f.arrival ? ` (${fmtTime(f.departure)} → ${fmtTime(f.arrival)})` : '';
+                return `🚂 ${f.trainNumber || ''} ${f.trainName || ''}${f.class ? ` [${f.class} Class]` : ''}${times}`.trim();
+            }
+            if (f.type === 'HOTEL') {
+                return `🏨 ${f.name || ''}${f.rating ? ` · ★${f.rating}` : ''}${f.pricePerNight ? ` (₹${f.pricePerNight}/night)` : ''}`.trim();
+            }
+            return '';
+        }
+
+        const CITY_IMAGES = {
+            'Mumbai':     'https://images.unsplash.com/photo-1529253355930-ddbe423a2ac7?auto=format&fit=crop&w=480&h=200&q=80',
+            'Delhi':      'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&h=200&q=80',
+            'New Delhi':  'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&h=200&q=80',
+            'Bangalore':  'https://images.unsplash.com/photo-1596516109370-a06d0dd7cd03?auto=format&fit=crop&w=480&h=200&q=80',
+            'Bengaluru':  'https://images.unsplash.com/photo-1596516109370-a06d0dd7cd03?auto=format&fit=crop&w=480&h=200&q=80',
+            'Hyderabad':  'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=480&h=200&q=80',
+            'Chennai':    'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=480&h=200&q=80',
+            'Kolkata':    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=480&h=200&q=80',
+            'Jaipur':     'https://images.unsplash.com/photo-1477587458883-47145ed31672?auto=format&fit=crop&w=480&h=200&q=80',
+            'Goa':        'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=480&h=200&q=80',
+            'Agra':       'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&h=200&q=80',
+            'Varanasi':   'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=480&h=200&q=80',
+            'Pune':       'https://images.unsplash.com/photo-1590123715937-9b8c8b6cd2e4?auto=format&fit=crop&w=480&h=200&q=80',
+            'Ahmedabad':  'https://images.unsplash.com/photo-1597040663342-45b6af3d91a5?auto=format&fit=crop&w=480&h=200&q=80',
+            'Lucknow':    'https://images.unsplash.com/photo-1586183189334-1cb3a044f96c?auto=format&fit=crop&w=480&h=200&q=80',
+            'Amritsar':   'https://images.unsplash.com/photo-1588416936097-41850ab3d86d?auto=format&fit=crop&w=480&h=200&q=80',
+            'Kochi':      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=480&h=200&q=80',
+            'Udaipur':    'https://images.unsplash.com/photo-1568695133990-d46c44b9d5e1?auto=format&fit=crop&w=480&h=200&q=80',
+            'Jodhpur':    'https://images.unsplash.com/photo-1524909600633-50fb4a1cc56e?auto=format&fit=crop&w=480&h=200&q=80',
+            'Srinagar':   'https://images.unsplash.com/photo-1548605710-a99a0bedfab8?auto=format&fit=crop&w=480&h=200&q=80',
+            'Leh':        'https://images.unsplash.com/photo-1605649461784-eee8f6b0e3d3?auto=format&fit=crop&w=480&h=200&q=80',
+            'Muzaffarpur':'https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=480&h=200&q=80',
+        };
+        const DEFAULT_CITY_IMG = 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=480&h=200&q=80';
+
+        function cityImg(name) {
+            if (!name) return DEFAULT_CITY_IMG;
+            const key = Object.keys(CITY_IMAGES).find(k => name.toLowerCase().includes(k.toLowerCase()));
+            return key ? CITY_IMAGES[key] : DEFAULT_CITY_IMG;
+        }
+
+        function fmtDate(str) {
+            if (!str) return '';
+            const d = new Date(str);
+            if (isNaN(d)) return str;
+            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        const STAGE_BG    = { PENDING_MANAGER:'var(--warning-bg)',  PENDING_VENDOR:'var(--info-bg)',  COMPLETED:'var(--success-bg)',  REJECTED:'var(--danger-bg)' };
+        const STAGE_COLOR = { PENDING_MANAGER:'var(--warning-text)', PENDING_VENDOR:'var(--info-text)', COMPLETED:'var(--success-text)', REJECTED:'var(--danger-text)' };
+        const STAGE_LABEL = { PENDING_MANAGER:'AWAITING APPROVAL',  PENDING_VENDOR:'WITH TRAVEL DESK', COMPLETED:'COMPLETED',          REJECTED:'REJECTED' };
+
+        async function loadBookings() {
+            try {
+                const bookings = await apiRequest('/bookings/mine');
+
+                // ── Stat cards ───────────────────────────────────────
+                const activeCount    = bookings.filter(b => b.stage === 'PENDING_MANAGER' || b.stage === 'PENDING_VENDOR').length;
+                const completedCount = bookings.filter(b => b.stage === 'COMPLETED').length;
+                const rejectedCount  = bookings.filter(b => b.stage === 'REJECTED').length;
+                document.getElementById('active-req-count').innerText = activeCount;
+                document.getElementById('stat-completed').innerText   = completedCount;
+                document.getElementById('stat-rejected').innerText    = rejectedCount;
+                const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0,0,0,0);
+                const monthlySpend = bookings
+                    .filter(b => b.stage !== 'REJECTED' && new Date(b.createdAt) >= startOfMonth)
+                    .reduce((acc, curr) => acc + Number(curr.cost || 0), 0);
+                document.getElementById('stat-spend').innerText = '₹' + monthlySpend.toLocaleString('en-IN');
+
+                // ── Recent journey cards ─────────────────────────────
+                const recent = bookings.slice(0, 4);
+                const section = document.getElementById('recent-journeys-section');
+                if (recent.length) {
+                    document.getElementById('recent-journeys-grid').innerHTML = recent.map(b => {
+                        const dest = b.details?.destination || '—';
+                        const img  = cityImg(dest);
+                        return `
+                        <div onclick="window.location.href='detail.html?id=${b.id}'"
+                             style="border-radius:16px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow-level-1);cursor:pointer;border:1px solid var(--outline-variant);transition:transform 0.18s,box-shadow 0.18s;"
+                             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='var(--shadow-level-2)'"
+                             onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow-level-1)'">
+                            <div style="position:relative;height:140px;overflow:hidden;background:var(--surface-container-low);">
+                                <img src="${img}" alt="${dest}" loading="lazy"
+                                     style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.35s;"
+                                     onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform=''"
+                                     onerror="this.style.display='none'">
+                                <span style="position:absolute;top:10px;right:10px;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;padding:0.2rem 0.55rem;border-radius:6px;background:${STAGE_BG[b.stage]};color:${STAGE_COLOR[b.stage]};">
+                                    ${STAGE_LABEL[b.stage] || b.stage}
+                                </span>
+                            </div>
+                            <div style="padding:0.85rem 1rem;">
+                                <div style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--on-surface);margin-bottom:0.15rem;">${dest}</div>
+                                <div style="font-size:0.72rem;font-weight:500;color:var(--secondary);margin-bottom:0.6rem;">${b.details?.origin ? b.details.origin + ' → ' : ''}${dest}</div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-size:0.72rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:0.25rem;">
+                                        <span class="material-symbols-outlined" style="font-size:13px;">calendar_today</span>
+                                        ${fmtDate(b.details?.date) || 'TBA'}
+                                    </span>
+                                    <span style="font-family:var(--font-display);font-size:0.82rem;font-weight:700;color:var(--on-surface);">₹${Number(b.cost||0).toLocaleString('en-IN')}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    section.style.display = 'flex';
+                } else {
+                    section.style.display = 'none';
+                }
+            } catch (err) {
+                console.error(err.message);
+            }
+        }
+
+        // City list
+        const CITY_LIST = [
+          {n:'Mumbai',c:'BOM',s:'Maharashtra'},{n:'Delhi',c:'DEL',s:'Delhi'},{n:'Bangalore',c:'BLR',s:'Karnataka'},
+          {n:'Hyderabad',c:'HYD',s:'Telangana'},{n:'Chennai',c:'MAA',s:'Tamil Nadu'},{n:'Kolkata',c:'CCU',s:'West Bengal'},
+          {n:'Pune',c:'PNQ',s:'Maharashtra'},{n:'Ahmedabad',c:'AMD',s:'Gujarat'},{n:'Goa',c:'GOI',s:'Goa'},
+          {n:'Jaipur',c:'JAI',s:'Rajasthan'},{n:'Lucknow',c:'LKO',s:'Uttar Pradesh'},{n:'Kochi',c:'COK',s:'Kerala'},
+          {n:'Chandigarh',c:'IXC',s:'Punjab'},{n:'Bhubaneswar',c:'BBI',s:'Odisha'},{n:'Indore',c:'IDR',s:'Madhya Pradesh'},
+          {n:'Nagpur',c:'NAG',s:'Maharashtra'},{n:'Coimbatore',c:'CJB',s:'Tamil Nadu'},{n:'Visakhapatnam',c:'VTZ',s:'Andhra Pradesh'},
+          {n:'Amritsar',c:'ATQ',s:'Punjab'},{n:'Varanasi',c:'VNS',s:'Uttar Pradesh'},{n:'Patna',c:'PAT',s:'Bihar'},
+          {n:'Raipur',c:'RPR',s:'Chhattisgarh'},{n:'Mangalore',c:'IXE',s:'Karnataka'},{n:'Madurai',c:'IXM',s:'Tamil Nadu'},
+          {n:'Trichy',c:'TRZ',s:'Tamil Nadu'},{n:'Ranchi',c:'IXR',s:'Jharkhand'},{n:'Bhopal',c:'BHO',s:'Madhya Pradesh'},
+          {n:'Agra',c:'AGR',s:'Uttar Pradesh'},{n:'Leh',c:'IXL',s:'Ladakh'},{n:'Srinagar',c:'SXR',s:'J&K'},
+          {n:'Darbhanga',c:'DBR',s:'Bihar'},{n:'Vadodara',c:'BDQ',s:'Gujarat'},{n:'Rajkot',c:'RAJ',s:'Gujarat'},
+          {n:'Jodhpur',c:'JDH',s:'Rajasthan'},{n:'Udaipur',c:'UDR',s:'Rajasthan'},{n:'Dehradun',c:'DED',s:'Uttarakhand'},
+          {n:'Gorakhpur',c:'GOP',s:'Uttar Pradesh'},{n:'Prayagraj',c:'IXD',s:'Uttar Pradesh'},{n:'Guwahati',c:'GAU',s:'Assam'},
+          {n:'Muzaffarpur',c:'MFU',s:'Bihar'},{n:'Haridwar',c:'HW',s:'Uttarakhand'},{n:'Mysore',c:'MYS',s:'Karnataka'},
+          {n:'Kanpur',c:'CNB',s:'Uttar Pradesh'},{n:'Nashik',c:'NK',s:'Maharashtra'},
+          // Uttar Pradesh
+          {n:'Mathura',c:'MTJ',s:'Uttar Pradesh'},{n:'Aligarh',c:'ALJN',s:'Uttar Pradesh'},{n:'Bareilly',c:'BE',s:'Uttar Pradesh'},
+          {n:'Moradabad',c:'MB',s:'Uttar Pradesh'},{n:'Saharanpur',c:'SRE',s:'Uttar Pradesh'},{n:'Meerut',c:'MTC',s:'Uttar Pradesh'},
+          {n:'Ghaziabad',c:'GZB',s:'Uttar Pradesh'},{n:'Jhansi',c:'JHS',s:'Uttar Pradesh'},{n:'Ayodhya',c:'AY',s:'Uttar Pradesh'},
+          {n:'Gonda',c:'GD',s:'Uttar Pradesh'},{n:'Basti',c:'BST',s:'Uttar Pradesh'},{n:'Sultanpur',c:'SLN',s:'Uttar Pradesh'},
+          {n:'Rae Bareli',c:'RBL',s:'Uttar Pradesh'},{n:'Mau',c:'MAU',s:'Uttar Pradesh'},{n:'Ballia',c:'BUI',s:'Uttar Pradesh'},
+          {n:'Deoria',c:'DEE',s:'Uttar Pradesh'},{n:'Sitapur',c:'STP',s:'Uttar Pradesh'},{n:'Faizabad',c:'FD',s:'Uttar Pradesh'},
+          // Bihar
+          {n:'Gaya',c:'GAYA',s:'Bihar'},{n:'Bhagalpur',c:'BGP',s:'Bihar'},{n:'Katihar',c:'KIR',s:'Bihar'},
+          {n:'Samastipur',c:'SPJ',s:'Bihar'},{n:'Hajipur',c:'HJP',s:'Bihar'},{n:'Begusarai',c:'BGS',s:'Bihar'},
+          {n:'Siwan',c:'SV',s:'Bihar'},{n:'Purnea',c:'PRNA',s:'Bihar'},{n:'Arrah',c:'ARA',s:'Bihar'},
+          {n:'Sasaram',c:'SSM',s:'Bihar'},{n:'Buxar',c:'BXR',s:'Bihar'},{n:'Motihari',c:'MFP',s:'Bihar'},
+          // West Bengal
+          {n:'Howrah',c:'HWH',s:'West Bengal'},{n:'Asansol',c:'ASN',s:'West Bengal'},{n:'Durgapur',c:'DGR',s:'West Bengal'},
+          {n:'New Jalpaiguri',c:'NJP',s:'West Bengal'},{n:'Siliguri',c:'IXB',s:'West Bengal'},{n:'Kharagpur',c:'KGP',s:'West Bengal'},
+          {n:'Malda',c:'MLDT',s:'West Bengal'},{n:'Burdwan',c:'BWN',s:'West Bengal'},{n:'Midnapore',c:'MDP',s:'West Bengal'},
+          {n:'Purulia',c:'PUI',s:'West Bengal'},{n:'Haldia',c:'HAP',s:'West Bengal'},
+          // Rajasthan
+          {n:'Ajmer',c:'AII',s:'Rajasthan'},{n:'Bikaner',c:'BKN',s:'Rajasthan'},{n:'Kota',c:'KOTA',s:'Rajasthan'},
+          {n:'Alwar',c:'AWR',s:'Rajasthan'},{n:'Bharatpur',c:'BTE',s:'Rajasthan'},{n:'Bhilwara',c:'BHL',s:'Rajasthan'},
+          {n:'Sikar',c:'SIKR',s:'Rajasthan'},{n:'Sawai Madhopur',c:'SWM',s:'Rajasthan'},{n:'Hanumangarh',c:'HMH',s:'Rajasthan'},
+          // Madhya Pradesh
+          {n:'Jabalpur',c:'JBP',s:'Madhya Pradesh'},{n:'Gwalior',c:'GWL',s:'Madhya Pradesh'},{n:'Ujjain',c:'UJN',s:'Madhya Pradesh'},
+          {n:'Satna',c:'STA',s:'Madhya Pradesh'},{n:'Itarsi',c:'ET',s:'Madhya Pradesh'},{n:'Katni',c:'KTE',s:'Madhya Pradesh'},
+          {n:'Rewa',c:'REWA',s:'Madhya Pradesh'},{n:'Sagar',c:'SGO',s:'Madhya Pradesh'},{n:'Chhindwara',c:'CHNW',s:'Madhya Pradesh'},
+          // Maharashtra
+          {n:'Aurangabad',c:'AWB',s:'Maharashtra'},{n:'Solapur',c:'SUR',s:'Maharashtra'},{n:'Kolhapur',c:'KOP',s:'Maharashtra'},
+          {n:'Nanded',c:'NED',s:'Maharashtra'},{n:'Amravati',c:'AMI',s:'Maharashtra'},{n:'Akola',c:'AK',s:'Maharashtra'},
+          {n:'Jalgaon',c:'JL',s:'Maharashtra'},{n:'Wardha',c:'WR',s:'Maharashtra'},{n:'Latur',c:'LUR',s:'Maharashtra'},
+          {n:'Bhusawal',c:'BSL',s:'Maharashtra'},{n:'Dhule',c:'DU',s:'Maharashtra'},{n:'Gondia',c:'GDYN',s:'Maharashtra'},
+          {n:'Sangli',c:'SLI',s:'Maharashtra'},{n:'Satara',c:'STR',s:'Maharashtra'},{n:'Chandrapur',c:'CD',s:'Maharashtra'},
+          // Gujarat
+          {n:'Surat',c:'STV',s:'Gujarat'},{n:'Gandhinagar',c:'GNC',s:'Gujarat'},{n:'Anand',c:'ANND',s:'Gujarat'},
+          {n:'Bhavnagar',c:'BVC',s:'Gujarat'},{n:'Gandhidham',c:'GIMB',s:'Gujarat'},{n:'Junagadh',c:'JND',s:'Gujarat'},
+          {n:'Bharuch',c:'BH',s:'Gujarat'},{n:'Mehsana',c:'MSH',s:'Gujarat'},{n:'Porbandar',c:'PBR',s:'Gujarat'},
+          {n:'Navsari',c:'NVS',s:'Gujarat'},{n:'Valsad',c:'BL',s:'Gujarat'},{n:'Bhuj',c:'BHUJ',s:'Gujarat'},
+          // Andhra Pradesh
+          {n:'Vijayawada',c:'BZA',s:'Andhra Pradesh'},{n:'Guntur',c:'GNT',s:'Andhra Pradesh'},{n:'Tirupati',c:'TPTY',s:'Andhra Pradesh'},
+          {n:'Nellore',c:'NLR',s:'Andhra Pradesh'},{n:'Rajahmundry',c:'RJY',s:'Andhra Pradesh'},{n:'Kurnool',c:'KRNT',s:'Andhra Pradesh'},
+          {n:'Kadapa',c:'HX',s:'Andhra Pradesh'},{n:'Vizianagaram',c:'VZM',s:'Andhra Pradesh'},{n:'Eluru',c:'EE',s:'Andhra Pradesh'},
+          {n:'Ongole',c:'OGL',s:'Andhra Pradesh'},{n:'Anantapur',c:'ATP',s:'Andhra Pradesh'},
+          // Telangana
+          {n:'Warangal',c:'WL',s:'Telangana'},{n:'Nizamabad',c:'NZB',s:'Telangana'},{n:'Karimnagar',c:'KMC',s:'Telangana'},
+          {n:'Khammam',c:'KMT',s:'Telangana'},{n:'Secunderabad',c:'SC',s:'Telangana'},
+          // Karnataka
+          {n:'Hubli',c:'UBL',s:'Karnataka'},{n:'Belagavi',c:'IXG',s:'Karnataka'},{n:'Davangere',c:'DVG',s:'Karnataka'},
+          {n:'Bellary',c:'BAY',s:'Karnataka'},{n:'Kalaburagi',c:'GR',s:'Karnataka'},{n:'Vijayapura',c:'BJP',s:'Karnataka'},
+          {n:'Tumkur',c:'TK',s:'Karnataka'},{n:'Hassan',c:'HAS',s:'Karnataka'},{n:'Shimoga',c:'RQM',s:'Karnataka'},
+          {n:'Hospet',c:'HPT',s:'Karnataka'},{n:'Gadag',c:'GDG',s:'Karnataka'},{n:'Raichur',c:'RC',s:'Karnataka'},
+          // Tamil Nadu
+          {n:'Salem',c:'SXV',s:'Tamil Nadu'},{n:'Erode',c:'ED',s:'Tamil Nadu'},{n:'Tirunelveli',c:'TEN',s:'Tamil Nadu'},
+          {n:'Thoothukudi',c:'TCN',s:'Tamil Nadu'},{n:'Nagercoil',c:'NCJ',s:'Tamil Nadu'},{n:'Vellore',c:'KPD',s:'Tamil Nadu'},
+          {n:'Karur',c:'KRR',s:'Tamil Nadu'},{n:'Villupuram',c:'VM',s:'Tamil Nadu'},{n:'Dindigul',c:'DG',s:'Tamil Nadu'},
+          {n:'Thanjavur',c:'TJ',s:'Tamil Nadu'},{n:'Tirupur',c:'TUP',s:'Tamil Nadu'},{n:'Kumbakonam',c:'KMU',s:'Tamil Nadu'},
+          {n:'Cuddalore',c:'CDL',s:'Tamil Nadu'},{n:'Tiruvannamalai',c:'TNM',s:'Tamil Nadu'},
+          // Kerala
+          {n:'Thiruvananthapuram',c:'TVC',s:'Kerala'},{n:'Kozhikode',c:'CCJ',s:'Kerala'},{n:'Thrissur',c:'TCR',s:'Kerala'},
+          {n:'Kollam',c:'QLN',s:'Kerala'},{n:'Palakkad',c:'PGT',s:'Kerala'},{n:'Alappuzha',c:'ALLP',s:'Kerala'},
+          {n:'Kannur',c:'CNN',s:'Kerala'},{n:'Kottayam',c:'KTYM',s:'Kerala'},{n:'Kasaragod',c:'KGQ',s:'Kerala'},
+          // Odisha
+          {n:'Cuttack',c:'CTC',s:'Odisha'},{n:'Berhampur',c:'BAM',s:'Odisha'},{n:'Sambalpur',c:'SBP',s:'Odisha'},
+          {n:'Rourkela',c:'ROU',s:'Odisha'},{n:'Balasore',c:'BLS',s:'Odisha'},{n:'Puri',c:'PURI',s:'Odisha'},
+          {n:'Jharsuguda',c:'JSG',s:'Odisha'},{n:'Angul',c:'ANGL',s:'Odisha'},
+          // Jharkhand
+          {n:'Dhanbad',c:'DHN',s:'Jharkhand'},{n:'Jamshedpur',c:'TATA',s:'Jharkhand'},{n:'Bokaro',c:'BKSC',s:'Jharkhand'},
+          {n:'Hazaribagh',c:'HZB',s:'Jharkhand'},{n:'Deoghar',c:'DGHR',s:'Jharkhand'},{n:'Giridih',c:'GRD',s:'Jharkhand'},
+          // Chhattisgarh
+          {n:'Bilaspur',c:'BSP',s:'Chhattisgarh'},{n:'Durg',c:'DURG',s:'Chhattisgarh'},{n:'Bhilai',c:'BIA',s:'Chhattisgarh'},
+          {n:'Korba',c:'KRBA',s:'Chhattisgarh'},{n:'Rajnandgaon',c:'RJN',s:'Chhattisgarh'},
+          // Punjab
+          {n:'Ludhiana',c:'LUH',s:'Punjab'},{n:'Jalandhar',c:'JUC',s:'Punjab'},{n:'Patiala',c:'PTA',s:'Punjab'},
+          {n:'Bathinda',c:'BTI',s:'Punjab'},{n:'Pathankot',c:'IXP',s:'Punjab'},{n:'Firozpur',c:'FZR',s:'Punjab'},
+          // Haryana
+          {n:'Ambala',c:'UMB',s:'Haryana'},{n:'Panipat',c:'PNP',s:'Haryana'},{n:'Faridabad',c:'FDB',s:'Haryana'},
+          {n:'Rohtak',c:'ROK',s:'Haryana'},{n:'Hisar',c:'HSR',s:'Haryana'},{n:'Karnal',c:'KUN',s:'Haryana'},
+          {n:'Rewari',c:'RE',s:'Haryana'},{n:'Sonipat',c:'SNP',s:'Haryana'},{n:'Kurukshetra',c:'KKDE',s:'Haryana'},
+          {n:'Yamunanagar',c:'YNRK',s:'Haryana'},
+          // Himachal Pradesh & J&K
+          {n:'Shimla',c:'SML',s:'Himachal Pradesh'},{n:'Kalka',c:'KLK',s:'Himachal Pradesh'},
+          {n:'Jammu',c:'IXJ',s:'J&K'},{n:'Udhampur',c:'UHP',s:'J&K'},{n:'Kathua',c:'KTHU',s:'J&K'},
+          // Uttarakhand
+          {n:'Rishikesh',c:'RKSH',s:'Uttarakhand'},{n:'Roorkee',c:'RK',s:'Uttarakhand'},
+          {n:'Haldwani',c:'HDW',s:'Uttarakhand'},{n:'Kathgodam',c:'KGM',s:'Uttarakhand'},
+          {n:'Ramnagar',c:'RMR',s:'Uttarakhand'},{n:'Tanakpur',c:'TPU',s:'Uttarakhand'},
+          // Assam & Northeast
+          {n:'Dibrugarh',c:'DIB',s:'Assam'},{n:'Silchar',c:'IXS',s:'Assam'},{n:'Tinsukia',c:'TSK',s:'Assam'},
+          {n:'Lumding',c:'LMG',s:'Assam'},{n:'Dimapur',c:'DMU',s:'Nagaland'},{n:'Agartala',c:'IXA',s:'Tripura'},
+          // International — Middle East
+          {n:'Dubai',c:'DXB',s:'UAE'},{n:'Abu Dhabi',c:'AUH',s:'UAE'},{n:'Doha',c:'DOH',s:'Qatar'},
+          {n:'Riyadh',c:'RUH',s:'Saudi Arabia'},{n:'Jeddah',c:'JED',s:'Saudi Arabia'},{n:'Muscat',c:'MCT',s:'Oman'},
+          {n:'Kuwait City',c:'KWI',s:'Kuwait'},{n:'Bahrain',c:'BAH',s:'Bahrain'},
+          // International — South & Southeast Asia
+          {n:'Singapore',c:'SIN',s:'Singapore'},{n:'Bangkok',c:'BKK',s:'Thailand'},
+          {n:'Kuala Lumpur',c:'KUL',s:'Malaysia'},{n:'Jakarta',c:'CGK',s:'Indonesia'},
+          {n:'Manila',c:'MNL',s:'Philippines'},{n:'Ho Chi Minh City',c:'SGN',s:'Vietnam'},
+          {n:'Hanoi',c:'HAN',s:'Vietnam'},{n:'Colombo',c:'CMB',s:'Sri Lanka'},
+          {n:'Dhaka',c:'DAC',s:'Bangladesh'},{n:'Kathmandu',c:'KTM',s:'Nepal'},
+          {n:'Karachi',c:'KHI',s:'Pakistan'},{n:'Islamabad',c:'ISB',s:'Pakistan'},
+          // International — East Asia
+          {n:'Tokyo',c:'NRT',s:'Japan'},{n:'Osaka',c:'KIX',s:'Japan'},
+          {n:'Beijing',c:'PEK',s:'China'},{n:'Shanghai',c:'PVG',s:'China'},
+          {n:'Hong Kong',c:'HKG',s:'Hong Kong'},{n:'Seoul',c:'ICN',s:'South Korea'},
+          {n:'Taipei',c:'TPE',s:'Taiwan'},
+          // International — Europe
+          {n:'London',c:'LHR',s:'UK'},{n:'Paris',c:'CDG',s:'France'},
+          {n:'Frankfurt',c:'FRA',s:'Germany'},{n:'Amsterdam',c:'AMS',s:'Netherlands'},
+          {n:'Zurich',c:'ZRH',s:'Switzerland'},{n:'Milan',c:'MXP',s:'Italy'},
+          {n:'Rome',c:'FCO',s:'Italy'},{n:'Barcelona',c:'BCN',s:'Spain'},
+          {n:'Madrid',c:'MAD',s:'Spain'},{n:'Brussels',c:'BRU',s:'Belgium'},
+          {n:'Vienna',c:'VIE',s:'Austria'},{n:'Stockholm',c:'ARN',s:'Sweden'},
+          {n:'Copenhagen',c:'CPH',s:'Denmark'},
+          // International — Americas
+          {n:'New York',c:'JFK',s:'USA'},{n:'Los Angeles',c:'LAX',s:'USA'},
+          {n:'Chicago',c:'ORD',s:'USA'},{n:'San Francisco',c:'SFO',s:'USA'},
+          {n:'Washington DC',c:'IAD',s:'USA'},{n:'Boston',c:'BOS',s:'USA'},
+          {n:'Toronto',c:'YYZ',s:'Canada'},{n:'Vancouver',c:'YVR',s:'Canada'},
+          {n:'Sao Paulo',c:'GRU',s:'Brazil'},
+          // International — Africa & Oceania
+          {n:'Sydney',c:'SYD',s:'Australia'},{n:'Melbourne',c:'MEL',s:'Australia'},
+          {n:'Auckland',c:'AKL',s:'New Zealand'},
+          {n:'Nairobi',c:'NBO',s:'Kenya'},{n:'Johannesburg',c:'JNB',s:'South Africa'},
+          {n:'Cairo',c:'CAI',s:'Egypt'},
+        ];
+
+        function showCitySuggestions(input, listId) {
+            const q = input.value.toLowerCase().trim();
+            const list = document.getElementById(listId);
+            if (!q) { list.classList.remove('open'); return; }
+            const startsWith = [], contains = [];
+            for (const c of CITY_LIST) {
+                const name = c.n.toLowerCase();
+                const code = c.c.toLowerCase();
+                if (name.startsWith(q) || code.startsWith(q)) startsWith.push(c);
+                else if (name.includes(q) || code.includes(q)) contains.push(c);
+            }
+            const matches = [...startsWith, ...contains].slice(0, 10);
+            if (!matches.length) { list.classList.remove('open'); return; }
+            list.innerHTML = matches.map(c => `
+                <div class="city-option" onmousedown="selectCity('${c.n}','${listId}','${input.id}')">
+                    <span>${c.n}</span>
+                    <span class="city-code">${c.c}</span>
+                    <span class="city-state">${c.s}</span>
+                </div>`).join('');
+            list.classList.add('open');
+        }
+        function selectCity(name, listId, inputId) { document.getElementById(inputId).value = name; hideCityList(listId); }
+        function hideCityList(id) { document.getElementById(id)?.classList.remove('open'); }
+
+        function showBookingModal() {
+            document.getElementById('booking-modal').style.display = 'flex';
+            document.getElementById('trip-plan-results').innerHTML = '<p style="color:#1a1a1a;font-size:0.9rem;text-align:center;margin-top:2rem;font-weight:600;">Enter your trip details above and click <strong style="color:#0055ff;">Search</strong>.</p>';
+            document.getElementById('submit-bar').style.display = 'none';
+            document.getElementById('estimated-cost').value = '';
+        }
+        function hideBookingModal() { document.getElementById('booking-modal').style.display = 'none'; }
+
+        async function runTripPlan() {
+            const from = document.getElementById('tp-from').value.trim();
+            const to   = document.getElementById('tp-to').value.trim();
+            const fromDate = document.getElementById('tp-from-date').value;
+            const toDate   = document.getElementById('tp-to-date').value;
+            if (!from || !to || !fromDate) { showToast('Fill in From, To and Departure Date.', 'warning'); return; }
+            const btn = document.getElementById('tp-search-btn');
+            btn.disabled = true; btn.textContent = 'Searching…';
+            document.getElementById('trip-plan-results').innerHTML = `
+                <div style="text-align:center;padding:2.5rem;color:#1a1a1a;font-weight:700;">
+                    <div style="font-size:2rem;margin-bottom:0.75rem;animation:bounce 1s infinite;">✈</div>
+                    SEARCHING FLIGHTS &amp; HOTELS FOR ${to.toUpperCase()}…
+                </div>`;
+            document.getElementById('origin').value      = from;
+            document.getElementById('destination').value = to;
+            document.getElementById('travel-date').value = fromDate;
+            try {
+                const params = new URLSearchParams({ from, to, fromDate });
+                if (toDate) params.set('toDate', toDate);
+                const plan = await apiRequest(`/bookings/trip-plan?${params}`);
+                renderTripPlan(plan, from, to, fromDate, toDate);
+                document.getElementById('submit-bar').style.display = 'block';
+            } catch (err) {
+                document.getElementById('trip-plan-results').innerHTML = `<p style="color:var(--accent-red);padding:1rem;font-size:0.9rem;font-weight:700;">Error: ${err.message}</p>`;
+            } finally {
+                btn.disabled = false; btn.textContent = 'Search';
+            }
+        }
+
+        function renderTripPlan(plan, from, to, fromDate, toDate) {
+            const res = document.getElementById('trip-plan-results');
+            const nights = toDate ? Math.max(1, Math.round((new Date(toDate)-new Date(fromDate))/86400000)) : 1;
+            const apInfo = plan.nearestAirports?.length
+                ? plan.nearestAirports.map(a => `${a.city} (${a.code}${a.distanceKm>0?`, ~${a.distanceKm}km`:''})`).join(' · ')
+                : null;
+
+            let html = `<div style="background:#ffffff;border:2px solid #1a1a1a;padding:1rem;margin-bottom:1.5rem;font-size:0.85rem;font-weight:700;">
+                ROUTE: <span style="color:#0055ff;">${from.toUpperCase()} → ${to.toUpperCase()}</span>
+                &nbsp;·&nbsp; ${fromDate}${toDate?' → '+toDate:''} &nbsp;·&nbsp; ${nights} NIGHT${nights>1?'S':''}
+                ${apInfo?`<br><span style="color:rgba(26,26,26,0.6);margin-top:0.3rem;display:block;font-size:0.75rem;">NEAREST AIRPORTS: ${apInfo}</span>`:''}
+            </div>`;
+
+            const _estHrs = plan.distanceKm ? Math.round(plan.distanceKm / 70) : null;
+            if (_estHrs !== null && _estHrs < 12) {
+                html += `
+                    <div style="background:#fffbeb;color:#b45309;border:2px solid #fef3c7;padding:1rem;margin-bottom:1.5rem;font-size:0.8rem;font-weight:700;display:flex;flex-direction:column;gap:0.4rem;box-shadow:0 2px 4px rgba(0,0,0,0.05);border-radius:4px;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <span class="material-symbols-outlined" style="font-size:20px;color:#b45309;">warning</span>
+                            <span style="font-size:0.85rem;font-weight:800;letter-spacing:-0.01em;">AIR TRAVEL NOT PERMITTED (T&amp;E §5.1.1)</span>
+                        </div>
+                        <p style="margin:0;line-height:1.4;font-weight:600;color:rgba(180,83,9,0.9);">
+                            Air travel is only permitted when the equivalent rail journey exceeds <strong>12 hours</strong>.
+                            Estimated rail time: <strong>~${_estHrs} hrs</strong> (${plan.distanceKm} km). Please select a compliant Train option below.
+                        </p>
+                    </div>
+                `;
+            } else if (plan.outboundFlights?.length) {
+                html += `<div class="trip-section"><div class="trip-section-header">✈ Outbound Flights to ${to} <span style="margin-left:auto;">${fromDate}</span></div>`;
+                plan.outboundFlights.forEach(group => {
+                    const flights = Array.isArray(group.results) ? group.results : [];
+                    html += `<div class="via-label">via ${group.via} (${group.code})${group.km>0?' · ~'+group.km+'km':''}</div>`;
+                    if (!flights.length) { html += `<p class="no-result">No flights found ${from} → ${group.via}</p>`; }
+                    else flights.slice(0,3).forEach((f,i) => {
+                        const dep = f.departure?.slice(11,16)||f.departure||'—';
+                        const arr = f.arrival?.slice(11,16)||f.arrival||'—';
+                        const _ffd = encodeURIComponent(JSON.stringify({airline:f.airline,flightNumber:f.flightNumber,departure:dep,arrival:arr,duration:f.duration,stops:f.stops}));
+                        html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT',JSON.parse(decodeURIComponent('${_ffd}')))">
+                            <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} &nbsp;·&nbsp; ${dep} → ${arr} &nbsp;·&nbsp; <span style="color:rgba(26,26,26,0.6);">${f.duration||''} · ${f.stops===0?'Non-stop':f.stops+' stop'}</span></span>
+                            <span class="price">₹${f.price?.toLocaleString('en-IN')}</span>
+                        </div>`;
+                    });
+                });
+                html += `</div>`;
+            }
+
+            html += `<div class="trip-section"><div class="trip-section-header">🚂 Trains to ${to} <span style="margin-left:auto;">${fromDate}</span></div>`;
+            const trains = Array.isArray(plan.trains) ? plan.trains : [];
+            if (!trains.length) { html += `<p class="no-result">${plan.trainNote||'No trains found.'}</p>`; }
+            else trains.forEach((t,i) => {
+                const timing = (t.departure&&t.arrival)?`${t.departure} → ${t.arrival}`:t.departure?`Dep ${t.departure}`:'';
+                const _tfd = encodeURIComponent(JSON.stringify({trainNumber:t.trainNumber,trainName:t.trainName,departure:t.departure,arrival:t.arrival,duration:t.duration,classes:t.classes||[]}));
+                html += `<div class="trip-card" onclick="pickPrice(0,'TRAIN',JSON.parse(decodeURIComponent('${_tfd}')))">
+                    <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${t.trainName}</strong> <span style="color:rgba(26,26,26,0.6);">${t.trainNumber}</span>${timing?' · '+timing:''} ${t.classes?.length?'· <span style="color:rgba(26,26,26,0.6);font-size:0.78rem;">'+t.classes.join(', ')+'</span>':''}</span>
+                    <span class="price" style="color:rgba(26,26,26,0.6);font-size:0.75rem;font-weight:700;">IRCTC</span>
+                </div>`;
+            });
+            html += `</div>`;
+
+            html += `<div class="trip-section"><div class="trip-section-header">🏨 Hotels in ${to} <span style="margin-left:auto;">${nights} night${nights>1?'s':''}</span></div>`;
+            const hotels = Array.isArray(plan.hotels) ? plan.hotels : [];
+            if (!hotels.length) { html += `<p class="no-result">${plan.hotelNote||'No hotels found.'}</p>`; }
+            else hotels.forEach((h,i) => {
+                const rating = h.rating?` · ★${h.rating}`:'';
+                const dist   = h.distanceFromCenter?` · ${h.distanceFromCenter} from center`:'';
+                const _hfd = encodeURIComponent(JSON.stringify({name:h.name,rating:h.rating,pricePerNight:h.pricePerNight||h.price||0}));
+                html += `<div class="trip-card" onclick="pickPrice(${h.price||h.pricePerNight||0},'HOTEL',JSON.parse(decodeURIComponent('${_hfd}')))">
+                    <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${h.name}</strong>${dist}${rating}</span>
+                    <span class="price">₹${(h.pricePerNight||0).toLocaleString('en-IN')}<span style="font-size:0.75rem;font-weight:400;color:inherit;">/night</span></span>
+                </div>`;
+            });
+            html += `</div>`;
+
+            if (toDate && plan.returnFlights?.length) {
+                html += `<div class="trip-section"><div class="trip-section-header">✈ Return Flights <span style="margin-left:auto;">${toDate}</span></div>`;
+                plan.returnFlights.forEach(group => {
+                    const flights = Array.isArray(group.results)?group.results:[];
+                    html += `<div class="via-label">from ${group.via}</div>`;
+                    if (!flights.length) { html += `<p class="no-result">No return flights found</p>`; }
+                    else flights.slice(0,2).forEach((f,i) => {
+                        const dep = f.departure?.slice(11,16)||f.departure||'—';
+                        const arr = f.arrival?.slice(11,16)||f.arrival||'—';
+                        const _ffd = encodeURIComponent(JSON.stringify({airline:f.airline,flightNumber:f.flightNumber,departure:dep,arrival:arr,duration:f.duration,stops:f.stops}));
+                        html += `<div class="trip-card" onclick="pickPrice(${f.price},'FLIGHT',JSON.parse(decodeURIComponent('${_ffd}')))">
+                            <span>${i===0?'<span class="best-tag">BEST</span>':''}<strong>${f.airline}</strong> ${f.flightNumber} · ${dep} → ${arr} · <span style="color:rgba(26,26,26,0.6);">${f.duration||''}</span></span>
+                            <span class="price">₹${f.price?.toLocaleString('en-IN')}</span>
+                        </div>`;
+                    });
+                });
+                html += `</div>`;
+            }
+
+            res.innerHTML = html;
+        }
+
+        function pickPrice(price, type, fareDetails) {
+            if (price > 0) document.getElementById('estimated-cost').value = price;
+            document.getElementById('travel-type').value = type;
+            _selectedFare = Object.assign({ type, price: Number(price) }, fareDetails || {});
+            document.querySelectorAll('.trip-card').forEach(c => c.classList.remove('selected'));
+            event.currentTarget?.classList?.add('selected');
+
+            // Render train class selector if it is a train
+            const classSelWrap = document.getElementById('modal-train-class-wrap');
+            if (type === 'TRAIN') {
+                if (!classSelWrap) {
+                    const wrap = document.createElement('div');
+                    wrap.id = 'modal-train-class-wrap';
+                    wrap.style.cssText = 'margin-top:1rem;display:flex;flex-direction:column;gap:0.25rem;flex:1;';
+                    wrap.innerHTML = `
+                        <label class="plan-label">Preferred Train Class</label>
+                        <select id="modal-train-class" class="plan-input" style="border:2px solid #1a1a1a;border-radius:0px;background:#ffffff;height:40px;font-weight:600;" onchange="updateModalTrainClass(this.value)">
+                        </select>
+                    `;
+                    const costWrap = document.getElementById('estimated-cost').parentElement;
+                    costWrap.parentElement.insertBefore(wrap, costWrap.nextSibling);
+                }
+                const select = document.getElementById('modal-train-class');
+                const classes = fareDetails?.classes || ['3A', '2A', 'SL'];
+                select.innerHTML = classes.map(c => `<option value="${c}">Class ${c}</option>`).join('');
+                
+                const defaultClass = classes[0];
+                _selectedFare.class = defaultClass;
+                if (_selectedFare.classFares && _selectedFare.classFares[defaultClass]) {
+                    const defaultPrice = _selectedFare.classFares[defaultClass];
+                    _selectedFare.price = defaultPrice;
+                    document.getElementById('estimated-cost').value = defaultPrice;
+                } else {
+                    document.getElementById('estimated-cost').value = '';
+                }
+            } else {
+                if (classSelWrap) classSelWrap.remove();
+            }
+        }
+
+        function updateModalTrainClass(value) {
+            if (_selectedFare && _selectedFare.type === 'TRAIN') {
+                _selectedFare.class = value;
+                if (_selectedFare.classFares && _selectedFare.classFares[value]) {
+                    const price = _selectedFare.classFares[value];
+                    _selectedFare.price = price;
+                    document.getElementById('estimated-cost').value = price;
+                }
+            }
+        }
+
+        async function submitTripBooking() {
+            const cost        = document.getElementById('estimated-cost').value;
+            const type        = document.getElementById('travel-type').value || 'FLIGHT';
+            const origin      = document.getElementById('origin').value;
+            const destination = document.getElementById('destination').value;
+            const date        = document.getElementById('travel-date').value;
+            const trainClass  = (type === 'TRAIN' && _selectedFare?.class) ? _selectedFare.class : null;
+
+            if (!cost || parseFloat(cost) <= 0) { showToast('Please select an option or enter a cost.', 'warning'); return; }
+            const btn = event.currentTarget;
+            btn.disabled = true; btn.textContent = 'Submitting…';
+            try {
+                const details = {
+                    origin,
+                    destination,
+                    date,
+                    ...(trainClass ? { trainClass } : {}),
+                    ...(_selectedFare ? { selectedFare: _selectedFare } : {})
+                };
+                await apiRequest('/bookings', {
+                    method: 'POST',
+                    body: { type, details, cost: parseFloat(cost) }
+                });
+                hideBookingModal();
+                showToast('Trip request submitted! Your manager will review it shortly.', 'success', 5000);
+                await loadBookings();
+            } catch (err) {
+                showToast(err.message, 'error');
+                btn.disabled = false; btn.textContent = 'Submit Request';
+            }
+        }
+
+        // ── AI Orb Assistant ──
+        function openAssistant() {
+            document.getElementById('ai-assistant-overlay').style.display = 'flex';
+            document.getElementById('ai-orb-fab').style.display = 'none';
+            setTimeout(toggleVoice, 400);
+        }
+        function closeAssistant() {
+            if (voiceActive) voiceRecognition?.stop();
+            document.getElementById('ai-assistant-overlay').style.display = 'none';
+            document.getElementById('ai-orb-fab').style.display = 'block';
+            setOrbState('idle');
+        }
+        function handleOverlayClick(e) {
+            if (e.target === document.getElementById('ai-assistant-overlay')) closeAssistant();
+        }
+        function setOrbState(state) {
+            const orb = document.getElementById('assistant-orb');
+            const status = document.getElementById('assistant-status');
+            const mic = document.getElementById('ai-mic-btn');
+            orb.className = 'orb-blob';
+            orb.style.width = '130px'; orb.style.height = '130px'; orb.style.margin = '.5rem 0';
+            if (state === 'listening') {
+                orb.classList.add('listening');
+                status.textContent = 'Listening…';
+                mic.style.background = 'rgba(253,121,168,.25)';
+                mic.style.borderColor = '#fd79a8';
+            } else if (state === 'thinking') {
+                orb.classList.add('thinking');
+                status.textContent = 'Thinking…';
+                mic.style.background = 'rgba(255,255,255,.1)';
+                mic.style.borderColor = 'rgba(255,255,255,.15)';
+            } else {
+                status.textContent = 'Tap to speak';
+                mic.style.background = 'rgba(255,255,255,.1)';
+                mic.style.borderColor = 'rgba(255,255,255,.15)';
+            }
+        }
+        function toggleAssistantKeyboard() {
+            keyboardOpen = !keyboardOpen;
+            const row = document.getElementById('assistant-input-row');
+            row.style.display = keyboardOpen ? 'flex' : 'none';
+            const kb = document.getElementById('ai-keyboard-btn');
+            kb.style.background = keyboardOpen ? 'rgba(33,147,176,.35)' : 'rgba(255,255,255,.1)';
+            if (keyboardOpen) setTimeout(() => document.getElementById('assistant-text').focus(), 100);
+        }
+        function showAssistantActions(reply) {
+            const lower = reply.toLowerCase();
+            const actions = [];
+            if (/trip|flight|train|hotel|travel|book|destination/.test(lower))
+                actions.push({ label: 'Plan Trip', fn: () => window.location.href = 'request.html' });
+            if (/booking|request|status|pending|approved|rejected/.test(lower))
+                actions.push({ label: 'My Bookings', fn: () => { closeAssistant(); document.getElementById('tab-btn-trips')?.click(); } });
+            if (/policy|limit|allowance|eligible|class|entitle/.test(lower))
+                actions.push({ label: 'View Policy', fn: () => closeAssistant() });
+            window._aiActions = actions;
+            document.getElementById('assistant-actions').innerHTML = actions
+                .map((a,i) => `<button class="ai-action-btn" onclick="window._aiActions[${i}].fn()">${a.label}</button>`)
+                .join('');
+        }
+
+        let voiceRecognition = null, voiceActive = false;
+        function toggleVoice() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) { showToast('Voice not supported. Try Chrome.', 'warning'); return; }
+            if (voiceActive) { voiceRecognition?.stop(); return; }
+            voiceRecognition = new SR();
+            voiceRecognition.lang = 'en-IN';
+            voiceRecognition.interimResults = true;
+            voiceRecognition.onstart = () => {
+                voiceActive = true;
+                setOrbState('listening');
+                document.getElementById('assistant-text').value = '';
+                if (!keyboardOpen) toggleAssistantKeyboard();
+            };
+            voiceRecognition.onresult = (e) => {
+                document.getElementById('assistant-text').value = Array.from(e.results).map(r=>r[0].transcript).join('');
+            };
+            voiceRecognition.onend = () => {
+                voiceActive = false;
+                const text = document.getElementById('assistant-text').value.trim();
+                if (text) sendAssistantChat();
+                else setOrbState('idle');
+            };
+            voiceRecognition.onerror = (e) => {
+                voiceActive = false;
+                setOrbState('idle');
+                if (e.error !== 'no-speech') showToast(`Mic: ${e.error}`, 'warning');
+            };
+            voiceRecognition.start();
+        }
+
+        async function sendAssistantChat() {
+            const input = document.getElementById('assistant-text');
+            const text  = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            chatMessages.push({ role: 'user', content: text });
+            setOrbState('thinking');
+            document.getElementById('assistant-reply').style.display = 'none';
+            document.getElementById('assistant-actions').innerHTML = '';
+            try {
+                const data = await apiRequest('/ai/chat', { method: 'POST', body: { messages: chatMessages } });
+                chatMessages.push({ role: 'assistant', content: data.reply });
+                const replyEl = document.getElementById('assistant-reply');
+                replyEl.textContent = data.reply;
+                replyEl.style.display = 'block';
+                showAssistantActions(data.reply);
+                if (data.booking) await loadBookings();
+                setOrbState('idle');
+            } catch {
+                setOrbState('idle');
+                showToast('Something went wrong. Please try again.', 'error');
+            }
+        }
+    </script>
+    <style>
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    </style>
+    <nav class="side-bottom-nav">
+        <a href="employee.html" data-active="true">
+            <span class="material-symbols-outlined">dashboard</span>
+            Dashboard
+        </a>
+        <a href="mytrips.html">
+            <span class="material-symbols-outlined">luggage</span>
+            My Trips
+        </a>
+        <a href="request.html">
+            <span class="material-symbols-outlined">add_circle</span>
+            New Booking
+        </a>
+    </nav>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+</body>
+</html>
