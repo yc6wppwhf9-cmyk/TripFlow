@@ -135,7 +135,7 @@ exports.me = asyncHandler(async (req, res) => {
     include: {
       employee: {
         include: {
-          manager: { include: { user: userSelect } },
+          manager: userSelect,  // manager IS a User — omit password directly
           policy: true
         }
       }
@@ -154,8 +154,8 @@ exports.me = asyncHandler(async (req, res) => {
     role: user.role,
     band,
     department: user.employee?.department || null,
-    manager: user.employee?.manager?.user
-      ? { name: user.employee.manager.user.name, email: user.employee.manager.user.email }
+    manager: user.employee?.manager
+      ? { name: user.employee.manager.name, email: user.employee.manager.email }
       : null,
     policyRules: Object.keys(policyRules).length ? policyRules : null
   });
