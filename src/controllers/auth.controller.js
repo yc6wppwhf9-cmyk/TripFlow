@@ -35,6 +35,26 @@ async function getLockTTL(email) {
   try { return await redisClient.ttl(`login:locked:${email}`); } catch { return 0; }
 }
 
+function signAccessToken(user) {
+  return jwt.sign(
+    { id: user.id, role: user.role },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: '7d',
+      jwtid: crypto.randomUUID()
+    }
+  );
+}
+
+async function isTokenRevoked(token, decoded) {
+  try {
+    const key = `token:revoked:${decoded.jti || token.slice(-16)}`;
+    return !!(await redisClient.get(key));
+  } catch {
+    return false;
+  }
+}
+
 exports.register = async (req, res) => {
   try {
     const { email, password, name, phone, department, managerId } = req.body;
@@ -106,11 +126,7 @@ exports.login = async (req, res) => {
 
     await clearFailCount(email);
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = signAccessToken(user);
 
     res.json({
       token,
@@ -244,14 +260,14 @@ exports.refresh = async (req, res) => {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
+    if (await isTokenRevoked(token, decoded)) {
+      return res.status(401).json({ error: 'Token has been revoked. Please log in again.' });
+    }
+
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
     if (!user) return res.status(401).json({ error: 'User not found' });
 
-    const newToken = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const newToken = signAccessToken(user);
 
     res.json({ token: newToken });
   } catch (error) {

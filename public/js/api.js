@@ -22,7 +22,11 @@ function showToast(message, type = 'info', duration = 3500) {
   }
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
-  toast.innerHTML = `<span class="toast-icon"></span><span>${message}</span>`;
+  const icon = document.createElement('span');
+  icon.className = 'toast-icon';
+  const text = document.createElement('span');
+  text.textContent = message;
+  toast.append(icon, text);
   container.appendChild(toast);
   setTimeout(() => {
     toast.classList.add('hide');

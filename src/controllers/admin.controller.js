@@ -36,7 +36,15 @@ exports.getStats = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
-      include: { employee: { include: { manager: true } }, vendor: true },
+      omit: { password: true },
+      include: {
+        employee: {
+          include: {
+            manager: { omit: { password: true } }
+          }
+        },
+        vendor: true
+      },
       orderBy: { createdAt: 'desc' }
     });
     res.json(users);
@@ -132,7 +140,11 @@ exports.updatePolicy = async (req, res) => {
 exports.createUser = async (req, res) => {
   try {
     const { email, name, role, phone, department, managerId, password, companyName, serviceType } = req.body;
-    const hashedPassword = await bcrypt.hash(password || 'Welcome@123', 12);
+    if (!password || password.length < 8) {
+      return res.status(400).json({ error: 'Password is required and must be at least 8 characters' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const data = { email, password: hashedPassword, name, role: role || 'EMPLOYEE', phone };
 
@@ -142,7 +154,11 @@ exports.createUser = async (req, res) => {
       data.vendor = { create: { companyName: companyName || name, serviceType: serviceType || 'FULL_SERVICE' } };
     }
 
-    const user = await prisma.user.create({ data, include: { employee: true, vendor: true } });
+    const user = await prisma.user.create({
+      data,
+      omit: { password: true },
+      include: { employee: true, vendor: true }
+    });
     res.status(201).json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });

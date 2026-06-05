@@ -18,12 +18,7 @@ async function connectRedis() {
 }
 
 // Queues removed — notifications send directly via email.service / whatsapp.service
-const emailQueue = null;
-const whatsappQueue = null;
-
 module.exports = {
   redisClient,
-  connectRedis,
-  emailQueue,
-  whatsappQueue
+  connectRedis
 };

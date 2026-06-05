@@ -165,7 +165,15 @@ Today: ${new Date().toISOString().split('T')[0]}`;
             return res.json({ reply: "I can only create bookings for employees. Your account type doesn't support this.", booking: null });
           }
 
-          const violation = await checkPolicyLimits(user.employee.id, type, parseFloat(cost));
+          const details = {
+            origin,
+            destination,
+            date,
+            ...(selectedFare?.class ? { trainClass: selectedFare.class } : {}),
+            ...(selectedFare ? { selectedFare } : {})
+          };
+
+          const violation = await checkPolicyLimits(user.employee.id, type, parseFloat(cost), details);
           if (violation) {
             return res.json({
               reply: `⚠️ Cannot book: ${violation.error} Please pick a lower-cost option or ask your manager for an override.`,
@@ -178,12 +186,7 @@ Today: ${new Date().toISOString().split('T')[0]}`;
             data: {
               employeeId: user.employee.id,
               type,
-              details: { 
-                origin, 
-                destination, 
-                date,
-                ...(selectedFare ? { selectedFare } : {})
-              },
+              details,
               cost: parseFloat(cost),
               stage: 'PENDING_MANAGER'
             }

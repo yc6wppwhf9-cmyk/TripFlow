@@ -9,6 +9,10 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_PROD_SEED !== 'true') {
+    throw new Error('Refusing to run destructive seed in production. Set ALLOW_PROD_SEED=true only if you intend to reset production data.');
+  }
+
   console.log('Clearing existing database records...');
   try {
     await prisma.notification.deleteMany({});

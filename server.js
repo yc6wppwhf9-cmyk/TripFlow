@@ -3,10 +3,6 @@ const app = require('./src/app');
 const prisma = require('./src/config/db');
 const { connectRedis } = require('./src/config/redis');
 
-// Start queue processors
-require('./src/queues/email.queue');
-require('./src/queues/whatsapp.queue');
-
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
