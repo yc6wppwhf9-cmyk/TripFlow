@@ -284,6 +284,12 @@
     }
     .spinning { animation: spinLoad 0.75s linear infinite; display: inline-block; }
 
+    /* ── Suppress browser-native password controls ── */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear { display: none; }
+    input::-webkit-contacts-auto-fill-button,
+    input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none !important; pointer-events: none; }
+
     @media (max-width: 480px) {
       .form-card { padding: 1.6rem 1.25rem; }
       .field-grid { grid-template-columns: 1fr; }
@@ -342,7 +348,7 @@
             <div class="inp-wrap">
               <input type="password" id="password" name="password" required
                      placeholder="••••••••" autocomplete="current-password"
-                     style="padding-right:2.6rem;">
+                     style="padding-right:2.8rem;" data-lpignore="true" data-1p-ignore>
               <button type="button" class="toggle-pw" id="toggle-pw" aria-label="Show password">
                 <span class="material-symbols-outlined">visibility</span>
               </button>
@@ -408,7 +414,7 @@
               <div class="inp-wrap">
                 <input type="password" id="reg-password" name="password" required
                        placeholder="Min. 8 characters" autocomplete="new-password"
-                       style="padding-right:2.6rem;">
+                       style="padding-right:2.8rem;" data-lpignore="true" data-1p-ignore>
                 <button type="button" class="toggle-pw" id="toggle-reg-pw" aria-label="Show password">
                   <span class="material-symbols-outlined">visibility</span>
                 </button>
