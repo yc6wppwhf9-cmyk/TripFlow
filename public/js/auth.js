@@ -41,14 +41,15 @@ function checkAuth() {
 
   // Page access control — maps each page to the roles that may view it
   const pageAccess = {
-    '/employee.html': ['EMPLOYEE', 'MANAGER', 'ADMIN'],
-    '/mytrips.html':  ['EMPLOYEE', 'MANAGER', 'ADMIN'],
-    '/manager.html':  ['MANAGER', 'ADMIN'],
-    '/hr.html':       ['HR', 'ADMIN'],
-    '/admin.html':    ['ADMIN'],
-    '/vendor.html':   ['VENDOR', 'ADMIN'],
-    '/request.html':  ['EMPLOYEE', 'MANAGER', 'ADMIN'],
-    '/detail.html':   ['EMPLOYEE', 'MANAGER', 'HR', 'ADMIN', 'VENDOR'],
+    '/employee.html':   ['EMPLOYEE', 'MANAGER', 'ADMIN'],
+    '/mytrips.html':    ['EMPLOYEE', 'MANAGER', 'ADMIN'],
+    '/manager.html':    ['MANAGER', 'ADMIN'],
+    '/hr.html':         ['HR', 'ADMIN'],
+    '/admin.html':      ['ADMIN'],
+    '/vendor.html':     ['VENDOR', 'ADMIN'],
+    '/request.html':    ['EMPLOYEE', 'MANAGER', 'ADMIN'],
+    '/detail.html':     ['EMPLOYEE', 'MANAGER', 'HR', 'ADMIN', 'VENDOR'],
+    '/management.html': ['HR', 'ADMIN'],
   };
 
   const allowed = pageAccess[path];

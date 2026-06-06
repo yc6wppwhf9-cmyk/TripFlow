@@ -65,6 +65,62 @@ exports.getPolicyCompliance = asyncHandler(async (req, res) => {
 });
 
 // Single GROUP BY query replacing 12 sequential DB round-trips
+exports.getManagementStats = asyncHandler(async (req, res) => {
+  const now = new Date();
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
+
+  const [
+    thisMonthAgg, lastMonthAgg,
+    thisMonthCount, lastMonthCount,
+    byType, avgAgg,
+    pendingVendor, rejectedCount
+  ] = await Promise.all([
+    prisma.booking.aggregate({
+      where: { createdAt: { gte: startOfThisMonth }, stage: { notIn: ['REJECTED', 'CANCELLED'] } },
+      _sum: { cost: true }
+    }),
+    prisma.booking.aggregate({
+      where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth }, stage: { notIn: ['REJECTED', 'CANCELLED'] } },
+      _sum: { cost: true }
+    }),
+    prisma.booking.count({
+      where: { createdAt: { gte: startOfThisMonth }, stage: { notIn: ['REJECTED', 'CANCELLED'] } }
+    }),
+    prisma.booking.count({
+      where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth }, stage: { notIn: ['REJECTED', 'CANCELLED'] } }
+    }),
+    prisma.$queryRaw`
+      SELECT type, COUNT(*)::int AS count, COALESCE(SUM(cost), 0)::float AS total
+      FROM "Booking"
+      WHERE stage NOT IN ('REJECTED', 'CANCELLED')
+      GROUP BY type ORDER BY total DESC
+    `,
+    prisma.booking.aggregate({
+      where: { stage: { notIn: ['REJECTED', 'CANCELLED'] } },
+      _avg: { cost: true }
+    }),
+    prisma.booking.count({ where: { stage: 'PENDING_VENDOR' } }),
+    prisma.booking.count({ where: { stage: 'REJECTED' } })
+  ]);
+
+  const thisMonthSpend = thisMonthAgg._sum.cost || 0;
+  const lastMonthSpend = lastMonthAgg._sum.cost || 0;
+  const spendChange = lastMonthSpend > 0
+    ? +((thisMonthSpend - lastMonthSpend) / lastMonthSpend * 100).toFixed(1)
+    : null;
+  const bookingChange = lastMonthCount > 0
+    ? +((thisMonthCount - lastMonthCount) / lastMonthCount * 100).toFixed(1)
+    : null;
+
+  res.json({
+    thisMonthSpend, lastMonthSpend, spendChange,
+    thisMonthBookings: thisMonthCount, lastMonthBookings: lastMonthCount, bookingChange,
+    byType, avgBookingValue: Math.round(avgAgg._avg.cost || 0),
+    pendingVendor, rejectedCount
+  });
+});
+
 exports.getMonthlyTrend = asyncHandler(async (req, res) => {
   const rows = await prisma.$queryRaw`
     SELECT
