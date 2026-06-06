@@ -14,24 +14,22 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --blue-darkest: #00154a;
-      --blue-dark:    #001f6e;
-      --blue-mid:     #003d9b;
-      --blue-bright:  #0052cc;
-      --text-primary: #191b23;
-      --text-muted:   #585f6c;
-      --border:       #c3c6d6;
-      --surface:      #ffffff;
-      --bg:           #f5f7ff;
+      --blue-mid:    #003d9b;
+      --blue-bright: #0052cc;
+      --text:        #191b23;
+      --text-muted:  #585f6c;
+      --border:      #c3c6d6;
+      --surface:     #ffffff;
+      --bg:          #f0f3ff;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --text-primary: #e4e6f0;
-        --text-muted:   #9aa0b8;
-        --border:       #2e3150;
-        --surface:      #1a1d2e;
-        --bg:           #12141f;
+        --text:       #e4e6f0;
+        --text-muted: #9aa0b8;
+        --border:     #2e3150;
+        --surface:    #1a1d2e;
+        --bg:         #12141f;
       }
     }
 
@@ -40,317 +38,218 @@
       vertical-align: middle;
     }
 
-    /* Two-column layout: brand | form */
     body {
       min-height: 100vh;
-      display: grid;
-      grid-template-columns: 45fr 55fr;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-family: 'Inter', system-ui, sans-serif;
-      color: var(--text-primary);
-      background: var(--bg);
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 20% 0%,  rgba(0,61,155,0.10) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 100%, rgba(0,82,204,0.08) 0%, transparent 55%),
+        var(--bg);
+      padding: 2rem 1rem;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Brand Panel ── */
-    .brand-panel {
-      background:
-        radial-gradient(ellipse at 80% 0%,   rgba(0,102,255,0.3) 0%,  transparent 50%),
-        radial-gradient(ellipse at 0%  100%,  rgba(0,82,204,0.4)  0%,  transparent 60%),
-        linear-gradient(160deg, #001148 0%, #002580 40%, #003d9b 75%, #0047b3 100%);
-      padding: 3rem 3.5rem;
+    /* ── Wrapper ── */
+    .page-wrap {
+      width: 100%;
+      max-width: 440px;
       display: flex;
       flex-direction: column;
-      position: relative;
-      overflow: hidden;
-      min-height: 100vh;
-    }
-    /* Dot grid overlay */
-    .brand-panel::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
-      background-size: 28px 28px;
-      pointer-events: none;
-    }
-    /* Glow orb */
-    .brand-panel::after {
-      content: '';
-      position: absolute;
-      width: 500px; height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(0,120,255,0.18) 0%, transparent 70%);
-      top: -150px; right: -150px;
-      pointer-events: none;
+      align-items: center;
+      gap: 1.5rem;
+      animation: fadeInUp 0.45s cubic-bezier(.22,.68,0,1.2) both;
     }
 
-    .brand-top {
+    /* ── Brand Header ── */
+    .brand-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      text-align: center;
+    }
+    .brand-row {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      position: relative;
-      z-index: 1;
-      animation: slideDown 0.55s cubic-bezier(.22,.68,0,1.2) both;
+      gap: 0.6rem;
     }
-    .brand-top img {
-      width: 42px; height: 42px;
-      border-radius: 10px;
-      object-fit: contain;
-      flex-shrink: 0;
-    }
-    .brand-top .name {
-      font-size: 1.55rem;
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: -0.025em;
-    }
-    .brand-top .tag {
-      font-size: 0.62rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      background: rgba(255,255,255,0.13);
-      color: rgba(255,255,255,0.85);
-      padding: 0.22rem 0.55rem;
-      border-radius: 4px;
-      border: 1px solid rgba(255,255,255,0.15);
-    }
-
-    .brand-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      position: relative;
-      z-index: 1;
-      padding: 2rem 0;
-    }
-    .brand-headline {
-      font-size: 2.75rem;
-      font-weight: 800;
-      color: #ffffff;
-      line-height: 1.15;
-      letter-spacing: -0.035em;
-      margin-bottom: 1.1rem;
-      animation: slideUp 0.55s 0.1s cubic-bezier(.22,.68,0,1.2) both;
-    }
-    .brand-headline .soft { color: rgba(255,255,255,0.55); }
-
-    .brand-sub {
-      font-size: 0.97rem;
-      color: rgba(255,255,255,0.65);
-      font-weight: 400;
-      line-height: 1.65;
-      max-width: 350px;
-      margin-bottom: 2.75rem;
-      animation: slideUp 0.55s 0.18s cubic-bezier(.22,.68,0,1.2) both;
-    }
-
-    /* Illustration */
-    .illustration-wrap {
-      margin-bottom: 2.75rem;
-      animation: floatAnim 7s ease-in-out infinite;
-      position: relative;
-      z-index: 1;
-    }
-    .illustration-wrap svg {
-      width: 100%;
-      max-width: 400px;
-      display: block;
-    }
-
-    /* Feature list */
-    .feature-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.9rem;
-      position: relative;
-      z-index: 1;
-      animation: slideUp 0.55s 0.28s cubic-bezier(.22,.68,0,1.2) both;
-    }
-    .feat { display: flex; align-items: center; gap: 0.85rem; }
-    .feat-icon {
-      width: 34px; height: 34px;
+    .brand-row img {
+      width: 38px; height: 38px;
       border-radius: 9px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.14);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      object-fit: contain;
     }
-    .feat-icon .material-symbols-outlined { font-size: 16px; color: rgba(255,255,255,0.88); }
-    .feat-text {
-      font-size: 0.83rem;
-      font-weight: 500;
-      color: rgba(255,255,255,0.7);
-      line-height: 1.4;
-    }
-
-    .brand-footer {
-      position: relative;
-      z-index: 1;
-      font-size: 0.72rem;
-      color: rgba(255,255,255,0.25);
-      margin-top: 2rem;
-    }
-
-    /* ── Form Panel ── */
-    .form-panel {
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 1.5rem;
-      width: 100%;
-      position: relative;
-    }
-    .form-panel::before {
-      content: '';
-      position: absolute;
-      top: 0; right: 0;
-      width: 220px; height: 220px;
-      background: radial-gradient(circle at top right, rgba(0,61,155,0.06), transparent 70%);
-      pointer-events: none;
-    }
-
-    .form-inner {
-      width: 100%;
-      max-width: 390px;
-      position: relative;
-      z-index: 1;
-      animation: fadeInUp 0.5s 0.2s cubic-bezier(.22,.68,0,1.2) both;
-    }
-    .form-eyebrow {
-      font-size: 0.73rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--blue-mid);
-      margin-bottom: 0.6rem;
-    }
-    .form-title {
-      font-size: 2rem;
+    .brand-name {
+      font-size: 1.65rem;
       font-weight: 800;
-      color: var(--text-primary);
+      color: var(--blue-mid);
       letter-spacing: -0.025em;
-      margin-bottom: 0.35rem;
     }
-    .form-subtitle {
-      font-size: 0.9rem;
+    .brand-sub {
+      font-size: 0.85rem;
       color: var(--text-muted);
       font-weight: 400;
-      margin-bottom: 2.25rem;
     }
 
+    /* ── Tab Switcher ── */
+    .tab-switcher {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      width: 100%;
+      gap: 4px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      background: transparent;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .tab-btn .material-symbols-outlined { font-size: 16px; }
+    .tab-btn.active {
+      background: var(--blue-mid);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,61,155,0.25);
+    }
+    .tab-btn:not(.active):hover {
+      background: #f0f3ff;
+      color: var(--blue-mid);
+    }
+
+    /* ── Card ── */
     .form-card {
+      width: 100%;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 18px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
-      padding: 2.25rem 2rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
+      padding: 2rem 2rem;
     }
 
-    /* Fields */
-    .field { margin-bottom: 1.2rem; }
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+
+    .form-section-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+    }
+    .form-section-sub {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Two-column grid for register ── */
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 1rem;
+    }
+    .field-grid .field-full { grid-column: 1 / -1; }
+
+    /* ── Fields ── */
+    .field { margin-bottom: 1.1rem; }
     .field-hd {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.45rem;
+      margin-bottom: 0.4rem;
     }
-    .field-hd label { font-size: 0.8rem; font-weight: 600; color: #434654; }
+    .field-hd label { font-size: 0.79rem; font-weight: 600; color: #434654; }
     .field-hd a {
-      font-size: 0.78rem; font-weight: 600;
+      font-size: 0.77rem; font-weight: 600;
       color: var(--blue-mid); text-decoration: none;
     }
     .field-hd a:hover { text-decoration: underline; }
 
     .inp-wrap { position: relative; }
-    .inp-wrap input {
+    .inp-wrap input, .inp-wrap select {
       width: 100%;
       background: #f8f9ff;
       border: 1.5px solid var(--border);
       border-radius: 10px;
-      padding: 0.72rem 0.9rem;
+      padding: 0.7rem 0.9rem;
       font-family: 'Inter', sans-serif;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--text);
       outline: none;
       transition: all 0.18s ease;
       display: block;
+      appearance: none;
     }
     .inp-wrap input::placeholder { color: #9aa0af; font-weight: 400; }
-    .inp-wrap input:focus {
+    .inp-wrap input:focus, .inp-wrap select:focus {
       border-color: var(--blue-mid);
       background: var(--surface);
       box-shadow: 0 0 0 3.5px rgba(0,61,155,0.1);
     }
 
     @media (prefers-color-scheme: dark) {
-      .inp-wrap input { background: #1e2133; }
-      .inp-wrap input:focus { background: #222640; }
+      .inp-wrap input, .inp-wrap select { background: #1e2133; }
+      .inp-wrap input:focus, .inp-wrap select:focus { background: #222640; }
       .field-hd label { color: #b0b8d0; }
     }
 
     .toggle-pw {
-      position: absolute;
-      right: 0.8rem; top: 50%;
+      position: absolute; right: 0.75rem; top: 50%;
       transform: translateY(-50%);
-      background: none; border: none;
-      cursor: pointer; padding: 0;
-      color: #9aa0af;
-      display: flex; align-items: center;
+      background: none; border: none; cursor: pointer; padding: 0;
+      color: #9aa0af; display: flex; align-items: center;
       min-height: unset; box-shadow: none;
     }
-    .toggle-pw:hover { color: var(--text-primary); background: none; box-shadow: none; }
-    .toggle-pw .material-symbols-outlined { font-size: 19px; }
+    .toggle-pw:hover { color: var(--text); background: none; box-shadow: none; }
+    .toggle-pw .material-symbols-outlined { font-size: 18px; }
 
     .remember-row {
-      display: flex; align-items: center; gap: 0.55rem;
-      margin-bottom: 1.6rem;
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-bottom: 1.4rem;
     }
     .remember-row input[type="checkbox"] {
-      width: 16px; height: 16px;
-      appearance: none;
-      border: 1.5px solid var(--border);
-      border-radius: 4px;
-      background: #f8f9ff;
-      cursor: pointer;
-      position: relative;
-      flex-shrink: 0;
-      outline: none;
-      transition: all 0.15s ease;
+      width: 16px; height: 16px; appearance: none;
+      border: 1.5px solid var(--border); border-radius: 4px;
+      background: #f8f9ff; cursor: pointer; position: relative;
+      flex-shrink: 0; outline: none; transition: all 0.15s ease;
     }
     .remember-row input[type="checkbox"]:checked {
-      background: var(--blue-mid);
-      border-color: var(--blue-mid);
+      background: var(--blue-mid); border-color: var(--blue-mid);
     }
     .remember-row input[type="checkbox"]:checked::after {
-      content: '✓';
-      position: absolute;
-      top: 50%; left: 50%;
+      content: '✓'; position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       font-size: 10px; font-weight: 700; color: #fff;
     }
-    .remember-row label { font-size: 0.84rem; font-weight: 500; color: #434654; cursor: pointer; }
+    .remember-row label { font-size: 0.83rem; font-weight: 500; color: #434654; cursor: pointer; }
 
     .btn-submit {
-      width: 100%;
-      padding: 0.82rem 1.5rem;
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: 0.93rem;
-      cursor: pointer;
-      border-radius: 10px;
-      border: none;
+      width: 100%; padding: 0.8rem 1.5rem;
+      font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.92rem;
+      cursor: pointer; border-radius: 10px; border: none;
       background: linear-gradient(135deg, #003d9b 0%, #0055d4 100%);
-      color: #fff;
-      transition: all 0.2s ease;
+      color: #fff; transition: all 0.2s ease;
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
       box-shadow: 0 4px 14px rgba(0,61,155,0.28);
-      min-height: unset;
-      letter-spacing: 0.01em;
+      min-height: unset; letter-spacing: 0.01em;
+      margin-top: 0.25rem;
     }
     .btn-submit:hover:not(:disabled) {
       transform: translateY(-1px);
@@ -361,32 +260,23 @@
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
     .btn-submit .material-symbols-outlined { font-size: 18px; }
 
-    .error-box {
-      display: none;
-      margin-top: 1.1rem;
-      padding: 0.72rem 1rem;
-      border-radius: 9px;
-      font-size: 0.84rem;
-      font-weight: 600;
-      text-align: center;
+    .msg-box {
+      display: none; margin-top: 1rem;
+      padding: 0.7rem 1rem; border-radius: 9px;
+      font-size: 0.83rem; font-weight: 600; text-align: center;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      opacity: 0.65;
     }
 
     /* ── Animations ── */
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-18px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(18px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(14px); }
+      from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes floatAnim {
-      0%, 100% { transform: translateY(0px); }
-      50%       { transform: translateY(-10px); }
     }
     @keyframes spinLoad {
       0%   { transform: rotate(0deg); }
@@ -394,149 +284,45 @@
     }
     .spinning { animation: spinLoad 0.75s linear infinite; display: inline-block; }
 
-    /* ── Mobile ── */
-    @media (max-width: 920px) {
-      body { grid-template-columns: 1fr; }
-
-      .brand-panel {
-        min-height: auto;
-        padding: 1.75rem 2rem;
-      }
-      .brand-body    { padding: 1.5rem 0 0.5rem; flex: unset; }
-      .brand-headline { font-size: 2rem; }
-      .brand-sub, .illustration-wrap, .feature-list, .brand-footer { display: none; }
-
-      .form-panel {
-        min-height: unset;
-        padding: 2.5rem 1.75rem 3rem;
-        justify-content: flex-start;
-      }
-    }
     @media (max-width: 480px) {
-      .brand-panel   { padding: 1.5rem 1.25rem; }
-      .brand-headline { font-size: 1.7rem; }
-      .form-panel    { padding: 2rem 1.25rem; }
-      .form-card     { padding: 1.75rem 1.25rem; }
-      .form-title    { font-size: 1.65rem; }
+      .form-card { padding: 1.6rem 1.25rem; }
+      .field-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ══ LEFT — Brand Panel ══ -->
-  <div class="brand-panel">
-    <div class="brand-top">
-      <img src="images/Logo.png" alt="TripFlow logo">
-      <span class="name">TripFlow</span>
-      <span class="tag">BETA</span>
+  <div class="page-wrap">
+
+    <!-- Brand Header -->
+    <div class="brand-header">
+      <div class="brand-row">
+        <img src="images/Logo.png" alt="TripFlow">
+        <span class="brand-name">TripFlow</span>
+      </div>
+      <p class="brand-sub">Corporate Travel Management Portal</p>
     </div>
 
-    <div class="brand-body">
-      <h1 class="brand-headline">
-        Smart travel,<br>
-        <span class="soft">zero friction.</span>
-      </h1>
-      <p class="brand-sub">
-        Corporate travel management that keeps your team moving and your finance team happy — all in one AI-powered platform.
-      </p>
-
-      <div class="illustration-wrap">
-        <svg viewBox="0 0 420 260" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Globe rings -->
-          <ellipse cx="210" cy="130" rx="195" ry="118" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
-          <ellipse cx="210" cy="130" rx="130" ry="118" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-          <ellipse cx="210" cy="130" rx="65"  ry="118" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-          <line x1="15" y1="130" x2="405" y2="130" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-          <line x1="15" y1="85"  x2="405" y2="85"  stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-          <line x1="15" y1="175" x2="405" y2="175" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-
-          <!-- Flight path Mumbai → Delhi -->
-          <path d="M 60 185 Q 210 35 355 95"
-                stroke="rgba(255,255,255,0.35)" stroke-width="1.5"
-                stroke-dasharray="7 5" fill="none"/>
-
-          <!-- Origin — Mumbai -->
-          <circle cx="60" cy="185" r="4.5" fill="rgba(255,255,255,0.65)"/>
-          <circle cx="60" cy="185" r="9"   fill="rgba(255,255,255,0.1)"/>
-          <text x="68" y="200" fill="rgba(255,255,255,0.45)" font-size="9.5"
-                font-family="Inter,sans-serif" font-weight="600">MUMBAI</text>
-
-          <!-- Destination — Delhi -->
-          <circle cx="355" cy="95" r="4.5" fill="#60a5fa"/>
-          <circle cx="355" cy="95" r="9"   fill="rgba(96,165,250,0.2)"/>
-          <path d="M355 78 C355 68 344 62 355 53 C366 62 355 68 355 78Z" fill="#60a5fa"/>
-          <circle cx="355" cy="60" r="3.5" fill="white"/>
-          <text x="330" y="112" fill="rgba(96,165,250,0.8)" font-size="9.5"
-                font-family="Inter,sans-serif" font-weight="600">DELHI</text>
-
-          <!-- Airplane -->
-          <g transform="translate(196, 91) rotate(-18)">
-            <path d="M0 0 L20 -4.5 L22 0 L20 4.5 L0 0Z" fill="white"/>
-            <path d="M4 0 L11 -11 L15 -9 L9 0Z"  fill="rgba(255,255,255,0.75)"/>
-            <path d="M4 0 L11 11  L15 9  L9 0Z"  fill="rgba(255,255,255,0.75)"/>
-            <path d="M0 0 L3 -4.5 L6 -3 L6 3 L3 4.5 L0 0Z" fill="rgba(255,255,255,0.55)"/>
-          </g>
-
-          <!-- Stat pills -->
-          <rect x="85" y="22" rx="9" ry="9" width="86" height="37"
-                fill="rgba(255,255,255,0.09)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
-          <text x="128" y="38" fill="white" font-size="12.5" font-family="Inter,sans-serif"
-                font-weight="700" text-anchor="middle">₹1.2 Cr</text>
-          <text x="128" y="51" fill="rgba(255,255,255,0.5)" font-size="7.5"
-                font-family="Inter,sans-serif" font-weight="600" text-anchor="middle"
-                letter-spacing="0.07em">SAVED YTD</text>
-
-          <rect x="255" y="188" rx="9" ry="9" width="86" height="37"
-                fill="rgba(255,255,255,0.09)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
-          <text x="298" y="204" fill="white" font-size="12.5" font-family="Inter,sans-serif"
-                font-weight="700" text-anchor="middle">98%</text>
-          <text x="298" y="217" fill="rgba(255,255,255,0.5)" font-size="7.5"
-                font-family="Inter,sans-serif" font-weight="600" text-anchor="middle"
-                letter-spacing="0.07em">ON-TIME</text>
-
-          <rect x="320" y="130" rx="9" ry="9" width="80" height="37"
-                fill="rgba(96,165,250,0.12)" stroke="rgba(96,165,250,0.2)" stroke-width="1"/>
-          <text x="360" y="146" fill="#93c5fd" font-size="12.5" font-family="Inter,sans-serif"
-                font-weight="700" text-anchor="middle">4.9 ★</text>
-          <text x="360" y="159" fill="rgba(147,197,253,0.6)" font-size="7.5"
-                font-family="Inter,sans-serif" font-weight="600" text-anchor="middle"
-                letter-spacing="0.07em">RATING</text>
-        </svg>
-      </div>
-
-      <div class="feature-list">
-        <div class="feat">
-          <div class="feat-icon">
-            <span class="material-symbols-outlined">verified</span>
-          </div>
-          <span class="feat-text">Policy-first approvals with real-time compliance checks</span>
-        </div>
-        <div class="feat">
-          <div class="feat-icon">
-            <span class="material-symbols-outlined">flight</span>
-          </div>
-          <span class="feat-text">Flights, trains, hotels and cabs in one workflow</span>
-        </div>
-        <div class="feat">
-          <div class="feat-icon">
-            <span class="material-symbols-outlined">psychology</span>
-          </div>
-          <span class="feat-text">AI travel assistant that plans and books for you</span>
-        </div>
-      </div>
+    <!-- Tab Switcher -->
+    <div class="tab-switcher">
+      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">
+        <span class="material-symbols-outlined">login</span>
+        Sign In
+      </button>
+      <button class="tab-btn" id="tab-register" onclick="switchTab('register')">
+        <span class="material-symbols-outlined">person_add</span>
+        Register
+      </button>
     </div>
 
-    <div class="brand-footer">© 2025 TripFlow. All rights reserved.</div>
-  </div>
+    <!-- Card -->
+    <div class="form-card">
 
-  <!-- ══ RIGHT — Form Panel ══ -->
-  <div class="form-panel">
-    <div class="form-inner">
-      <div class="form-eyebrow">Corporate Portal</div>
-      <h2 class="form-title">Welcome back</h2>
-      <p class="form-subtitle">Sign in to your travel dashboard</p>
+      <!-- ── Sign In ── -->
+      <div id="section-login" class="form-section active">
+        <div class="form-section-title">Welcome back</div>
+        <p class="form-section-sub">Sign in to your travel dashboard</p>
 
-      <div class="form-card">
         <form id="login-form" autocomplete="on">
           <div class="field">
             <div class="field-hd">
@@ -556,7 +342,7 @@
             <div class="inp-wrap">
               <input type="password" id="password" name="password" required
                      placeholder="••••••••" autocomplete="current-password"
-                     style="padding-right: 2.6rem;">
+                     style="padding-right:2.6rem;">
               <button type="button" class="toggle-pw" id="toggle-pw" aria-label="Show password">
                 <span class="material-symbols-outlined">visibility</span>
               </button>
@@ -574,10 +360,85 @@
           </button>
         </form>
 
-        <div class="error-box" id="error-msg"></div>
+        <div class="msg-box" id="login-msg"></div>
       </div>
-    </div>
-  </div>
+
+      <!-- ── Register ── -->
+      <div id="section-register" class="form-section">
+        <div class="form-section-title">Create account</div>
+        <p class="form-section-sub">Register as a new employee</p>
+
+        <form id="register-form" autocomplete="off">
+          <div class="field-grid">
+
+            <div class="field">
+              <div class="field-hd"><label for="reg-name">Full Name</label></div>
+              <div class="inp-wrap">
+                <input type="text" id="reg-name" name="name" required
+                       placeholder="John Doe" autocomplete="name">
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-hd"><label for="reg-dept">Department</label></div>
+              <div class="inp-wrap">
+                <input type="text" id="reg-dept" name="department"
+                       placeholder="Engineering" autocomplete="off">
+              </div>
+            </div>
+
+            <div class="field field-full">
+              <div class="field-hd"><label for="reg-email">Corporate Email</label></div>
+              <div class="inp-wrap">
+                <input type="email" id="reg-email" name="email" required
+                       placeholder="john.doe@company.com" autocomplete="email">
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-hd"><label for="reg-phone">Phone <span style="color:#9aa0af;font-weight:400;">(optional)</span></label></div>
+              <div class="inp-wrap">
+                <input type="tel" id="reg-phone" name="phone"
+                       placeholder="+91 98765 43210" autocomplete="tel">
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-hd"><label for="reg-password">Password</label></div>
+              <div class="inp-wrap">
+                <input type="password" id="reg-password" name="password" required
+                       placeholder="Min. 8 characters" autocomplete="new-password"
+                       style="padding-right:2.6rem;">
+                <button type="button" class="toggle-pw" id="toggle-reg-pw" aria-label="Show password">
+                  <span class="material-symbols-outlined">visibility</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="field field-full">
+              <div class="field-hd"><label for="reg-confirm">Confirm Password</label></div>
+              <div class="inp-wrap">
+                <input type="password" id="reg-confirm" name="confirm" required
+                       placeholder="Re-enter password" autocomplete="new-password">
+              </div>
+            </div>
+
+          </div>
+
+          <button type="submit" class="btn-submit" id="register-btn">
+            <span class="material-symbols-outlined">person_add</span>
+            Create Account
+          </button>
+        </form>
+
+        <div class="msg-box" id="register-msg"></div>
+      </div>
+
+    </div><!-- /form-card -->
+
+    <p class="page-footer">© 2025 TripFlow — All rights reserved.</p>
+
+  </div><!-- /page-wrap -->
 
   <script src="js/auth.js"></script>
   <script src="js/login.js"></script>
