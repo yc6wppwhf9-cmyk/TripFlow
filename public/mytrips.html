@@ -157,6 +157,36 @@
             font-weight: 700;
             color: var(--on-surface);
         }
+        @media (max-width: 640px) {
+            .upcoming-grid {
+                grid-template-columns: 1fr;
+                gap: 0.85rem;
+                margin-bottom: 1.25rem;
+            }
+            .city-card {
+                border-radius: 8px;
+                box-shadow: 0 12px 30px rgba(15,23,42,0.10);
+            }
+            .city-card-img {
+                height: 178px;
+            }
+            .city-stage-badge {
+                top: 12px;
+                right: 12px;
+                border-radius: 999px;
+                background: rgba(255,255,255,0.92) !important;
+                box-shadow: 0 8px 18px rgba(15,23,42,0.14);
+            }
+            .city-card-body {
+                padding: 1rem;
+            }
+            .city-card-dest {
+                font-size: 1.12rem;
+            }
+            .city-card-footer {
+                padding-top: 0.15rem;
+            }
+        }
     </style>
     <meta name="theme-color" content="#003d9b">
     <meta name="apple-mobile-web-app-capable" content="yes">

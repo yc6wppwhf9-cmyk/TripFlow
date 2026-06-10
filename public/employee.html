@@ -498,6 +498,52 @@
             .top-appbar { padding: 0 1rem; }
             .tp-grid { grid-template-columns: 1fr !important; }
             .tp-arrow { display: none !important; }
+            .bento-grid {
+                gap: 0.9rem;
+                margin-bottom: 1rem;
+            }
+            .bento-card-greeting {
+                padding: 1.2rem !important;
+                border-radius: 8px !important;
+                box-shadow: 0 16px 40px rgba(0,61,155,0.18) !important;
+            }
+            .bento-badge-group {
+                gap: 0.55rem;
+                flex-wrap: wrap;
+            }
+            .bento-badge {
+                flex: 1 1 calc(50% - 0.55rem);
+                min-width: 128px;
+            }
+            .concierge-card {
+                border-radius: 8px !important;
+                padding: 1.2rem !important;
+            }
+            #booking-modal .modal-content {
+                border: 0 !important;
+                box-shadow: 0 -20px 46px rgba(15,23,42,0.22) !important;
+                border-radius: 20px 20px 0 0 !important;
+            }
+            #booking-modal .modal-content > div:first-child {
+                background: linear-gradient(135deg, #003d9b, #0052cc) !important;
+                color: #ffffff !important;
+                border-bottom: 0 !important;
+                padding: 1.15rem 1.25rem !important;
+            }
+            #booking-modal .modal-content > div:first-child p,
+            #booking-modal .modal-content > div:first-child h2 {
+                color: #ffffff !important;
+            }
+            #booking-modal .modal-content > div:nth-child(2) {
+                padding: 1.1rem !important;
+            }
+            #ai-orb-fab {
+                bottom: calc(5.3rem + env(safe-area-inset-bottom, 0px)) !important;
+                right: 1rem !important;
+            }
+            #ai-assistant-overlay > div {
+                border-radius: 22px 22px 0 0 !important;
+            }
         }
         @media (max-width: 480px) {
             #ai-orb-fab { bottom: 1rem !important; right: 1rem !important; }

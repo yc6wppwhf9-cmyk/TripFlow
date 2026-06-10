@@ -1,6 +1,10 @@
-const CACHE = 'tripdesk-v2';
+const CACHE = 'tripflow-v3';
 const STATIC_ASSETS = [
   '/css/style.css',
+  '/js/api.js',
+  '/js/auth.js',
+  '/js/login.js',
+  '/images/Logo.png',
   '/manifest.json'
 ];
 

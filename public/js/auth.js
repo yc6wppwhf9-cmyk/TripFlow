@@ -4,6 +4,10 @@ async function login(email, password) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    throw new Error('API server is not running. Start the app with npm run dev and open http://localhost:3000.');
+  }
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Login failed');
   localStorage.setItem('tripflow_token', data.token);
@@ -13,7 +17,12 @@ async function login(email, password) {
 
 function checkAuth() {
   const token = localStorage.getItem('tripflow_token');
-  const user  = JSON.parse(localStorage.getItem('tripflow_user'));
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('tripflow_user'));
+  } catch {
+    localStorage.removeItem('tripflow_user');
+  }
 
   const roleHome = {
     EMPLOYEE: '/employee.html',

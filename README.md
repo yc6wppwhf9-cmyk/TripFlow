@@ -34,7 +34,7 @@ AI-powered travel booking and approval system for enterprises. Employees describ
 ## Project Structure
 
 ```
-TripDesk/
+TripFlow/
 ├── server.js                    # Entry point
 ├── prisma/
 │   ├── schema.prisma            # DB schema

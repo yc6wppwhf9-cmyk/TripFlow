@@ -45,10 +45,7 @@
       justify-content: center;
       font-family: 'Inter', system-ui, sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(ellipse at 20% 0%,  rgba(0,61,155,0.10) 0%, transparent 55%),
-        radial-gradient(ellipse at 85% 100%, rgba(0,82,204,0.08) 0%, transparent 55%),
-        var(--bg);
+      background: linear-gradient(180deg, #f6f8fb 0%, var(--bg) 100%);
       padding: 2rem 1rem;
       -webkit-font-smoothing: antialiased;
     }
@@ -99,7 +96,7 @@
       display: flex;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 4px;
       width: 100%;
       gap: 4px;
@@ -137,7 +134,7 @@
       width: 100%;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 18px;
+      border-radius: 8px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
       padding: 2rem 2rem;
     }
@@ -196,6 +193,11 @@
       transition: all 0.18s ease;
       display: block;
       appearance: none;
+    }
+    .inp-wrap input:focus-visible, .inp-wrap select:focus-visible,
+    .tab-btn:focus-visible, .btn-submit:focus-visible, .toggle-pw:focus-visible {
+      outline: 3px solid rgba(0,61,155,0.18);
+      outline-offset: 2px;
     }
     .inp-wrap input::placeholder { color: #9aa0af; font-weight: 400; }
     .inp-wrap input:focus, .inp-wrap select:focus {
@@ -311,11 +313,11 @@
 
     <!-- Tab Switcher -->
     <div class="tab-switcher">
-      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">
+      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')" aria-controls="section-login" aria-selected="true">
         <span class="material-symbols-outlined">login</span>
         Sign In
       </button>
-      <button class="tab-btn" id="tab-register" onclick="switchTab('register')">
+      <button class="tab-btn" id="tab-register" onclick="switchTab('register')" aria-controls="section-register" aria-selected="false">
         <span class="material-symbols-outlined">person_add</span>
         Register
       </button>
@@ -325,7 +327,7 @@
     <div class="form-card">
 
       <!-- ── Sign In ── -->
-      <div id="section-login" class="form-section active">
+      <div id="section-login" class="form-section active" role="tabpanel" aria-labelledby="tab-login">
         <div class="form-section-title">Welcome back</div>
         <p class="form-section-sub">Sign in to your travel dashboard</p>
 
@@ -370,7 +372,7 @@
       </div>
 
       <!-- ── Register ── -->
-      <div id="section-register" class="form-section">
+      <div id="section-register" class="form-section" role="tabpanel" aria-labelledby="tab-register">
         <div class="form-section-title">Create account</div>
         <p class="form-section-sub">Register as a new employee</p>
 
@@ -442,7 +444,7 @@
 
     </div><!-- /form-card -->
 
-    <p class="page-footer">© 2025 TripFlow — All rights reserved.</p>
+    <p class="page-footer">© 2026 TripFlow - All rights reserved.</p>
 
   </div><!-- /page-wrap -->
 

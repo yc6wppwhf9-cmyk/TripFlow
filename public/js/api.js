@@ -66,14 +66,15 @@ async function apiRequest(endpoint, options = {}) {
   }
 
   const response = await fetch(`${API_URL}${endpoint}`, config);
-  const data = await response.json();
+  const contentType = response.headers.get('content-type') || '';
+  const data = contentType.includes('application/json') ? await response.json() : {};
 
   if (!response.ok) {
     if (response.status === 401) {
       localStorage.removeItem('tripflow_token');
       window.location.href = '/index.html';
     }
-    throw new Error(data.error || 'Something went wrong');
+    throw new Error(data.error || data.message || 'Something went wrong');
   }
 
   return data;

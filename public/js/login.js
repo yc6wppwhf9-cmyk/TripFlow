@@ -5,6 +5,8 @@ function switchTab(tab) {
   const isLogin = tab === 'login';
   document.getElementById('tab-login').classList.toggle('active', isLogin);
   document.getElementById('tab-register').classList.toggle('active', !isLogin);
+  document.getElementById('tab-login').setAttribute('aria-selected', String(isLogin));
+  document.getElementById('tab-register').setAttribute('aria-selected', String(!isLogin));
   document.getElementById('section-login').classList.toggle('active', isLogin);
   document.getElementById('section-register').classList.toggle('active', !isLogin);
 }
@@ -65,7 +67,7 @@ document.getElementById('login-form').addEventListener('submit', async e => {
 
   hideMsg('login-msg');
   btn.disabled  = true;
-  btn.innerHTML = '<span class="material-symbols-outlined spinning">progress_activity</span> Signing in…';
+  btn.innerHTML = '<span class="material-symbols-outlined spinning">progress_activity</span> Signing in...';
 
   try {
     const user = await login(email, password);
@@ -104,7 +106,7 @@ document.getElementById('register-form').addEventListener('submit', async e => {
   }
 
   btn.disabled  = true;
-  btn.innerHTML = '<span class="material-symbols-outlined spinning">progress_activity</span> Creating account…';
+  btn.innerHTML = '<span class="material-symbols-outlined spinning">progress_activity</span> Creating account...';
 
   try {
     const res = await fetch('/api/auth/register', {
@@ -112,6 +114,10 @@ document.getElementById('register-form').addEventListener('submit', async e => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password, phone: phone || undefined, department: dept || 'General' })
     });
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      throw new Error('API server is not running. Start the app with npm run dev and open http://localhost:3000.');
+    }
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Registration failed');
 
