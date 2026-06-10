@@ -1,156 +1,271 @@
-# TripFlow — Corporate Travel Management Platform
+# TripFlow
 
-AI-powered travel booking and approval system for enterprises. Employees describe their travel in plain language; Claude searches real flights, trains, and hotels, enforces company policies, and routes bookings through manager approval.
+Corporate travel management platform for employee travel requests, policy enforcement, manager/HR approvals, vendor ticket fulfillment, and travel analytics.
 
----
+TripFlow is a Node.js + Express application with a PostgreSQL database managed through Prisma. The frontend is a set of responsive static HTML dashboards served from `public/`.
 
-## Features
+## What It Does
 
-- **AI Chat Booking** — Employees chat with Claude to find and book travel. Includes **voice input** (mic button) in the chat widget.
-- **Real Travel Prices** — Live data from Google Flights, IRCTC Railway, and Booking.com via RapidAPI.
-- **Policy Enforcement** — Per-type spend limits (flight/hotel/train/cab) and global monthly budget caps. Violations blocked at API level.
-- **Approval Workflow** — Bookings flow: Employee → Manager → Finance → Confirmed. Email notifications at each stage via Resend.
-- **Multi-role Portals** — Separate dashboards for Employee, Manager, Admin, HR, and Vendor.
-- **HR Analytics** — Department-wise spend, policy compliance rates, monthly booking trends.
-- **JWT Auth** — Login + token refresh flow. Role-based access on every route.
-- **Rate Limiting** — AI chat limited to 20 requests/min per user.
-
----
+- Employee travel booking with flight, train, hotel, cab, meal, and trip-package request types
+- Multi-step request flow with policy checks, fare selection, hotel add-ons, and mobile-first UI polish
+- AI travel assistant powered by Anthropic Claude for chat-based travel help
+- Manager approval queue and department travel overview
+- HR dashboard for employee management, policy assignment, vendor assignment, and analytics
+- Admin dashboard for users, vendors, policies, bookings, and governance controls
+- Vendor portal for assigned bookings, PNR entry, and ticket upload
+- Notifications, email updates, password reset, and PWA manifest/service worker support
+- Indian railway data support through local seeded rail station/train tables
 
 ## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
-| Runtime | Node.js + Express 5 |
-| Database | PostgreSQL (Supabase) via Prisma ORM |
-| AI | Claude claude-sonnet-4-6 (Anthropic) — tool-use agentic loop |
-| Cache / Queue | Redis (Upstash) + Bull |
+| --- | --- |
+| Runtime | Node.js, Express 5 |
+| Database | PostgreSQL with Prisma ORM |
+| Frontend | Static HTML, CSS, vanilla JavaScript |
+| Auth | JWT, bcrypt |
+| AI | Anthropic Claude SDK |
 | Email | Resend |
-| Storage | Uploadthing |
-| Travel APIs | Google Flights · IRCTC Railway · Booking.com (via RapidAPI) |
-
----
+| Cache | Redis |
+| Storage | Supabase Storage |
+| Travel APIs | RapidAPI / Indian rail integrations plus local railway data |
+| Deployment | Render |
 
 ## Project Structure
 
-```
+```text
 TripFlow/
-├── server.js                    # Entry point
-├── prisma/
-│   ├── schema.prisma            # DB schema
-│   └── seed.js                  # Seed data
-├── src/
-│   ├── app.js                   # Express app + routes
-│   ├── config/db.js             # Prisma client
-│   ├── controllers/
-│   │   ├── ai.controller.js     # Claude agentic chat loop
-│   │   ├── auth.controller.js   # Login + JWT refresh
-│   │   ├── booking.controller.js
-│   │   ├── hr.controller.js     # HR analytics
-│   │   └── ...
-│   ├── services/
-│   │   ├── travel.service.js    # Flights / Trains / Hotels APIs
-│   │   ├── approval.service.js
-│   │   └── ...
-│   ├── routes/                  # One file per role
-│   └── middleware/              # auth, role, validate
-└── public/                      # Vanilla HTML frontends
-    ├── employee.html
-    ├── manager.html
-    ├── admin.html
-    ├── hr.html
-    └── vendor.html
+|-- server.js
+|-- render.yaml
+|-- package.json
+|-- prisma/
+|   |-- schema.prisma
+|   |-- seed.js
+|   |-- seed-trains.js
+|   `-- import-trains-csv.js
+|-- src/
+|   |-- app.js
+|   |-- config/
+|   |-- controllers/
+|   |-- middleware/
+|   |-- routes/
+|   |-- services/
+|   `-- utils/
+`-- public/
+    |-- index.html
+    |-- employee.html
+    |-- request.html
+    |-- mytrips.html
+    |-- detail.html
+    |-- manager.html
+    |-- hr.html
+    |-- admin.html
+    |-- vendor.html
+    |-- management.html
+    |-- css/
+    |-- js/
+    `-- images/
 ```
-
----
 
 ## Local Setup
 
+1. Install dependencies:
+
 ```bash
-# 1. Install dependencies
 npm install
+```
 
-# 2. Copy and fill environment variables
-cp .env.example .env
+2. Create a `.env` file in the project root and fill the required values.
 
-# 3. Push DB schema
+Minimum required values for the server to start:
+
+```env
+DATABASE_URL="postgresql://..."
+JWT_SECRET="use-a-long-random-secret-at-least-32-characters"
+```
+
+3. Push the database schema:
+
+```bash
 npx prisma db push
+```
 
-# 4. Seed initial data (optional)
+4. Seed demo users and default policy:
+
+```bash
 npm run prisma:seed
+```
 
-# 5. Start dev server
+5. Optional: seed railway data:
+
+```bash
+npm run prisma:seed-trains
+```
+
+6. Start the app:
+
+```bash
 npm run dev
 ```
 
-Server starts on `http://localhost:3000`
+Open the real app at:
 
----
+```text
+http://localhost:3000/index.html
+```
+
+Do not use the static preview server for login. A static server such as `localhost:4173` can show HTML/CSS pages, but it does not run `/api/*` routes.
+
+## Demo Accounts
+
+All seeded accounts use the same password:
+
+```text
+Welcome@123
+```
+
+| Role | Email |
+| --- | --- |
+| Admin | `admin@tripflow.com` |
+| HR | `hr@tripflow.com` |
+| Manager | `manager@tripflow.com` |
+| Employee | `alice@tripflow.com` |
+| Employee | `bob@tripflow.com` |
+| Vendor | `vendor@travel.com` |
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | Supabase pooled connection string |
-| `DIRECT_URL` | Supabase direct connection (for migrations) |
-| `JWT_SECRET` | Secret for signing JWT tokens |
-| `ANTHROPIC_API_KEY` | Claude AI key — console.anthropic.com |
-| `RAPIDAPI_KEY` | RapidAPI key (covers Flights, Trains, Hotels) |
-| `RESEND_API_KEY` | Email API key — resend.com |
-| `FROM_EMAIL` | Sender address for notifications |
-| `REDIS_URL` | Upstash Redis connection string |
-| `UPLOADTHING_TOKEN` | File upload token |
-| `PORT` | Server port (default 3000) |
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `DIRECT_URL` | Recommended | Direct PostgreSQL connection for migrations |
+| `JWT_SECRET` | Yes | JWT signing secret, minimum 32 characters |
+| `PORT` | No | Server port, defaults to `3000` |
+| `ALLOWED_ORIGINS` | No | Comma-separated CORS allowlist |
+| `APP_URL` | Recommended | Public app URL used in email links |
+| `ANTHROPIC_API_KEY` | Optional | Enables Claude AI assistant and policy parsing |
+| `RAPIDAPI_KEY` | Optional | Enables external travel search integrations |
+| `INDIAN_RAIL_API_KEY` | Optional | Enables Indian rail API integration if configured |
+| `RESEND_API_KEY` | Optional | Enables outbound emails |
+| `FROM_EMAIL` | Optional | Sender address for emails |
+| `REDIS_URL` | Optional | Redis connection for cache/login fail tracking |
+| `SUPABASE_URL` | Optional | Supabase project URL for ticket storage |
+| `SUPABASE_ANON_KEY` | Optional | Supabase key for storage upload |
+| `INTERAKT_API_KEY` | Optional | WhatsApp notification integration |
 
----
+## Main Pages
 
-## Deploying to Render
+| Page | Purpose |
+| --- | --- |
+| `/index.html` | Login and registration |
+| `/employee.html` | Employee dashboard and AI assistant |
+| `/request.html` | New travel or meal request |
+| `/mytrips.html` | Employee trip history |
+| `/detail.html` | Booking detail and cancellation |
+| `/manager.html` | Manager analytics and approval queue |
+| `/hr.html` | HR operations, policies, vendor assignment, analytics |
+| `/admin.html` | Admin controls for users, vendors, bookings, and policies |
+| `/vendor.html` | Vendor fulfillment and ticket upload |
+| `/management.html` | Executive management overview |
 
-1. Push this repo to GitHub.
-2. Create a new **Web Service** on [render.com](https://render.com).
-3. Connect your GitHub repo and set:
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-   - **Region:** Singapore (closest to India)
-4. Add all environment variables listed above.
-5. After first deploy, open the Render **Shell** tab and run:
-   ```
-   npx prisma db push
-   ```
+## API Overview
 
----
+| Method | Path | Access |
+| --- | --- | --- |
+| `POST` | `/api/auth/register` | Public |
+| `POST` | `/api/auth/login` | Public |
+| `POST` | `/api/auth/refresh` | Public |
+| `POST` | `/api/auth/logout` | Authenticated |
+| `POST` | `/api/auth/forgot-password` | Public |
+| `POST` | `/api/auth/reset-password` | Public |
+| `GET` | `/api/auth/me` | Authenticated |
+| `GET` | `/api/bookings/mine` | Authenticated |
+| `GET` | `/api/bookings/trip-plan` | Authenticated |
+| `GET` | `/api/bookings/suggestions` | Authenticated |
+| `POST` | `/api/bookings` | Employee, Manager |
+| `GET` | `/api/bookings/:id` | Authenticated |
+| `DELETE` | `/api/bookings/:id` | Authenticated |
+| `POST` | `/api/bookings/:id/receipt` | Authenticated |
+| `GET` | `/api/approvals/pending` | Manager, Admin |
+| `GET` | `/api/approvals/team` | Manager, Admin |
+| `POST` | `/api/approvals/:id/approve` | Manager, HR, Admin |
+| `POST` | `/api/approvals/:id/reject` | Manager, HR, Admin |
+| `GET` | `/api/approvals/hr/pending` | HR, Admin |
+| `POST` | `/api/approvals/:id/assign-vendor` | HR, Admin |
+| `GET` | `/api/admin/users` | HR, Admin |
+| `GET` | `/api/admin/employees` | HR, Admin |
+| `GET` | `/api/admin/vendors` | HR, Admin |
+| `GET` | `/api/admin/bookings` | HR, Admin |
+| `GET` | `/api/admin/policies` | HR, Admin |
+| `POST` | `/api/admin/users` | HR, Admin |
+| `POST` | `/api/admin/policies` | HR, Admin |
+| `POST` | `/api/admin/policies/assign` | HR, Admin |
+| `POST` | `/api/admin/policies/analyze` | HR, Admin |
+| `GET` | `/api/hr/dept-spend` | HR, Admin |
+| `GET` | `/api/hr/policy-compliance` | HR, Admin |
+| `GET` | `/api/hr/monthly-trend` | HR, Admin |
+| `GET` | `/api/hr/management-stats` | HR, Admin |
+| `GET` | `/api/vendor/requests` | Vendor |
+| `GET` | `/api/vendor/completed` | Vendor |
+| `POST` | `/api/vendor/:id/upload-ticket` | Vendor |
+| `POST` | `/api/ai/chat` | Employee |
+| `GET` | `/api/notifications` | Authenticated |
+| `PATCH` | `/api/notifications/:id/read` | Authenticated |
+| `GET` | `/health` | Public |
 
-## API Routes
+## Booking Workflow
 
-| Method | Path | Role | Description |
-|--------|------|------|-------------|
-| POST | `/api/auth/login` | Public | Login, returns JWT |
-| POST | `/api/auth/refresh` | Public | Refresh JWT token |
-| POST | `/api/ai/chat` | Employee | AI travel chat (20 req/min) |
-| GET | `/api/bookings/suggestions` | Employee | Search flights/trains/hotels |
-| POST | `/api/bookings` | Employee | Create booking |
-| GET | `/api/bookings` | Employee | My bookings |
-| PATCH | `/api/approvals/:id` | Manager/Finance | Approve or reject |
-| GET | `/api/hr/dept-spend` | HR/Admin | Department spend breakdown |
-| GET | `/api/hr/policy-compliance` | HR/Admin | Policy compliance stats |
-| GET | `/api/hr/monthly-trend` | HR/Admin | 6-month booking trend |
-| GET | `/api/admin/employees` | Admin | All employees |
-| GET | `/api/vendor/bookings` | Vendor | Assigned bookings |
+```text
+Employee creates request
+        ↓
+PENDING_MANAGER
+        ↓ manager approves
+PENDING_HR
+        ↓ HR assigns vendor
+PENDING_VENDOR
+        ↓ vendor uploads ticket / PNR
+COMPLETED
+```
 
----
+Rejected and cancelled bookings move to `REJECTED` or `CANCELLED`.
 
-## How the AI Chat Works
+## Scripts
 
-1. Employee opens the chat widget and describes their trip in plain English (or uses the **mic button** for voice input — works in Chrome/Edge).
-2. Claude detects the intent and calls the `search_travel` tool with the route and dates.
-3. The backend fetches live prices from Google Flights / IRCTC / Booking.com.
-4. Claude presents real options with prices in the chat.
-5. Employee confirms a booking; Claude calls `create_booking`.
-6. Policy limits are checked server-side (422 if exceeded).
-7. Booking is created in `PENDING_MANAGER` stage and the manager receives an email notification.
+| Command | Description |
+| --- | --- |
+| `npm start` | Run production server |
+| `npm run dev` | Run with nodemon |
+| `npm run prisma:generate` | Generate Prisma client |
+| `npm run prisma:migrate` | Run Prisma migration workflow |
+| `npm run prisma:seed` | Seed users, vendor, and default policy |
+| `npm run prisma:seed-trains` | Seed railway reference data |
+| `npm run prisma:import-csv` | Import railway CSV data |
 
----
+## Deployment
+
+The repository includes `render.yaml`.
+
+Render settings:
+
+- Build command: `npm install`
+- Start command: `node server.js`
+- Health check: `/health`
+
+After first deploy, run:
+
+```bash
+npx prisma db push
+npm run prisma:seed
+```
+
+Only seed production intentionally. `prisma/seed.js` refuses to run in production unless `ALLOW_PROD_SEED=true`.
+
+## Notes
+
+- The frontend is served by Express from `public/`.
+- The mobile UI has a premium travel-app treatment with floating navigation, polished itinerary cards, and responsive request flows.
+- If login returns an API unavailable message, make sure you are using the Express server URL, not a static preview server.
 
 ## License
 
-MIT
+ISC
